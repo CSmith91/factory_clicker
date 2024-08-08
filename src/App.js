@@ -20,7 +20,7 @@ function App() {
 
   // Research items with their costs
   const researchItems = {
-    "Coal": { cost: {"Stone" : 5} },
+    "Coal": { cost: {"Stone" : 5, "Wood": 10} },
     "Copper Ore": { cost: { "Iron Ore": 20 } },
 
   };
