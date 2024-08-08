@@ -4,18 +4,21 @@ import OreSection from './Components/OreSection';
 import Furnaces from './Components/Furnaces';
 import Inventory from './Components/Inventory';
 import Research from './Components/Research';
+import TestMode from './Components/TestMode'
 
 function App() {
+
+  const testMode = true
 
    // Initial state for ores with unlocked and canHandMine properties
   const [ores, setOres] = useState({
     Wood: { count: 0, canHandMine: true, unlocked: true },
     Stone: { count: 0, canHandMine: true, unlocked: true },
     "Iron Ore": { count: 0, canHandMine: true, unlocked: true },
-    Coal: { count: 0, canHandMine: true, unlocked: false },
-    "Copper Ore": { count: 0, canHandMine: true, unlocked: false },
-    "Crude Oil": { count: 0, canHandMine: false, unlocked: false },
-    Uranium: { count: 0, canHandMine: false, unlocked: false }
+    Coal: { count: 0, canHandMine: true, unlocked: testMode },
+    "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode },
+    "Crude Oil": { count: 0, canHandMine: false, unlocked: testMode },
+    Uranium: { count: 0, canHandMine: false, unlocked: testMode }
   });
 
   // Research items with their costs
@@ -24,7 +27,18 @@ function App() {
     "Copper Ore": { cost: { "Iron Ore": 20 } },
 
   };
-  
+
+  // TestMode (Cheat Mode)
+  const onCheat = (oreName) => {
+    setOres(prevOres => ({
+      ...prevOres,
+      [oreName]: {
+        ...prevOres[oreName],
+        count: prevOres[oreName].count + 50
+      }
+    }));
+
+  }
 
   // Function to increment the ore count
   const onIncrement = (oreName) => {
@@ -91,7 +105,11 @@ function App() {
             </div>
 
             <div className='section'>
-              <Research ores={ores} onUnlock={onUnlock} researchItems={researchItems} />
+              {testMode ? (
+                < TestMode ores={ores} onCheat={onCheat} />
+              ) : (
+                <Research ores={ores} onUnlock={onUnlock} researchItems={researchItems} />
+              )}
             </div>
           </div>
       </div>
