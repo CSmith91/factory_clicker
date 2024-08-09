@@ -4,7 +4,9 @@ import OreSection from './Components/OreSection';
 import Furnaces from './Components/Furnaces';
 import Inventory from './Components/Inventory';
 import Research from './Components/Research';
-import TestMode from './Components/TestMode'
+import TestMode from './Components/TestMode';
+import Messages from './Components/Messages';
+import AudioPlayer from './Components/AudioPlayer';
 
 function App() {
 
@@ -31,6 +33,26 @@ function App() {
     "Coal": { cost: {"Stone" : 5, "Wood": 10} },
     "Copper Ore": { cost: { "Iron Ore": 20 } },
 
+  };
+
+  // Messages & sound
+  const [messages, setMessages] = useState([])
+  const [playAudio, setPlayAudio] = useState(false); // State to trigger audio playback
+
+
+  // Function to add alerts for the player
+  const onAlert = (message) => {
+    const id = Date.now(); // Unique identifier for the message
+    setMessages(prevMessages => [...prevMessages, { id, text: message }]);
+    setPlayAudio(true); // Trigger audio playback
+
+    // Remove the message after 5 seconds
+    setTimeout(() => {
+      setMessages(prevMessages => prevMessages.filter(msg => msg.id !== id));
+    }, 5000);
+    setTimeout(() => {
+      setPlayAudio(false);
+    }, 100);
   };
 
   // TestMode (Cheat Mode)
@@ -85,14 +107,62 @@ function App() {
       };
       setOres(newOres);
     } else {
-      alert("Not enough resources to unlock this item.");
+      onAlert("Not enough resources to unlock this item.");
     }
   };
+
+  // Function for crafting
+  const onCraft = (ingredientName) => {
+    const ingredient = ingredients[ingredientName];
+    if (!ingredient || !ingredient.cost) return;
+
+    const hasEnoughResources = Object.entries(ingredient.cost).every(
+      ([resourceName, amountRequired]) => {
+        const resource = ores[resourceName] || ingredients[resourceName];
+        return resource?.count >= amountRequired;
+      }
+    );
+
+    if (!hasEnoughResources) {
+      onAlert(`Not enough resources to craft ${ingredientName}`);
+      return;
+    }
+
+    // Deduct the costs from the resources
+    const updatedOres = { ...ores };
+    const updatedIngredients = { ...ingredients };
+
+    Object.entries(ingredient.cost).forEach(([resourceName, amountRequired]) => {
+      if (updatedOres[resourceName]) {
+        updatedOres[resourceName].count -= amountRequired;
+      } else if (updatedIngredients[resourceName]) {
+        updatedIngredients[resourceName].count -= amountRequired;
+      }
+    });
+
+    // Increment the crafted ingredient count
+    updatedIngredients[ingredientName].count += 1;
+
+    // Increment the idleCount if the ingredient is a machine
+    if (ingredient.isMachine) {
+      updatedIngredients[ingredientName].idleCount += 1;
+    }
+
+    setOres(updatedOres);
+    setIngredients(updatedIngredients);
+  };
+
 
   return (
     <>
       <div className="App" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+
+            {/* Alert Section */}
+            <div className='alerts'>
+              <Messages messages={messages} />
+              <AudioPlayer play={playAudio} />
+            </div>
 
             {/* Ore Patch Section */}
             <div className='section'>
@@ -106,7 +176,7 @@ function App() {
 
             {/* Inventory Section */}
             <div className='section'>
-              <Inventory ores={ores} ingredients={ingredients} />
+              <Inventory ores={ores} ingredients={ingredients} onCraft={onCraft} />
             </div>
 
             <div className='section'>

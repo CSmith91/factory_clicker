@@ -1,6 +1,7 @@
 import React from 'react';
+import CraftButton from './CraftButton';
 
-const Inventory = ({ ores, ingredients }) => {
+const Inventory = ({ ores, ingredients, onCraft }) => {
     return (
         <div>
             <h2>Inventory</h2>
@@ -15,8 +16,8 @@ const Inventory = ({ ores, ingredients }) => {
                         .join(', ');
 
                         return(
-                        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                            {ingredientData.isCraftable && <button>Craft</button>}
+                        <div key={"div-"+ingredientName} style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                            {ingredientData.isCraftable && <CraftButton key={"Craft"+ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
                             <li key={ingredientName} style={{marginLeft: '10px'}}>
                                 {ingredientName} ({costText}): {ingredientData.count} <br/> Idle Count: {ingredientData.idleCount}
                             </li>
@@ -42,8 +43,8 @@ const Inventory = ({ ores, ingredients }) => {
                         .join(', ');
 
                         return(
-                            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                                {ingredientData.isCraftable && <button>Craft</button>}
+                            <div key={"div-"+ingredientName} style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                                {ingredientData.isCraftable && <CraftButton key={"Craft"+ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
                                 <li key={ingredientName} style={{marginLeft: '10px'}}>
                                     {ingredientName} ({costText}): {ingredientData.count}
                                 </li>
