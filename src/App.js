@@ -12,14 +12,19 @@ function App() {
 
    // Initial state for ores with unlocked and canHandMine properties
   const [ores, setOres] = useState({
-    Wood: { count: 0, canHandMine: true, unlocked: true },
-    Stone: { count: 0, canHandMine: true, unlocked: true },
-    "Iron Ore": { count: 0, canHandMine: true, unlocked: true },
-    Coal: { count: 0, canHandMine: true, unlocked: testMode },
-    "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode },
+    Wood: { count: 0, canHandMine: true, unlocked: true, isFuel: true },
+    Stone: { count: 0, canHandMine: true, unlocked: true, canFurnace: true },
+    "Iron Ore": { count: 0, canHandMine: true, unlocked: true, canFurnace: true },
+    Coal: { count: 0, canHandMine: true, unlocked: testMode, isFuel: true },
+    "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode, canFurnace: true },
     "Crude Oil": { count: 0, canHandMine: false, unlocked: testMode },
     Uranium: { count: 0, canHandMine: false, unlocked: testMode }
   });
+
+  const [ingredients, setIngredients] = useState({
+    "Stone Furnace": { group: 'p4', count: 0, unlocked: testMode, cost: {"Stone": 5}, isCraftable: true, craftTime: 0.5, isFuel: false, isMachine: true, isBurner: true, machineSpeed: 1, idleCount: 0},
+    "Gear" : { group: 'i5', count: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }
+  })
 
   // Research items with their costs
   const researchItems = {
@@ -101,14 +106,14 @@ function App() {
 
             {/* Inventory Section */}
             <div className='section'>
-              <Inventory ores={ores} />
+              <Inventory ores={ores} ingredients={ingredients} />
             </div>
 
             <div className='section'>
               {testMode ? (
-                < TestMode ores={ores} onCheat={onCheat} />
+                < TestMode ores={ores} ingredients={ingredients} onCheat={onCheat} />
               ) : (
-                <Research ores={ores} onUnlock={onUnlock} researchItems={researchItems} />
+                <Research ores={ores} ingredients={ingredients} onUnlock={onUnlock} researchItems={researchItems} />
               )}
             </div>
           </div>
