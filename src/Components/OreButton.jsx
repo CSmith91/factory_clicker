@@ -5,8 +5,7 @@ const OreButton = ({ oreName, onIncrement }) => {
     return (
         <div style={{ margin: '10px' }}>
             <button 
-                onClick={() => onIncrement(oreName)} 
-                style={{ padding: '10px', fontSize: '16px' }}>
+                onClick={() => onIncrement(oreName)}>
                 Get {oreName}
             </button>
         </div>
