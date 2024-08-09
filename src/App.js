@@ -7,6 +7,7 @@ import Research from './Components/Research';
 import TestMode from './Components/TestMode';
 import Messages from './Components/Messages';
 import AudioPlayer from './Components/AudioPlayer';
+import StatusSection from './Components/StatusSection';
 
 function App() {
 
@@ -34,6 +35,13 @@ function App() {
     "Copper Ore": { cost: { "Iron Ore": 20 } },
 
   };
+
+  // Tools
+  const [tools, setTools] = useState ({
+    Axe: { durability: 100, corrodeRate: 0.25, unlocked: true},
+    Pickaxe: { durability: 100, corrodeRate: 0.5, unlocked: true},
+    Hammer: { durability: 100, corrodeRate: 1.5, unlocked: testMode}
+  })
 
   // Messages & sound
   const [messages, setMessages] = useState([])
@@ -69,14 +77,42 @@ function App() {
 
   // Function to increment the ore count
   const onIncrement = (oreName) => {
-    setOres(prevOres => ({
-      ...prevOres,
-      [oreName]: {
-        ...prevOres[oreName],
-        count: prevOres[oreName].count + 1
+    const toolName = oreName === 'Wood' ? 'Axe' : 'Pickaxe';
+    
+    setTools(prevTools => {
+      const tool = prevTools[toolName];
+      if (!tool || tool.durability <= 0) {
+          onAlert(`Your ${toolName} is broken. You cannot mine ${oreName}.`);
+          return prevTools;
       }
-    }));
-  };
+
+      const updatedDurability = tool.durability - tool.corrodeRate;
+
+      // Update the tool's durability
+      return {
+          ...prevTools,
+          [toolName]: {
+              ...tool,
+              durability: Math.max(0, updatedDurability)
+          }
+      };
+    });
+
+    // Increment the ore count only if the tool had durability
+    setOres(prevOres => {
+      const tool = tools[toolName];
+      if (tool.durability > 0) {
+          return {
+              ...prevOres,
+              [oreName]: {
+                  ...prevOres[oreName],
+                  count: prevOres[oreName].count + 1
+              }
+          };
+      }
+      return prevOres;
+  });
+};
 
   // Function to unlock ores
   const onUnlock = (oreName) => {
@@ -113,6 +149,27 @@ function App() {
 
   // Function for crafting
   const onCraft = (ingredientName) => {
+    const toolName = 'Hammer';
+    
+    setTools(prevTools => {
+      const tool = prevTools[toolName];
+      if (!tool || tool.durability <= 0) {
+          onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
+          return prevTools;
+      }
+
+      const updatedDurability = tool.durability - tool.corrodeRate;
+
+      // Update the tool's durability
+      return {
+          ...prevTools,
+          [toolName]: {
+              ...tool,
+              durability: Math.max(0, updatedDurability)
+          }
+      };
+    });
+
     const ingredient = ingredients[ingredientName];
     if (!ingredient || !ingredient.cost) return;
 
@@ -152,6 +209,27 @@ function App() {
     setIngredients(updatedIngredients);
   };
 
+  // Tools function
+  const useTool = (toolName) => {
+    setTools(prevTools => {
+        const tool = prevTools[toolName];
+        if (!tool || tool.durability <= 0) {
+            onAlert(`You need to repair your ${toolName}.`);
+            return prevTools;
+        }
+
+        const updatedDurability = tool.durability - tool.corrodeRate;
+
+        return {
+            ...prevTools,
+            [toolName]: {
+                ...tool,
+                durability: Math.max(0, updatedDurability)
+            }
+        };
+    });
+};
+
 
   return (
     <>
@@ -164,9 +242,14 @@ function App() {
               <AudioPlayer play={playAudio} />
             </div>
 
+            {/* Status Section */}
+            <div className='section'>
+              <StatusSection tools={tools} useTool={useTool} />
+            </div>
+
             {/* Ore Patch Section */}
             <div className='section'>
-              <OreSection ores={ores} onIncrement={onIncrement} />
+              <OreSection ores={ores} onIncrement={onIncrement} useTool={useTool} />
             </div>
 
             {/* Furnaces Section
@@ -176,7 +259,7 @@ function App() {
 
             {/* Inventory Section */}
             <div className='section'>
-              <Inventory ores={ores} ingredients={ingredients} onCraft={onCraft} />
+              <Inventory ores={ores} ingredients={ingredients} onCraft={onCraft} useTool={useTool} />
             </div>
 
             <div className='section'>
