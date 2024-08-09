@@ -18,7 +18,7 @@ function App() {
     Coal: { count: 0, canHandMine: true, unlocked: testMode, isFuel: true },
     "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode, canFurnace: true },
     "Crude Oil": { count: 0, canHandMine: false, unlocked: testMode },
-    Uranium: { count: 0, canHandMine: false, unlocked: testMode }
+    "Uranium Ore": { count: 0, canHandMine: false, unlocked: testMode }
   });
 
   const [ingredients, setIngredients] = useState({
