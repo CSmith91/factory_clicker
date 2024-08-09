@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import './App.css';
 import OreSection from './Components/OreSection';
-import Furnaces from './Components/Furnaces';
 import Inventory from './Components/Inventory';
 import Research from './Components/Research';
 import TestMode from './Components/TestMode';
 import Messages from './Components/Messages';
 import AudioPlayer from './Components/AudioPlayer';
 import StatusSection from './Components/StatusSection';
+import RepairTools from './Components/RepairTools';
 
 function App() {
 
@@ -38,9 +38,9 @@ function App() {
 
   // Tools
   const [tools, setTools] = useState ({
-    Axe: { durability: 100, corrodeRate: 0.25, unlocked: true},
-    Pickaxe: { durability: 100, corrodeRate: 0.5, unlocked: true},
-    Hammer: { durability: 100, corrodeRate: 1.5, unlocked: testMode}
+    Axe: { durability: 100, corrodeRate: 0.25, cost: {"Stone": 2}, unlocked: true},
+    Pickaxe: { durability: 100, corrodeRate: 0.5, cost: {"Wood": 5},unlocked: true},
+    Hammer: { durability: 100, corrodeRate: 1.5, cost: {"Wood": 5, "Stone": 5},unlocked: testMode}
   })
 
   // Messages & sound
@@ -150,27 +150,8 @@ function App() {
   // Function for crafting
   const onCraft = (ingredientName) => {
     const toolName = 'Hammer';
-    
-    setTools(prevTools => {
-      const tool = prevTools[toolName];
-      if (!tool || tool.durability <= 0) {
-          onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
-          return prevTools;
-      }
-
-      const updatedDurability = tool.durability - tool.corrodeRate;
-
-      // Update the tool's durability
-      return {
-          ...prevTools,
-          [toolName]: {
-              ...tool,
-              durability: Math.max(0, updatedDurability)
-          }
-      };
-    });
-
     const ingredient = ingredients[ingredientName];
+
     if (!ingredient || !ingredient.cost) return;
 
     const hasEnoughResources = Object.entries(ingredient.cost).every(
@@ -184,6 +165,26 @@ function App() {
       onAlert(`Not enough resources to craft ${ingredientName}`);
       return;
     }
+
+    // Proceed with crafting if there are enough resources
+    setTools(prevTools => {
+        const tool = prevTools[toolName];
+        if (!tool || tool.durability <= 0) {
+            onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
+            return prevTools;
+        }
+
+        const updatedDurability = tool.durability - tool.corrodeRate;
+
+        // Update the tool's durability
+        return {
+            ...prevTools,
+            [toolName]: {
+                ...tool,
+                durability: Math.max(0, updatedDurability)
+            }
+        };
+    });
 
     // Deduct the costs from the resources
     const updatedOres = { ...ores };
@@ -228,7 +229,43 @@ function App() {
             }
         };
     });
-};
+  };
+
+  const onRepair = (toolName) => {
+    const tool = tools[toolName]
+    const requiredResources = tool.cost;
+
+    // Check if enough resources are available
+    const hasEnoughResources = Object.entries(requiredResources).every(([resourceName, amountRequired]) => {
+      return (ores[resourceName]?.count || 0) >= amountRequired;
+    });
+
+    if (!hasEnoughResources) {
+      onAlert(`Not enough resources to repair ${toolName}`);
+      return;
+    }
+
+    // Deduct the resources from the ores state
+    const updatedOres = { ...ores };
+    Object.entries(requiredResources).forEach(([resourceName, amountRequired]) => {
+      if (updatedOres[resourceName]) {
+        updatedOres[resourceName].count -= amountRequired;
+      }
+    });
+
+    // Restore the tool's durability to 100%
+    const updatedTools = {
+      ...tools,
+      [toolName]: {
+        ...tools[toolName],
+        durability: 100,
+      },
+    };
+
+    // Update the state
+    setOres(updatedOres);
+    setTools(updatedTools);
+    }
 
 
   return (
@@ -244,7 +281,7 @@ function App() {
 
             {/* Status Section */}
             <div className='section'>
-              <StatusSection tools={tools} useTool={useTool} />
+              <StatusSection tools={tools} />
             </div>
 
             {/* Ore Patch Section */}
@@ -268,6 +305,7 @@ function App() {
               ) : (
                 <Research ores={ores} ingredients={ingredients} onUnlock={onUnlock} researchItems={researchItems} />
               )}
+              <RepairTools tools={tools} onRepair={onRepair} />
             </div>
           </div>
       </div>
