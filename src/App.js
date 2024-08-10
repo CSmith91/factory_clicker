@@ -64,15 +64,28 @@ function App() {
   };
 
   // TestMode (Cheat Mode)
-  const onCheat = (oreName) => {
-    setOres(prevOres => ({
-      ...prevOres,
-      [oreName]: {
-        ...prevOres[oreName],
-        count: prevOres[oreName].count + 50
-      }
-    }));
-
+  const onCheat = (itemName) => {
+    if(ores[itemName]){
+      setOres(prevOres => ({
+        ...prevOres,
+        [itemName]: {
+          ...prevOres[itemName],
+          count: prevOres[itemName].count + 50
+        }
+      }));
+    }
+    else{
+      setIngredients(prevIngs => ({
+        ...prevIngs,
+        [itemName]: {
+          ...prevIngs[itemName],
+          count: prevIngs[itemName].count + 50,
+          ...(prevIngs[itemName].idleCount !== undefined && {
+            idleCount: prevIngs[itemName].idleCount + 50
+          })
+        }
+      }));
+    }
   }
 
   // Function to increment the ore count
