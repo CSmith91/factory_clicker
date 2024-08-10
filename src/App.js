@@ -39,8 +39,8 @@ function App() {
   // Tools
   const [tools, setTools] = useState ({
     Axe: { durability: 100, corrodeRate: 0.25, cost: {"Stone": 2}, unlocked: true},
-    Pickaxe: { durability: 100, corrodeRate: 0.5, cost: {"Wood": 5},unlocked: true},
-    Hammer: { durability: 100, corrodeRate: 1.5, cost: {"Wood": 5, "Stone": 5},unlocked: testMode}
+    Pickaxe: { durability: 100, corrodeRate: 0.5, cost: {"Wood": 5}, unlocked: true},
+    Hammer: { durability: 100, corrodeRate: 1.5, cost: {"Wood": 5, "Stone": 5}, unlocked: testMode}
   })
 
   // Messages & sound

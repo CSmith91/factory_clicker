@@ -6,7 +6,7 @@ const OreSection = ({ ores, onIncrement }) => {
     return (
         <>
             <div>
-                <h2>Resources</h2>
+                <h2>Resource Patches</h2>
                     {Object.entries(ores)
                         .filter(([_, oreData]) => oreData.unlocked && oreData.canHandMine)
                         .map(([oreName]) => (
