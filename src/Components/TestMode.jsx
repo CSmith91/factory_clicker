@@ -1,7 +1,6 @@
 import React from "react"
 
 const TestMode = ({ ores, ingredients, onCheat }) => {
-    const items = ores + ingredients
     return (
         <>
             <h2>Test Mode</h2>

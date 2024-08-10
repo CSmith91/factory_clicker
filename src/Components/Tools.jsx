@@ -5,9 +5,9 @@ const Tools = ({ tools }) => {
             {Object.entries(tools)
                         .filter(([_, toolData]) => toolData.unlocked)
                         .map(([toolName, toolData]) => (
-                            <>
-                            <p>{toolName} Condition: {Math.floor(toolData.durability)}%</p>
-                            </>
+                            <div key={toolName+"Condition"}>
+                                <p>{toolName} Condition: {Math.floor(toolData.durability)}%</p>
+                            </div>
                         ))}
         </>
     )

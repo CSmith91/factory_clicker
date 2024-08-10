@@ -15,11 +15,11 @@ function App() {
 
    // Initial state for ores with unlocked and canHandMine properties
   const [ores, setOres] = useState({
-    Wood: { count: 0, canHandMine: true, unlocked: true, isFuel: true },
-    Stone: { count: 0, canHandMine: true, unlocked: true, canFurnace: true },
-    "Iron Ore": { count: 0, canHandMine: true, unlocked: true, canFurnace: true },
-    Coal: { count: 0, canHandMine: true, unlocked: testMode, isFuel: true },
-    "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode, canFurnace: true },
+    Wood: { count: 0, harvested: 0, canHandMine: true, unlocked: true, fuelValue: 2 },
+    Stone: { count: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 120000}, canFurnace: true, canDrill: true },
+    "Iron Ore": { count: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 350000}, canFurnace: true, canDrill: true },
+    Coal: { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 345000}, canDrill: true, fuelValue: 4 },
+    "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 340000}, canFurnace: true, canDrill: true  },
     "Crude Oil": { count: 0, canHandMine: false, unlocked: testMode },
     "Uranium Ore": { count: 0, canHandMine: false, unlocked: testMode }
   });
@@ -92,16 +92,14 @@ function App() {
   const onIncrement = (oreName) => {
     const toolName = oreName === 'Wood' ? 'Axe' : 'Pickaxe';
     
+    // Update the tool's durability
     setTools(prevTools => {
       const tool = prevTools[toolName];
       if (!tool || tool.durability <= 0) {
           onAlert(`Your ${toolName} is broken. You cannot mine ${oreName}.`);
           return prevTools;
       }
-
       const updatedDurability = tool.durability - tool.corrodeRate;
-
-      // Update the tool's durability
       return {
           ...prevTools,
           [toolName]: {
@@ -115,13 +113,24 @@ function App() {
     setOres(prevOres => {
       const tool = tools[toolName];
       if (tool.durability > 0) {
-          return {
-              ...prevOres,
-              [oreName]: {
-                  ...prevOres[oreName],
-                  count: prevOres[oreName].count + 1
-              }
-          };
+        // update patch, if applicable
+        const updatedPatch = prevOres[oreName].patch
+          ? { ...prevOres[oreName].patch, size: prevOres[oreName].patch.size - 1 }
+          : undefined;
+        //update harvest, if applicable
+        const updatedHarvest = prevOres[oreName].harvested !== undefined
+          ? prevOres[oreName].harvested + 1
+          : undefined;
+          
+        return {
+            ...prevOres,
+            [oreName]: {
+                ...prevOres[oreName],
+                count: prevOres[oreName].count + 1,
+                harvested: updatedHarvest,
+                patch: updatedPatch
+            }
+        };
       }
       return prevOres;
   });
