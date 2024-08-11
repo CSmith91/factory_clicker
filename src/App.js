@@ -25,7 +25,8 @@ function App() {
   });
 
   const [ingredients, setIngredients] = useState({
-    "Stone Furnace": { group: 'p4', count: 0, unlocked: testMode, cost: {"Stone": 5}, isCraftable: true, craftTime: 0.5, isFuel: false, isMachine: true, isBurner: true, machineSpeed: 1, idleCount: 0},
+    "Stone Furnace": { group: 'p4', count: 0, unlocked: testMode, cost: {"Stone": 5}, isCraftable: true, craftTime: 0.5, isFuel: false, isMachine: true, isFurnace: true, isBurner: true, machineSpeed: 1, idleCount: 0},
+    "Iron Plate" : { group: 'i3', count: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true},
     "Gear" : { group: 'i5', count: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }
   })
 
@@ -121,7 +122,7 @@ function App() {
         const updatedHarvest = prevOres[oreName].harvested !== undefined
           ? prevOres[oreName].harvested + 1
           : undefined;
-          
+
         return {
             ...prevOres,
             [oreName]: {
@@ -308,11 +309,11 @@ function App() {
 
             {/* Ore Patch Section */}
             <div className='section'>
-              <OreSection ores={ores} onIncrement={onIncrement} useTool={useTool} />
+              <OreSection ores={ores} ingredients={ingredients} onIncrement={onIncrement} useTool={useTool} />
             </div>
 
-            {/* Furnaces Section
-            <div className='section'>
+            {/* Furnaces Section */}
+            {/* <div className='section'>
               <Furnaces />
             </div> */}
 

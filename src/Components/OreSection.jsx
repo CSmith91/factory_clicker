@@ -1,7 +1,8 @@
 import React from 'react';
 import OreButton from './OreButton';
+import Furnaces from './Furnaces';
 
-const OreSection = ({ ores, onIncrement }) => {
+const OreSection = ({ ores, ingredients, onIncrement }) => {
 
     return (
         <>
@@ -11,6 +12,7 @@ const OreSection = ({ ores, onIncrement }) => {
                     .filter(([_, oreData]) => oreData.unlocked)
                     .map(([oreName, oreData]) => (
                         <div key={oreName+"HarvestDiv"}>
+                            <h3>{oreName}</h3>
                             {oreData.canHandMine ? (
                                 <OreButton key={oreName} oreName={oreName} onIncrement={onIncrement} /> 
                                 ) : (<></>)}
@@ -19,6 +21,18 @@ const OreSection = ({ ores, onIncrement }) => {
                             ) : (
                                 <p>{oreName} harvested: {oreData.harvested}</p> 
                             )}
+                            {oreData.canFurnace ? (
+                                <Furnaces ores={ores} oreName={oreName} ingredients={ingredients} />
+                                ) : (<></>)}
+                        </div>
+                    ))}
+                <h2>Advanced Resources</h2>
+                {Object.entries(ingredients)
+                    .filter(([_, oreData]) => oreData.unlocked && oreData.canFurnace)
+                    .map(([oreName, oreData]) => (
+                        <div key={oreName+"HarvestDiv"}>
+                            <h3>{oreName}</h3>
+                            <Furnaces ores={ores} oreName={oreName} ingredients={ingredients} />
                         </div>
                     ))}
             </div>
