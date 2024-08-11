@@ -1,6 +1,6 @@
 import React from "react"
 
-const TestMode = ({ ores, onCheat }) => {
+const TestMode = ({ ores, ingredients, onCheat }) => {
     return (
         <>
             <h2>Test Mode</h2>
@@ -8,6 +8,11 @@ const TestMode = ({ ores, onCheat }) => {
             {Object.entries(ores).map(([oreName]) => (
                 <button key={oreName} onClick={() => onCheat(oreName)} style={{ padding: '10px', fontSize: '16px', margin: '5px'}}>
                         Add 50 {oreName}
+                </button>
+            ))}
+            {Object.entries(ingredients).map(([ingredientName]) => (
+                <button key={ingredientName} onClick={() => onCheat(ingredientName)} style={{ padding: '10px', fontSize: '16px', margin: '5px'}}>
+                        Add 50 {ingredientName}
                 </button>
             ))}
             </div>

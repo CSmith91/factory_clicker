@@ -5,9 +5,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  font-size: calc(2px + 2vmin);
   color: white;
   text-align: center;
+}
+
+button {
+  padding: 10px; 
+  font-size: 16px;
 }
 
 button:hover {
@@ -19,4 +24,13 @@ button:hover {
   padding: 20px;
   border-radius: 10px;
   max-width: 100%;
+}
+
+.alerts {
+  position: absolute;
+  left: 66%;
+  top: 0;
+  text-align: right;
+  width: 30%;
+  font-size: 12px;
 }
