@@ -254,6 +254,7 @@ function App() {
     });
   };
 
+  // repair tools
   const onRepair = (toolName) => {
     const tool = tools[toolName]
     const requiredResources = tool.cost;
@@ -288,8 +289,7 @@ function App() {
     // Update the state
     setOres(updatedOres);
     setTools(updatedTools);
-    }
-
+  }
 
   return (
     <>

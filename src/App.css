@@ -34,3 +34,13 @@ button:hover {
   width: 30%;
   font-size: 12px;
 }
+
+.machineButtons{
+  display: flex;
+  align-items: center;
+  margin-top: -20px;
+}
+
+.machineButtons button{
+  padding: 5px;
+}

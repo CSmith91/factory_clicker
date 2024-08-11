@@ -1,4 +1,5 @@
 import React from "react";
+import MachineOnSite from "./MachineOnSite";
 
 const Furnaces = ({ ores, oreName, ingredients }) => {
 
@@ -16,6 +17,7 @@ const Furnaces = ({ ores, oreName, ingredients }) => {
                     furnaceData.unlocked && furnaceableItem.unlocked && (
                         <div key={`${furnaceName}-${itemName}`}>
                             <p>{furnaceName}s for {itemName}:</p>
+                            <MachineOnSite furnaces={furnaces} />
                         </div>
                     )
                 ))}
