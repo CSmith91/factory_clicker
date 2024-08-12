@@ -1,8 +1,8 @@
 import React from 'react';
 import OreButton from './OreButton';
-import Furnaces from './Furnaces';
+import Machines from './Machines';
 
-const OreSection = ({ ores, ingredients, onIncrement }) => {
+const OreSection = ({ ores, ingredients, onIncrement, handleMachineChange, onAlert }) => {
 
     return (
         <>
@@ -22,7 +22,7 @@ const OreSection = ({ ores, ingredients, onIncrement }) => {
                                 <p>{oreName} harvested: {oreData.harvested}</p> 
                             )}
                             {oreData.canFurnace ? (
-                                <Furnaces ores={ores} oreName={oreName} ingredients={ingredients} />
+                                <Machines ores={ores} oreName={oreName} ingredients={ingredients} handleMachineChange={handleMachineChange} onAlert={onAlert} />
                                 ) : (<></>)}
                         </div>
                     ))}
@@ -32,7 +32,7 @@ const OreSection = ({ ores, ingredients, onIncrement }) => {
                     .map(([oreName, oreData]) => (
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{oreName}</h3>
-                            <Furnaces ores={ores} oreName={oreName} ingredients={ingredients} />
+                            <Machines ores={ores} oreName={oreName} ingredients={ingredients} handleMachineChange={handleMachineChange} onAlert={onAlert} />
                         </div>
                     ))}
             </div>

@@ -291,6 +291,48 @@ function App() {
     setTools(updatedTools);
   }
 
+  // handle adding and removing machines on site
+  const handleMachineChange = (action, machineName) => {
+    let stateUpdated = false;
+
+    setIngredients(prevIngredients => {
+        const machine = prevIngredients[machineName];
+        if (!machine || !machine.isMachine || !machine.unlocked) {
+            return prevIngredients;
+        }
+
+        if (action === 'increment' && machine.idleCount > 0) {
+            stateUpdated = true;
+            return {
+                ...prevIngredients,
+                [machineName]: {
+                    ...machine,
+                    idleCount: machine.idleCount - 1
+                }
+            };
+        } else if (action === 'decrement' && machine.idleCount !== machine.count) {
+            stateUpdated = true;
+            return {
+                ...prevIngredients,
+                [machineName]: {
+                    ...machine,
+                    idleCount: machine.idleCount + 1
+                }
+            };
+        }
+        return prevIngredients;
+    });
+    //return stateUpdated;
+
+    // Instead of returning stateUpdated directly, use a callback
+    // This ensures you are checking after the state update logic
+    return new Promise((resolve) => {
+      setTimeout(() => {
+          resolve(stateUpdated);
+      }, 0); // Use a timeout to delay resolution until after state update
+  });
+};
+
   return (
     <>
       <div className="App" style={{ padding: '20px' }}>
@@ -309,7 +351,7 @@ function App() {
 
             {/* Ore Patch Section */}
             <div className='section'>
-              <OreSection ores={ores} ingredients={ingredients} onIncrement={onIncrement} useTool={useTool} />
+              <OreSection ores={ores} ingredients={ingredients} onIncrement={onIncrement} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
             </div>
 
             {/* Furnaces Section */}

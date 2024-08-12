@@ -1,28 +1,36 @@
 import React, { useState } from "react"
 
-const onMachineChange = (action, setCounter) => {
-    setCounter(prevCounter => {
-        if (action === 'increment') {
-            return prevCounter + 1;
-        } else if (action === 'decrement') {
-            // Ensure the counter doesn't go below zero or any other condition you want to check
-            return prevCounter > 0 ? prevCounter - 1 : prevCounter;
-        } else {
-            return prevCounter;
-        }
-    });
-}
-
-const MachineOnSite = ({ furnaces }) => {
+const MachineOnSite = ({ itemName, machineName, handleMachineChange, onAlert }) => {
     const [counter, setCounter] = useState(0) // initialises state
+
+    const onMachineChange = (action) => {
+        handleMachineChange(action, machineName).then((result) =>{
+            if (result) {
+                setCounter(prevCounter => {
+                    if (action === 'increment') {
+                        return prevCounter + 1;
+                    } else if (action === 'decrement') {
+                        // Ensure the counter doesn't go below zero or any other condition you want to check
+                        return prevCounter > 0 ? prevCounter - 1 : prevCounter;
+                    } else {
+                        return prevCounter;
+                    }
+                });
+            }
+            else if (!result && action === 'increment') {
+                onAlert(`You need to craft more ${machineName}s`)
+            }
+        })
+    };
 
     return(
         <div className="machineButtons">
-            <button onClick={() => onMachineChange('decrement', setCounter)}>
+            <p style={{padding: '5px'}}>{machineName}s for {itemName}:</p>
+            <button onClick={() => onMachineChange('decrement')}>
                 {"<"}
             </button>
             <p style={{padding: '5px'}}>{counter}</p>
-            <button onClick={() => onMachineChange('increment', setCounter)}>
+            <button onClick={() => onMachineChange('increment')}>
                 {">"}
             </button>
         </div>
