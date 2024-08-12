@@ -1,7 +1,19 @@
 import React, { useState } from "react"
+import stoneFurnace from './Images/stone_furnace.png'
 
 const MachineOnSite = ({ itemName, machineName, handleMachineChange, onAlert }) => {
     const [counter, setCounter] = useState(0) // initialises state
+    
+    const getMachineImage  = (machineName) => {
+        switch (machineName) {
+            case 'Stone Furnace':
+                return stoneFurnace;
+            default:
+                return null
+        }
+    } 
+
+    const machineImg = getMachineImage(machineName);
 
     const onMachineChange = (action) => {
         handleMachineChange(action, machineName).then((result) =>{
@@ -24,6 +36,7 @@ const MachineOnSite = ({ itemName, machineName, handleMachineChange, onAlert }) 
     };
 
     return(
+        <>
         <div className="machineButtons">
             <p style={{padding: '5px'}}>{machineName}s for {itemName}:</p>
             <button onClick={() => onMachineChange('decrement')}>
@@ -34,6 +47,11 @@ const MachineOnSite = ({ itemName, machineName, handleMachineChange, onAlert }) 
                 {">"}
             </button>
         </div>
+        <div>
+            {machineImg && <img src={machineImg} alt={`${machineName} Image`} style={{ width: '32px', height: 'auto' }} />}
+            
+        </div>
+        </>
     )
 }
 
