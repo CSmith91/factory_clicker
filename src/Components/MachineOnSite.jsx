@@ -54,7 +54,7 @@ const MachineOnSite = ({ itemName, machineName, fuels, handleMachineChange, onAl
     return(
         <>
         <div className="machineButtons">
-            <p style={{padding: '5px'}}>{machineName}s for {itemName}:</p>
+            <p style={{padding: '5px'}}>{machineName} in use:</p>
             <button onClick={() => onMachineChange('decrement')}>
                 {"<"}
             </button>
