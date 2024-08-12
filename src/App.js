@@ -9,6 +9,7 @@ import Messages from './Components/Messages';
 import AudioPlayer from './Components/AudioPlayer';
 import StatusSection from './Components/StatusSection';
 import RepairTools from './Components/RepairTools';
+import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
@@ -376,6 +377,7 @@ function App() {
                 <Research ores={ores} ingredients={ingredients} onUnlock={onUnlock} researchItems={researchItems} />
               )}
               <RepairTools tools={tools} onRepair={onRepair} />
+              <CompletedResearch />
             </div>
           </div>
       </div>

@@ -21,6 +21,7 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
     return(
         <>
         <h2>Furnaces</h2>
+        <h6>|  |  |  collapsable icons  |  |  |</h6>
                 {Object.entries(ores)
                     .filter(([_, oreData]) => oreData.unlocked && oreData.canFurnace)
                     .map(([oreName, _]) => (
