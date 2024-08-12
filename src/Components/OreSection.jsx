@@ -29,7 +29,7 @@ const OreSection = ({ ores, ingredients, onIncrement, handleMachineChange, onAle
                 <h2>Advanced Resources</h2>
                 {Object.entries(ingredients)
                     .filter(([_, oreData]) => oreData.unlocked && oreData.canFurnace)
-                    .map(([oreName, oreData]) => (
+                    .map(([oreName, _]) => (
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{oreName}</h3>
                             <Machines ores={ores} oreName={oreName} ingredients={ingredients} handleMachineChange={handleMachineChange} onAlert={onAlert} />

@@ -1,20 +1,26 @@
 import React, { useState } from "react"
 import stoneFurnace from './Images/stone_furnace.png'
+import steelFurnace from './Images/steel_furnace.png'
 
-const MachineOnSite = ({ itemName, machineName, handleMachineChange, onAlert }) => {
+const MachineOnSite = ({ itemName, machineName, fuels, handleMachineChange, onAlert }) => {
    
+    // load image of machine
     const getMachineImage  = (machineName) => {
         switch (machineName) {
             case 'Stone Furnace':
                 return stoneFurnace;
+            case 'Steel Furnace':
+                return steelFurnace;
             default:
                 return null
         }
     } 
     const machineImg = getMachineImage(machineName);
 
+    // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
 
+    // handles changing the number of machines
     const onMachineChange = (action) => {
         handleMachineChange(action, machineName).then((result) =>{
             if (result) {
@@ -41,6 +47,7 @@ const MachineOnSite = ({ itemName, machineName, handleMachineChange, onAlert }) 
         })
     };
 
+    // shows the machines resource amounts
     const [currentInput, setCurrentInput] = useState(0);
     const [inputMax, setInputMax] = useState(0);
 
@@ -58,7 +65,7 @@ const MachineOnSite = ({ itemName, machineName, handleMachineChange, onAlert }) 
         </div>
         {/* Conditionally render the div if counter > 0 */}
         {counter > 0 && (
-        <div>
+        <div style={{marginBottom: "5%"}}>
             <div style={{marginBottom: "5%"}}>
                 <button>{"Add " + itemName}</button>
             </div>
