@@ -1,9 +1,9 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
 import stoneFurnace from './Images/stone_furnace.png'
 import steelFurnace from './Images/steel_furnace.png'
 
-const MachineOnSite = ({ itemName, machineName, ores, ingredients, setOres, setIngredients, fuels, handleMachineChange, onAlert }) => {
+const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, fuels, handleMachineChange, onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
@@ -25,8 +25,10 @@ const MachineOnSite = ({ itemName, machineName, ores, ingredients, setOres, setI
     const [machineStates, setMachineStates] = useState({
         [machineName]: {
             [itemName]: {
+                count: 0,
                 currentInput: 0,
                 inputMax: 0,
+                isRunning: false,
                 fuels: Object.keys(fuels).reduce((acc, fuelName) => {
                     acc[fuelName] = { current: 0 };
                     return acc;
@@ -34,6 +36,15 @@ const MachineOnSite = ({ itemName, machineName, ores, ingredients, setOres, setI
             }
         }
     });
+
+    // UseEffect to monitor state changes and trigger checkProduction
+    useEffect(() => {
+        // Run checkProduction when machineStates[machineName] changes
+        if (machineStates[machineName]) {
+            checkProduction(machineStates[machineName]);
+        }
+    }, [machineStates[machineName]]); // Dependency array
+
 
     // shows the machines resource amounts
     const machineParent = ingredients[machineName]
@@ -59,12 +70,8 @@ const MachineOnSite = ({ itemName, machineName, ores, ingredients, setOres, setI
                             ...machineStates[machineName],
                             [itemName]: {
                                 ...machineStates[machineName]?.[itemName],
+                                count: newCounter,
                                 inputMax: newCounter * 10,
-                                currentInput: machineStates[machineName]?.[itemName]?.currentInput || 0,
-                                fuels: fuelsArray.reduce((acc, [fuelName]) => {
-                                    acc[fuelName] = { current: 0 }; // Initialize or reset fuel state
-                                    return acc;
-                                }, {})
                             }
                         }
                     };
@@ -79,22 +86,23 @@ const MachineOnSite = ({ itemName, machineName, ores, ingredients, setOres, setI
     };
 
     // Adding ore and ingredients to a machine
-    const addItem = (item) => {
+    const addItem = (item, byHand) => {
         // Determine if item is ore or ingredient
         const isOre = ores[item] ? true : false;
         const itemData = isOre ? ores[item] : ingredients[item];
+        const inputItem = Object.keys(machineStates[machineName])[0]// this is for checkProduction and looks for only the core input, not fuel
 
         // Find the machine state for the specific machineName and itemName
         const chosenMachineState = machineStates[machineName]?.[itemName];
-
-        console.log("Chosen machine state: ", chosenMachineState);
 
         if (chosenMachineState.inputMax <= 0) {
             console.log("inputMax is 0 or not correctly set");
         }
 
         if (itemData.count < 1) {
-            onAlert(`Not enough ${item}`);
+            if(byHand){
+                onAlert(`Not enough ${item}`);
+            }
         } else {
             // Check if the current input or fuel is not exceeding the inputMax
             const canAddMore = chosenMachineState && (
@@ -152,10 +160,68 @@ const MachineOnSite = ({ itemName, machineName, ores, ingredients, setOres, setI
                     }));
                 }
             } else {
-                onAlert(`Cannot add more ${item}, limit reached.`);
+                if(byHand){
+                    onAlert(`Cannot add more ${item}, limit reached.`);
+                }
             }
         }
     };
+
+    const checkProduction = (machine) => {
+        //console.log(JSON.stringify(machine))
+        // console.log(JSON.stringify(input))
+
+        // first, check we have any machines
+        if(machine[itemName].count > 0){
+            // second, check we aren't aleady running this machine
+            if(!machine[itemName].isRunning){
+                // third, check we have ingredients
+                const cost = ingredients[output].cost
+                const targetName = Object.keys(cost)[0];  // Get the first key, "Stone"
+                const amount = cost[targetName];  // Access the value dynamically
+                //const haveIngredients = ores[itemName] ? ores[itemName] : ingredients[itemName]
+                
+                //console.log(`Current Input: ${machine[itemName].currentInput}, Required Amount: ${amount}`);
+                //console.log(`Fuel Levels:`, Object.values(fuels));
+
+                if(machine[itemName].currentInput >= amount){
+                    // fourth, check if we require fuel
+                    if(ingredients[machineName].isBurner){
+                        // fifth, check we have fuel
+                        const fuels = machine[itemName].fuels;
+                        const fuelAvailable = Object.values(fuels).some(fuel => fuel.current > 0);
+
+                        if (fuelAvailable) {
+                            turnOnProduction(machine);  // Call the function if any fuel is available
+                        } 
+                        else {
+                            console.log('Needs fuel');
+                        }
+                    }
+                    else{
+                        // electric machine, we can start
+                        turnOnProduction(machine)
+                    }
+                } 
+                else {
+                    console.log(`Needs more ${Object.keys(machine)[0]}`);
+                }
+            } 
+            else {
+                console.log(`${machineName}s making ${output} are already running.`);
+            }
+        } 
+        else {
+            console.log(`No ${machineName} available.`);
+        }
+    }
+
+
+    const turnOnProduction = (machine) => {
+        console.log(`${machineName} is turned on!`)
+        machine[itemName].isRunning = true
+        //const waitTime = 
+    }
 
     return(
         <>

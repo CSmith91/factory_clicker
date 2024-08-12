@@ -12,6 +12,24 @@ const Machines = ({ ores, oreName, ingredients,  setOres, setIngredients, handle
     const furnaces = Object.entries(ingredients)
         .filter(([_, ingData]) => ingData.isFurnace);
 
+    // this is for furnaces only
+    const inputToOutput = (oreName) => {
+        switch (oreName) {
+            case 'Stone':
+                return 'Brick';
+            case 'Iron Ore':
+                return 'Iron Plate';
+            case 'Copper Ore':
+                return 'Copper Plate';
+            case 'Iron Plate':
+                return 'Steel';
+            default:
+                return null
+        }
+    }
+
+    const output = inputToOutput(oreName)
+
     // Find all fuel items 
     const filterFuelItems = (items) => {
         return Object.entries(items)
@@ -33,7 +51,7 @@ const Machines = ({ ores, oreName, ingredients,  setOres, setIngredients, handle
                     // Conditional check: render only if both the furnace and item are unlocked
                     furnaceData.unlocked && furnaceableItem.unlocked && (
                         <div key={`${furnaceName}-${itemName}`}>
-                            <MachineOnSite itemName={itemName} machineName={furnaceName} ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} fuels={fuels} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+                            <MachineOnSite itemName={itemName} output={output} machineName={furnaceName} ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} fuels={fuels} handleMachineChange={handleMachineChange} onAlert={onAlert} />
                         </div>
                     )
                 ))}
