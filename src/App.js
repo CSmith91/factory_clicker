@@ -358,7 +358,7 @@ function App() {
 
             {/* Furnaces Section */}
             <div className='section'>
-              <Furnaces ores={ores} ingredients={ingredients} onIncrement={onIncrement} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+              <Furnaces ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
             </div>
 
             {/* Inventory Section */}
