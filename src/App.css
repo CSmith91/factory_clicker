@@ -75,3 +75,10 @@ button:hover {
       align-items: flex-start; /* Aligns items to the start */
   }
 }
+
+.machine-input-buttons{
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Vertically centers the content */
+  gap: 6px; /* Adds space between the image and the text block */
+}

@@ -33,7 +33,7 @@ const Machines = ({ ores, oreName, ingredients, handleMachineChange, onAlert }) 
                     // Conditional check: render only if both the furnace and item are unlocked
                     furnaceData.unlocked && furnaceableItem.unlocked && (
                         <div key={`${furnaceName}-${itemName}`}>
-                            <MachineOnSite itemName={itemName} machineName={furnaceName} fuels={fuels} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+                            <MachineOnSite itemName={itemName} machineName={furnaceName} ingredients={ingredients} fuels={fuels} handleMachineChange={handleMachineChange} onAlert={onAlert} />
                         </div>
                     )
                 ))}
