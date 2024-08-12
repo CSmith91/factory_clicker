@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import OreSection from './Components/OreSection';
+import Furnaces from './Components/Furnaces';
 import Inventory from './Components/Inventory';
 import Research from './Components/Research';
 import TestMode from './Components/TestMode';
@@ -356,9 +357,9 @@ function App() {
             </div>
 
             {/* Furnaces Section */}
-            {/* <div className='section'>
-              <Furnaces />
-            </div> */}
+            <div className='section'>
+              <Furnaces ores={ores} ingredients={ingredients} onIncrement={onIncrement} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+            </div>
 
             {/* Inventory Section */}
             <div className='section'>

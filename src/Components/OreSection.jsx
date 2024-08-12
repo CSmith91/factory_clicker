@@ -1,23 +1,7 @@
 import React from 'react';
 import OreButton from './OreButton';
-import Machines from './Machines';
 
 const OreSection = ({ ores, ingredients, onIncrement, handleMachineChange, onAlert }) => {
-
-    const getOutput = (oreName) => {
-        switch (oreName) {
-            case 'Stone':
-                return 'Brick';
-            case 'Iron Ore':
-                return 'Iron Plate';
-            case 'Copper Ore':
-                return 'Copper Plate';
-            case 'Iron Plate':
-                return 'Steel';
-            default:
-                return null
-        }
-    }
 
     return (
         <>
@@ -40,23 +24,6 @@ const OreSection = ({ ores, ingredients, onIncrement, handleMachineChange, onAle
                             {/* {oreData.canFurnace ? (
                                 <Machines ores={ores} oreName={oreName} ingredients={ingredients} handleMachineChange={handleMachineChange} onAlert={onAlert} />
                                 ) : (<></>)} */}
-                        </div>
-                    ))}
-                <h2>Smelting</h2>
-                {Object.entries(ores)
-                    .filter(([_, oreData]) => oreData.unlocked && oreData.canFurnace)
-                    .map(([oreName, _]) => (
-                        <div key={oreName+"HarvestDiv"}>
-                            <h3>{getOutput(oreName)}</h3>
-                            <Machines ores={ores} oreName={oreName} ingredients={ingredients} handleMachineChange={handleMachineChange} onAlert={onAlert} />
-                        </div>
-                    ))}
-                {Object.entries(ingredients)
-                    .filter(([_, oreData]) => oreData.unlocked && oreData.canFurnace)
-                    .map(([oreName, _]) => (
-                        <div key={oreName+"HarvestDiv"}>
-                            <h3>{getOutput(oreName)}</h3>
-                            <Machines ores={ores} oreName={oreName} ingredients={ingredients} handleMachineChange={handleMachineChange} onAlert={onAlert} />
                         </div>
                     ))}
             </div>
