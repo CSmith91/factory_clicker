@@ -1,11 +1,11 @@
 import React from 'react';
 
-const OreButton = ({ oreName, onIncrement }) => {
+const OreButton = ({ oreName, updateOutputCount }) => {
 
     return (
         <div style={{ margin: '10px' }}>
             <button 
-                onClick={() => onIncrement(oreName)}>
+                onClick={() => updateOutputCount(oreName)}>
                 Get {oreName}
             </button>
         </div>

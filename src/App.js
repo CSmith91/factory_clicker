@@ -97,54 +97,6 @@ function App() {
     }
   }
 
-  // Function to increment the ore count
-  const onIncrement = (oreName) => {
-    const toolName = oreName === 'Wood' ? 'Axe' : 'Pickaxe';
-    
-    // Update the tool's durability
-    setTools(prevTools => {
-      const tool = prevTools[toolName];
-      if (!tool || tool.durability <= 0) {
-          onAlert(`Your ${toolName} is broken. You cannot mine ${oreName}.`);
-          return prevTools;
-      }
-      const updatedDurability = tool.durability - tool.corrodeRate;
-      return {
-          ...prevTools,
-          [toolName]: {
-              ...tool,
-              durability: Math.max(0, updatedDurability)
-          }
-      };
-    });
-
-    // Increment the ore count only if the tool had durability
-    setOres(prevOres => {
-      const tool = tools[toolName];
-      if (tool.durability > 0) {
-        // update patch, if applicable
-        const updatedPatch = prevOres[oreName].patch
-          ? { ...prevOres[oreName].patch, size: prevOres[oreName].patch.size - 1 }
-          : undefined;
-        //update harvest, if applicable
-        const updatedHarvest = prevOres[oreName].harvested !== undefined
-          ? prevOres[oreName].harvested + 1
-          : undefined;
-
-        return {
-            ...prevOres,
-            [oreName]: {
-                ...prevOres[oreName],
-                count: prevOres[oreName].count + 1,
-                harvested: updatedHarvest,
-                patch: updatedPatch
-            }
-        };
-      }
-      return prevOres;
-  });
-};
-
   // Function to unlock ores
   const onUnlock = (oreName) => {
 
@@ -185,6 +137,14 @@ function App() {
 
     if (!ingredient || !ingredient.cost) return;
 
+    // Check if the hammer has durability
+    const tool = tools[toolName];
+    if (!tool || tool.durability <= 0) {
+        onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
+        return; // Exit the function if the tool is broken
+    }
+
+    // Check if there are enough resources to craft
     const hasEnoughResources = Object.entries(ingredient.cost).every(
       ([resourceName, amountRequired]) => {
         const resource = ores[resourceName] || ingredients[resourceName];
@@ -200,11 +160,6 @@ function App() {
     // Proceed with crafting if there are enough resources
     setTools(prevTools => {
         const tool = prevTools[toolName];
-        if (!tool || tool.durability <= 0) {
-            onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
-            return prevTools;
-        }
-
         const updatedDurability = tool.durability - tool.corrodeRate;
 
         // Update the tool's durability
@@ -359,7 +314,7 @@ function App() {
 
             {/* Ore Patch Section */}
             <div className='section'>
-              <OreSection ores={ores} ingredients={ingredients} onIncrement={onIncrement} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+              <OreSection ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
             </div>
 
             {/* Furnaces Section */}
