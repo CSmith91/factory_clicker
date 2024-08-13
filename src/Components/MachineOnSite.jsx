@@ -45,6 +45,21 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         }
     }, [machineStates[machineName]]); // Dependency array
 
+    // UseEffect to handle the production timing
+    useEffect(() => {
+        const currentMachineState = machineStates[machineName]?.[itemName];
+        const machineSpeed = ingredients[machineName].machineSpeed
+        
+        if (currentMachineState?.isRunning) {
+            const waitTime = ingredients[output].craftTime / currentMachineState.count;
+            const timeoutId = setTimeout(() => {
+                payout(machineStates[machineName]);
+            }, waitTime / machineSpeed * 1000);
+            
+            return () => clearTimeout(timeoutId); // Cleanup timeout on unmount or dependency change
+        }
+    }, [machineStates, machineName, itemName, ingredients, output]);
+
 
     // shows the machines resource amounts
     const machineParent = ingredients[machineName]
@@ -90,8 +105,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         // Determine if item is ore or ingredient
         const isOre = ores[item] ? true : false;
         const itemData = isOre ? ores[item] : ingredients[item];
-        const inputItem = Object.keys(machineStates[machineName])[0]// this is for checkProduction and looks for only the core input, not fuel
-
+    
         // Find the machine state for the specific machineName and itemName
         const chosenMachineState = machineStates[machineName]?.[itemName];
 
@@ -192,7 +206,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                         const fuelAvailable = Object.values(fuels).some(fuel => fuel.current > 0);
 
                         if (fuelAvailable) {
-                            turnOnProduction(machine);  // Call the function if any fuel is available
+                            turnOnProduction();  // Call the function if any fuel is available
                         } 
                         else {
                             console.log('Needs fuel');
@@ -200,7 +214,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                     }
                     else{
                         // electric machine, we can start
-                        turnOnProduction(machine)
+                        turnOnProduction()
                     }
                 } 
                 else {
@@ -212,15 +226,108 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             }
         } 
         else {
-            console.log(`No ${machineName} available.`);
+            //console.log(`No ${machineName} available.`);
         }
     }
 
 
-    const turnOnProduction = (machine) => {
+    const turnOnProduction = () => {
         console.log(`${machineName} is turned on!`)
-        machine[itemName].isRunning = true
-        //const waitTime = 
+        // Update the running state
+        setMachineStates(prevState => ({
+            ...prevState,
+            [machineName]: {
+                ...prevState[machineName],
+                [itemName]: {
+                    ...prevState[machineName][itemName],
+                    isRunning: true
+                }
+            }
+        }));
+
+        // this triggers the useEffect to now call the payout script after a delay 
+    }
+
+    const turnOffProduction = (machine, reason) => {
+        console.log(`${machineName} is now off!`)
+        setMachineStates(prevState => ({
+            ...prevState,
+            [machineName]: {
+                ...prevState[machineName],
+                [itemName]: {
+                    ...prevState[machineName][itemName],
+                    isRunning: false
+                }
+            }
+        }));
+    }
+
+    const payout = (machine) => {
+        // deduct input
+        const cost = ingredients[output].cost
+        const targetName = Object.keys(cost)[0];  // Get the first key, e.g. "Stone"
+        const amount = cost[targetName];  // Access the value dynamically
+                
+        setMachineStates(prevState => ({
+            ...prevState,
+            [machineName]: {
+                ...prevState[machineName],
+                [itemName]: {
+                    ...prevState[machineName][itemName],
+                    currentInput: prevState[machineName][itemName].currentInput - amount
+                }
+            }
+        }));
+
+        // deduct fuel (if applicable)
+        if (ingredients[machineName].isBurner) {
+            const fuels = machine[itemName].fuels;
+
+            // Find the first available fuel and deduct from it
+            for (const fuelName of Object.keys(fuels)) {
+                if (fuels[fuelName].current > 0) {
+                    // Determine if fuel is in ores or ingredients
+                    const fuelSource = ores[fuelName] ? ores : ingredients;
+                    const fuelValue = fuelSource[fuelName].fuelValue;
+
+                    const fuelToDeduct = 1 / fuelValue;
+
+                    setMachineStates(prevState => ({
+                        ...prevState,
+                        [machineName]: {
+                            ...prevState[machineName],
+                            [itemName]: {
+                                ...prevState[machineName][itemName],
+                                fuels: {
+                                    ...prevState[machineName][itemName].fuels,
+                                    [fuelName]: {
+                                        current: prevState[machineName][itemName].fuels[fuelName].current - fuelToDeduct
+                                    }
+                                }
+                            }
+                        }
+                    }));
+
+                    // Break out of the loop after deducting from one fuel source
+                    break;
+                }
+            }
+        }
+
+        // payout
+
+        // turn off and loop back
+        setMachineStates(prevState => ({
+            ...prevState,
+            [machineName]: {
+                ...prevState[machineName],
+                [itemName]: {
+                    ...prevState[machineName][itemName],
+                    isRunning: false
+                }
+            }
+        }));
+        checkProduction(machine)
     }
 
     return(
