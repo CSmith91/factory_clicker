@@ -76,28 +76,28 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
 
         // Increment the ore count only if the tool had durability
         setOres(prevOres => {
-        const tool = tools[toolName];
-        if (tool.durability > 0 || manOrMachine === 'machine') {
-            // update patch, if applicable
-            const updatedPatch = prevOres[oreName].patch
-            ? { ...prevOres[oreName].patch, size: prevOres[oreName].patch.size - 1 }
-            : undefined;
-            //update harvest, if applicable
-            const updatedHarvest = prevOres[oreName].harvested !== undefined
-            ? prevOres[oreName].harvested + 1
-            : undefined;
+            const tool = tools[toolName];
+            if (tool.durability > 0 || !manOrMachine === 'manual') {
+                // update patch, if applicable
+                const updatedPatch = prevOres[oreName].patch
+                ? { ...prevOres[oreName].patch, size: prevOres[oreName].patch.size - 1 }
+                : undefined;
+                //update harvest, if applicable
+                const updatedHarvest = prevOres[oreName].harvested !== undefined
+                ? prevOres[oreName].harvested + 1
+                : undefined;
 
-            return {
-                ...prevOres,
-                [oreName]: {
-                    ...prevOres[oreName],
-                    harvested: updatedHarvest,
-                    patch: updatedPatch
-                }
-            };
-        }
-        return prevOres;
-    });
+                return {
+                    ...prevOres,
+                    [oreName]: {
+                        ...prevOres[oreName],
+                        harvested: updatedHarvest,
+                        patch: updatedPatch
+                    }
+                };
+            }
+            return prevOres;
+        });
     };
 
     const handleBank = (oreName) => {

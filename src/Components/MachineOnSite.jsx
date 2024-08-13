@@ -200,7 +200,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
 
                 let amount = '';
 
-                if(machine[itemName.isFurnace]){
+                if(ingredients[machineName].isFurnace){
                     const cost = ingredients[output].cost
                     const targetName = Object.keys(cost)[0];  // Get the first key, "Stone"
                     amount = cost[targetName];  // Access the value dynamically
@@ -210,7 +210,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                     //console.log(`Fuel Levels:`, Object.values(fuels));
                 }
 
-                if(machine[itemName].currentInput >= amount || machine[itemName].isDrill){
+                if(machine[itemName].currentInput >= amount || ingredients[machineName].isDrill){
                     // fourth, check if we require fuel
                     if(ingredients[machineName].isBurner){
                         // fifth, check we have fuel
@@ -219,9 +219,18 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
 
                         if (fuelAvailable) {
                             turnOnProduction();  // Call the function if any fuel is available
-                        } 
+                        }
+                        else if(itemName === "Coal" && ingredients[machineName].isDrill){
+                            // ** Special event ** we have burner drills on coal with no fuel
+                            if(ores["Coal"].patch.size > 1){
+                                turnOnProduction()
+                            }
+                            else{
+                                console.log('Needs fuel');
+                            }
+                        }
                         else {
-                            //console.log('Needs fuel');
+                            console.log('Needs fuel');
                         }
                     }
                     else{
@@ -293,6 +302,8 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             }));
         }
 
+        let fuelDeducted = false; // Track if any fuel was deducted
+
         // deduct fuel (if applicable)
         if (ingredients[machineName]?.isBurner) {
             const fuels = machine[itemName].fuels;
@@ -322,14 +333,49 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                         }
                     }));
 
+                    fuelDeducted = true; // Indicate that fuel was deducted
                     // Break out of the loop after deducting from one fuel source
                     break;
                 }
             }
         }
 
-        // payout
-        updateOutputCount(output, 'machine')
+        // check this isn't a self-start from the burner drills on coal
+        if(!fuelDeducted && ingredients[machineName]?.isBurner && ingredients[machineName]?.isDrill && itemName == 'Coal' ){
+            console.log(`Oho! Self-starting the burner drill on coal.`);
+
+            setOres(prevOres => ({
+                ...prevOres,
+                [itemName]: {
+                    ...prevOres[itemName],
+                    patch: {
+                        ...prevOres[itemName].patch,
+                        size: prevOres[itemName].patch.size - 1
+                    }
+                }
+            }));
+
+            setMachineStates(prevState => ({
+                ...prevState,
+                [machineName]: {
+                    ...prevState[machineName],
+                    [itemName]: {
+                        ...prevState[machineName][itemName],
+                        fuels: {
+                            ...prevState[machineName][itemName].fuels,
+                            [itemName]: {
+                                current: prevState[machineName][itemName].fuels[itemName].current + 1
+                            }
+                        }
+                    }
+                }
+            }));
+        }
+        
+        // else, payout
+        else{
+            updateOutputCount(output, 1)
+        }
 
         // turn off and loop back
         setMachineStates(prevState => ({
