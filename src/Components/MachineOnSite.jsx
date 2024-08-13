@@ -209,7 +209,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                             turnOnProduction();  // Call the function if any fuel is available
                         } 
                         else {
-                            console.log('Needs fuel');
+                            //console.log('Needs fuel');
                         }
                     }
                     else{
@@ -218,11 +218,11 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                     }
                 } 
                 else {
-                    console.log(`Needs more ${Object.keys(machine)[0]}`);
+                    //console.log(`Needs more ${Object.keys(machine)[0]}`);
                 }
             } 
             else {
-                console.log(`${machineName}s making ${output} are already running.`);
+                //console.log(`${machineName}s making ${output} are already running.`);
             }
         } 
         else {
@@ -232,7 +232,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
 
 
     const turnOnProduction = () => {
-        console.log(`${machineName} is turned on!`)
+        //console.log(`${machineName} is turned on!`)
         // Update the running state
         setMachineStates(prevState => ({
             ...prevState,

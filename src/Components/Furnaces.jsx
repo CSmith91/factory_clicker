@@ -49,6 +49,30 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
         }));
     };
 
+    const handleBank = (oreName) => {
+        const outputName = getOutput(oreName);
+        if (!outputName) return;
+
+        const currentCount = outputCounts[outputName] || 0;
+        if (currentCount > 0) {
+            // Update ingredient
+            const itemName = outputName;
+            setIngredients(prevIngs => ({
+                ...prevIngs,
+                [itemName]: {
+                    ...prevIngs[itemName],
+                    count: prevIngs[itemName].count + currentCount
+                }
+            }));
+
+            // Reset output count
+            setOutputCounts(prevCounts => ({
+                ...prevCounts,
+                [outputName]: 0
+            }));
+        }
+    };
+
     return(
         <>
         <h2>Furnaces</h2>
@@ -58,7 +82,7 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
                     .map(([oreName, _]) => (
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{getOutput(oreName)}</h3>
-                            <div key={oreName+"ImgDiv"} style={{marginBottom: '10px'}} className="imgdiv">
+                            <div key={oreName+"ImgDiv"} className="imgdiv" onClick={() => handleBank(oreName)} >
                                 {getFurnaceImage(oreName) && (
                                     <>
                                         <img src={getFurnaceImage(oreName)} alt={`${getOutput(oreName)} Image`} />
@@ -83,7 +107,7 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
                     .map(([oreName, _]) => (
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{getOutput(oreName)}</h3>
-                            <div key={oreName+"ImgDiv"} style={{marginBottom: '10px'}} className="imgdiv">
+                            <div key={oreName+"ImgDiv"} className="imgdiv" onClick={() => handleBank(oreName)} >
                                 {getFurnaceImage(oreName) && (
                                     <>
                                         <img src={getFurnaceImage(oreName)} alt={`${getOutput(oreName)} Image`} />

@@ -91,7 +91,8 @@ button:hover {
   cursor: pointer; 
   padding: 4%;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */
-  background-color: #3a3f4a
+  background-color: #3a3f4a;
+  margin-bottom: 20px;
 }
 
 .imgdiv img {
@@ -102,6 +103,11 @@ button:hover {
 .imgdiv:hover {
   filter: brightness(1.2); /* Lighten the image */
   background-color: #808aa0; /* Lightbox overlay color */
+}
+
+.imgdiv:active {
+  transform: translateY(2px) translateX(2px); /* Moves the div down */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Reduces the shadow to make it appear sunk */
 }
 
 /* Number overlay */
