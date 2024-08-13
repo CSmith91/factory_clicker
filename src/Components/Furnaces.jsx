@@ -37,7 +37,7 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
             default:
                 return null
         }
-    } 
+    }
 
 
     return(
