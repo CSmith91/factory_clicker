@@ -21,6 +21,28 @@ const Inventory = ({ ores, ingredients, onCraft }) => {
         <div>
             <h2>Inventory</h2>
             <h3>Production</h3>
+            <div className='p3'>
+                {groupedIngredients['p3']?.map(([ingredientName, ingredientData]) => {
+                    const costText = Object.entries(ingredientData.cost)
+                        .map(([resource, amount]) => `${amount} ${resource}`)
+                        .join(', ');
+
+                    return (
+                        <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {ingredientData.isCraftable && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
+                            <ul style={{ listStyleType: 'none', padding: 0 }}>
+                                <li key={ingredientName} style={{ marginLeft: '10px' }}>
+                                    {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
+                                        <>
+                                            <br /> Idle Count: {ingredientData.idleCount}
+                                        </>
+                                    )}
+                                </li>
+                            </ul>
+                        </div>
+                    );
+                })}
+            </div>
             <div className='p4'>
                 {groupedIngredients['p4']?.map(([ingredientName, ingredientData]) => {
                     const costText = Object.entries(ingredientData.cost)
