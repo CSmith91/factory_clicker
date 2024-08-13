@@ -41,7 +41,7 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
         const toolName = oreName === 'Wood' ? 'Axe' : 'Pickaxe';
         const tool = tools[toolName];
 
-        if (manOrMachine == 'manual' && tool.durability <= 0 || !tool) {
+        if ((manOrMachine === 'manual' && tool.durability <= 0 ) || !tool) {
             onAlert(`Your ${toolName} is broken. You cannot mine ${oreName}.`);
             return; // Exit the function if the tool is broken
         }

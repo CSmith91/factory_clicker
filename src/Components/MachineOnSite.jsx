@@ -342,7 +342,6 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
 
         // check this isn't a self-start from the burner drills on coal
         if(!fuelDeducted && ingredients[machineName]?.isBurner && ingredients[machineName]?.isDrill && itemName == 'Coal' ){
-            console.log(`Oho! Self-starting the burner drill on coal.`);
 
             setOres(prevOres => ({
                 ...prevOres,
