@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Machines from './Machines';
 import OreButton from './OreButton';
 import wood from './Images/wood.png'
 import ironOre from './Images/iron_ore.png'
@@ -146,9 +147,19 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
                                 <p>{oreName} harvested: {oreData.harvested}</p> 
                             )}
                             {/* THIS WILL BE FOR DRILLS, so replace .canFurnace with .canDrill! */}
-                            {/* {oreData.canFurnace ? (
-                                <Machines ores={ores} oreName={oreName} ingredients={ingredients} handleMachineChange={handleMachineChange} onAlert={onAlert} />
-                                ) : (<></>)} */}
+                            {oreData.canDrill ? (
+                                <Machines
+                                machineType={"drill"} 
+                                ores={ores} 
+                                oreName={oreName} 
+                                ingredients={ingredients} 
+                                setOres={setOres} 
+                                setIngredients={setIngredients} 
+                                handleMachineChange={handleMachineChange} 
+                                updateOutputCount={updateOutputCount}
+                                onAlert={onAlert} 
+                                />
+                                ) : (<></>)}
                         </div>
                     ))}
             </div>

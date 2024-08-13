@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
 import stoneFurnace from './Images/stone_furnace.png'
 import steelFurnace from './Images/steel_furnace.png'
+import burnerDrill from './Images/burner_drill.png'
+import electricDrill from './Images/electric_drill.png'
 
 const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, fuels, handleMachineChange, updateOutputCount, onAlert }) => {
    
@@ -15,6 +17,10 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 return stoneFurnace;
             case 'Steel Furnace':
                 return steelFurnace;
+            case 'Burner Drill':
+                return burnerDrill;
+            case 'Electric Drill':
+                return electricDrill;
             default:
                 return null
         }

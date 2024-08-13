@@ -1,16 +1,19 @@
 import React from "react";
 import MachineOnSite from "./MachineOnSite";
 
-const Machines = ({ ores, oreName, ingredients,  setOres, setIngredients, handleMachineChange, updateOutputCount, onAlert }) => {
-
-    // currently setup only for furnaces
+const Machines = ({ machineType, ores, oreName, ingredients,  setOres, setIngredients, handleMachineChange, updateOutputCount, onAlert }) => {
 
     const itemName = oreName
-    const furnaceableItem = ores[oreName] ? ores[oreName] : ingredients[oreName]
+    const workableItem = ores[oreName] ? ores[oreName] : ingredients[oreName]
 
     // Find all items that are furnaces (isFurnace: true)
     const furnaces = Object.entries(ingredients)
         .filter(([_, ingData]) => ingData.isFurnace);
+    
+    const drills = Object.entries(ingredients)
+    .filter(([_, ingData]) => ingData.isDrill);
+
+    const machines = machineType === "furnace" ? furnaces : drills 
 
     // this is for furnaces only
     const inputToOutput = (oreName) => {
@@ -47,14 +50,14 @@ const Machines = ({ ores, oreName, ingredients,  setOres, setIngredients, handle
 
     return(
         <>
-            {furnaces.map(([furnaceName, furnaceData]) => (
+            {machines.map(([machineName, machineData]) => (
                     // Conditional check: render only if both the furnace and item are unlocked
-                    furnaceData.unlocked && furnaceableItem.unlocked && (
-                        <div key={`${furnaceName}-${itemName}`}>
+                    machineData.unlocked && workableItem.unlocked && (
+                        <div key={`${machineName}-${itemName}`}>
                             <MachineOnSite 
                                 itemName={itemName} 
                                 output={output} 
-                                machineName={furnaceName} 
+                                machineName={machineName} 
                                 ores={ores} 
                                 ingredients={ingredients} 
                                 setOres={setOres} 

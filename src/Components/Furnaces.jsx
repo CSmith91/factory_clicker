@@ -90,7 +90,8 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
                                     </>
                                 )}
                             </div>
-                            <Machines 
+                            <Machines
+                                machineType={"furnace"}
                                 ores={ores} 
                                 oreName={oreName} 
                                 ingredients={ingredients} 
@@ -115,7 +116,8 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
                                     </>
                                 )}
                             </div>
-                                <Machines 
+                                <Machines
+                                    machineType={"furnace"} 
                                     ores={ores} 
                                     oreName={oreName} 
                                     ingredients={ingredients} 

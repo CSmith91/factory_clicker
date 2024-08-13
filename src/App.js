@@ -23,7 +23,7 @@ function App() {
     Coal: { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 345000}, canDrill: true, fuelValue: 4 },
     "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 340000}, canFurnace: true, canDrill: true  },
     "Crude Oil": { count: 0, canHandMine: false, unlocked: testMode },
-    "Uranium Ore": { count: 0, canHandMine: false, unlocked: testMode }
+    "Uranium Ore": { count: 0, canHandMine: false, unlocked: testMode, canDrill: true, needsAcid: true }
   });
 
   const [ingredients, setIngredients] = useState({
