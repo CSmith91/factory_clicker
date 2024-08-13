@@ -5,7 +5,7 @@ const OreButton = ({ oreName, updateOutputCount }) => {
     return (
         <div style={{ margin: '10px' }}>
             <button 
-                onClick={() => updateOutputCount(oreName)}>
+                onClick={() => updateOutputCount(oreName, 'manual')}>
                 Get {oreName}
             </button>
         </div>

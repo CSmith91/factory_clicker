@@ -36,18 +36,18 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
     }
 
     // Function to update the output count
-    const updateOutputCount = (oreName) => {
+    const updateOutputCount = (oreName, manOrMachine) => {
         // Check if the tool is usable before incrementing
         const toolName = oreName === 'Wood' ? 'Axe' : 'Pickaxe';
         const tool = tools[toolName];
 
-        if (!tool || tool.durability <= 0) {
+        if (manOrMachine == 'manual' && tool.durability <= 0 || !tool) {
             onAlert(`Your ${toolName} is broken. You cannot mine ${oreName}.`);
             return; // Exit the function if the tool is broken
         }
 
         // If the tool is usable, proceed with incrementing the ore and output count
-        onIncrement(oreName, toolName);
+        onIncrement(oreName, toolName, manOrMachine);
 
         setOutputCounts(prevCounts => ({
             ...prevCounts,
@@ -57,25 +57,27 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
 
 
     // Function to increment the ore count
-    const onIncrement = (oreName, toolName) => {
+    const onIncrement = (oreName, toolName, manOrMachine) => {
         
-        // Update the tool's durability
-        setTools(prevTools => {
-        const tool = prevTools[toolName];
-        const updatedDurability = tool.durability - tool.corrodeRate;
-        return {
-            ...prevTools,
-            [toolName]: {
-                ...tool,
-                durability: Math.max(0, updatedDurability)
-            }
-        };
-        });
+        if(manOrMachine === "manual"){
+            // Update the tool's durability
+            setTools(prevTools => {
+            const tool = prevTools[toolName];
+            const updatedDurability = tool.durability - tool.corrodeRate;
+            return {
+                ...prevTools,
+                [toolName]: {
+                    ...tool,
+                    durability: Math.max(0, updatedDurability)
+                }
+            };
+            });
+        }
 
         // Increment the ore count only if the tool had durability
         setOres(prevOres => {
         const tool = tools[toolName];
-        if (tool.durability > 0) {
+        if (tool.durability > 0 || manOrMachine === 'machine') {
             // update patch, if applicable
             const updatedPatch = prevOres[oreName].patch
             ? { ...prevOres[oreName].patch, size: prevOres[oreName].patch.size - 1 }
@@ -146,7 +148,7 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
                             ) : (
                                 <p>{oreName} harvested: {oreData.harvested}</p> 
                             )}
-                            {/* THIS WILL BE FOR DRILLS, so replace .canFurnace with .canDrill! */}
+                            {/* DRILLS */}
                             {oreData.canDrill ? (
                                 <Machines
                                 machineType={"drill"} 

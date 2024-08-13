@@ -57,7 +57,8 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         const machineSpeed = ingredients[machineName].machineSpeed
         
         if (currentMachineState?.isRunning) {
-            const waitTime = ingredients[output].craftTime / currentMachineState.count;
+            const makeTime = ingredients[machineName].isDrill ? ores[output].craftTime : ingredients[output].craftTime
+            const waitTime = makeTime / currentMachineState.count;
             const timeoutId = setTimeout(() => {
                 payout(machineStates[machineName]);
             }, waitTime / machineSpeed * 1000);
@@ -196,15 +197,20 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             // second, check we aren't aleady running this machine
             if(!machine[itemName].isRunning){
                 // third, check we have ingredients
-                const cost = ingredients[output].cost
-                const targetName = Object.keys(cost)[0];  // Get the first key, "Stone"
-                const amount = cost[targetName];  // Access the value dynamically
-                //const haveIngredients = ores[itemName] ? ores[itemName] : ingredients[itemName]
-                
-                //console.log(`Current Input: ${machine[itemName].currentInput}, Required Amount: ${amount}`);
-                //console.log(`Fuel Levels:`, Object.values(fuels));
 
-                if(machine[itemName].currentInput >= amount){
+                let amount = '';
+
+                if(machine[itemName.isFurnace]){
+                    const cost = ingredients[output].cost
+                    const targetName = Object.keys(cost)[0];  // Get the first key, "Stone"
+                    amount = cost[targetName];  // Access the value dynamically
+                    //const haveIngredients = ores[itemName] ? ores[itemName] : ingredients[itemName]
+                    
+                    //console.log(`Current Input: ${machine[itemName].currentInput}, Required Amount: ${amount}`);
+                    //console.log(`Fuel Levels:`, Object.values(fuels));
+                }
+
+                if(machine[itemName].currentInput >= amount || machine[itemName].isDrill){
                     // fourth, check if we require fuel
                     if(ingredients[machineName].isBurner){
                         // fifth, check we have fuel
@@ -254,36 +260,38 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         // this triggers the useEffect to now call the payout script after a delay 
     }
 
-    const turnOffProduction = (machine, reason) => {
-        console.log(`${machineName} is now off!`)
-        setMachineStates(prevState => ({
-            ...prevState,
-            [machineName]: {
-                ...prevState[machineName],
-                [itemName]: {
-                    ...prevState[machineName][itemName],
-                    isRunning: false
-                }
-            }
-        }));
-    }
+    // const turnOffProduction = (machine, reason) => {
+    //     console.log(`${machineName} is now off!`)
+    //     setMachineStates(prevState => ({
+    //         ...prevState,
+    //         [machineName]: {
+    //             ...prevState[machineName],
+    //             [itemName]: {
+    //                 ...prevState[machineName][itemName],
+    //                 isRunning: false
+    //             }
+    //         }
+    //     }));
+    // }
 
     const payout = (machine) => {
         // deduct input
-        const cost = ingredients[output].cost
-        const targetName = Object.keys(cost)[0];  // Get the first key, e.g. "Stone"
-        const amount = cost[targetName];  // Access the value dynamically
-                
-        setMachineStates(prevState => ({
-            ...prevState,
-            [machineName]: {
-                ...prevState[machineName],
-                [itemName]: {
-                    ...prevState[machineName][itemName],
-                    currentInput: prevState[machineName][itemName].currentInput - amount
+        if(ingredients[machineName]?.isFurnace){
+            const cost = ingredients[output].cost
+            const targetName = Object.keys(cost)[0];  // Get the first key, e.g. "Stone"
+            const amount = cost[targetName];  // Access the value dynamically
+                    
+            setMachineStates(prevState => ({
+                ...prevState,
+                [machineName]: {
+                    ...prevState[machineName],
+                    [itemName]: {
+                        ...prevState[machineName][itemName],
+                        currentInput: prevState[machineName][itemName].currentInput - amount
+                    }
                 }
-            }
-        }));
+            }));
+        }
 
         // deduct fuel (if applicable)
         if (ingredients[machineName]?.isBurner) {
@@ -321,7 +329,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         }
 
         // payout
-        updateOutputCount(output, 1)
+        updateOutputCount(output, 'machine')
 
         // turn off and loop back
         setMachineStates(prevState => ({
@@ -354,7 +362,9 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             <>
                 <div style={{marginBottom: "5%"}}>
                     <div style={{marginBottom: "5%"}} className="machine-input-buttons">
-                        <MachineAddButton machineName={machineName} itemName={itemName} addItem={addItem} handleMachineChange={handleMachineChange} onAlert={onAlert} />               
+                        {machineParent.isFurnace && (
+                            <MachineAddButton machineName={machineName} itemName={itemName} addItem={addItem} handleMachineChange={handleMachineChange} onAlert={onAlert} />   
+                        )}            
                         {machineParent.isBurner && fuelsArray.map(([fuelName, fuelData]) =>
                             fuelData.unlocked && (
                                 <div key={`${machineName}-${itemName}-${fuelName}`}>
@@ -367,7 +377,9 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 <div className="machine-div" style={{marginBottom: "5%"}}>
                     {machineImg && <img src={machineImg} alt={`${machineName} Image`} style={{ width: '32px', height: 'auto' }} />}
                     <div className="machine-inputs">
-                        <p>{itemName}: {currentMachineState[itemName].currentInput} / {currentMachineState[itemName].inputMax || 0}</p>
+                        {machineParent.isFurnace && (
+                            <p>{itemName}: {currentMachineState[itemName].currentInput} / {currentMachineState[itemName].inputMax || 0}</p>
+                        )}    
                         {machineParent.isBurner && fuelsArray.map(([fuelName, fuelData]) => {
                             const fuelState = currentMachineState[itemName].fuels?.[fuelName] || {}; // Default to empty object
                             return fuelData.unlocked && fuelState && (

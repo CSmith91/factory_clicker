@@ -31,7 +31,7 @@ const Machines = ({ machineType, ores, oreName, ingredients,  setOres, setIngred
         }
     }
 
-    const output = inputToOutput(oreName)
+    const output = machineType === "furnace" ? inputToOutput(oreName) : oreName;
 
     // Find all fuel items 
     const filterFuelItems = (items) => {

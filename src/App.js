@@ -17,13 +17,13 @@ function App() {
 
    // Initial state for ores with unlocked and canHandMine properties
   const [ores, setOres] = useState({
-    Wood: { count: 0, harvested: 0, canHandMine: true, unlocked: true, fuelValue: 2 },
-    Stone: { count: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 120000}, canFurnace: true, canDrill: true },
-    "Iron Ore": { count: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 350000}, canFurnace: true, canDrill: true },
-    Coal: { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 345000}, canDrill: true, fuelValue: 4 },
-    "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 340000}, canFurnace: true, canDrill: true  },
-    "Crude Oil": { count: 0, canHandMine: false, unlocked: testMode },
-    "Uranium Ore": { count: 0, canHandMine: false, unlocked: testMode, canDrill: true, needsAcid: true }
+    Wood: { count: 0, harvested: 0, canHandMine: true, unlocked: true, fuelValue: 2, craftTime: 0.5 },
+    Stone: { count: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 120000}, canFurnace: true, canDrill: true, craftTime: 1 },
+    "Iron Ore": { count: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 350000}, canFurnace: true, canDrill: true, craftTime: 1 },
+    Coal: { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 345000}, canDrill: true, fuelValue: 4, craftTime: 1 },
+    "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 340000}, canFurnace: true, canDrill: true, craftTime: 1 },
+    "Crude Oil": { count: 0, canHandMine: false, unlocked: testMode, craftTime: 1 },
+    "Uranium Ore": { count: 0, canHandMine: false, unlocked: testMode, canDrill: true, needsAcid: true, craftTime: 2 }
   });
 
   const [ingredients, setIngredients] = useState({
