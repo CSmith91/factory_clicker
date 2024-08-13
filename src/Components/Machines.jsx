@@ -1,7 +1,7 @@
 import React from "react";
 import MachineOnSite from "./MachineOnSite";
 
-const Machines = ({ ores, oreName, ingredients,  setOres, setIngredients, handleMachineChange, onAlert }) => {
+const Machines = ({ ores, oreName, ingredients,  setOres, setIngredients, handleMachineChange, updateOutputCount, onAlert }) => {
 
     // currently setup only for furnaces
 
@@ -51,7 +51,18 @@ const Machines = ({ ores, oreName, ingredients,  setOres, setIngredients, handle
                     // Conditional check: render only if both the furnace and item are unlocked
                     furnaceData.unlocked && furnaceableItem.unlocked && (
                         <div key={`${furnaceName}-${itemName}`}>
-                            <MachineOnSite itemName={itemName} output={output} machineName={furnaceName} ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} fuels={fuels} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+                            <MachineOnSite 
+                                itemName={itemName} 
+                                output={output} 
+                                machineName={furnaceName} 
+                                ores={ores} 
+                                ingredients={ingredients} 
+                                setOres={setOres} 
+                                setIngredients={setIngredients} 
+                                fuels={fuels} 
+                                handleMachineChange={handleMachineChange} 
+                                updateOutputCount={updateOutputCount}
+                                onAlert={onAlert} />
                         </div>
                     )
                 ))}

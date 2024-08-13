@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import Machines from "./Machines";
 import brick from './Images/brick.png'
 import ironPlate from './Images/iron_plate.png'
@@ -6,6 +6,8 @@ import copperPlate from './Images/copper_plate.png'
 import steel from './Images/steel.png'
 
 const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineChange, onAlert }) => {
+
+    const [outputCounts, setOutputCounts] = useState({});
 
     // used for lookups within production (later) as well as headers (here)
     const getOutput = (oreName) => {
@@ -39,6 +41,13 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
         }
     }
 
+    // Function to update the output count
+    const updateOutputCount = (output, amount) => {
+        setOutputCounts(prevCounts => ({
+            ...prevCounts,
+            [output]: (prevCounts[output] || 0) + amount
+        }));
+    };
 
     return(
         <>
@@ -53,11 +62,20 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
                                 {getFurnaceImage(oreName) && (
                                     <>
                                         <img src={getFurnaceImage(oreName)} alt={`${getOutput(oreName)} Image`} />
-                                        <span className="img-number">1</span> {/* Update this number dynamically as needed */}
+                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}
                             </div>
-                            <Machines ores={ores} oreName={oreName} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+                            <Machines 
+                                ores={ores} 
+                                oreName={oreName} 
+                                ingredients={ingredients} 
+                                setOres={setOres} 
+                                setIngredients={setIngredients} 
+                                handleMachineChange={handleMachineChange} 
+                                updateOutputCount={updateOutputCount}
+                                onAlert={onAlert} 
+                                />
                         </div>
                     ))}
                 {Object.entries(ingredients)
@@ -69,13 +87,22 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
                                 {getFurnaceImage(oreName) && (
                                     <>
                                         <img src={getFurnaceImage(oreName)} alt={`${getOutput(oreName)} Image`} />
-                                        <span className="img-number">1</span> {/* Update this number dynamically as needed */}
+                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}
                             </div>
-                            <Machines ores={ores} oreName={oreName} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} handleMachineChange={handleMachineChange} onAlert={onAlert} />
-                        </div>
-                    ))}
+                                <Machines 
+                                    ores={ores} 
+                                    oreName={oreName} 
+                                    ingredients={ingredients} 
+                                    setOres={setOres} 
+                                    setIngredients={setIngredients} 
+                                    handleMachineChange={handleMachineChange} 
+                                    updateOutputCount={updateOutputCount}
+                                    onAlert={onAlert} 
+                                    />
+                            </div>
+                        ))}
         </>
     )
 }

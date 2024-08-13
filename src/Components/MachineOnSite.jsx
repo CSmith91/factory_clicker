@@ -3,7 +3,7 @@ import MachineAddButton from "./MachineAddButton"
 import stoneFurnace from './Images/stone_furnace.png'
 import steelFurnace from './Images/steel_furnace.png'
 
-const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, fuels, handleMachineChange, onAlert }) => {
+const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, fuels, handleMachineChange, updateOutputCount, onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
@@ -280,7 +280,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         }));
 
         // deduct fuel (if applicable)
-        if (ingredients[machineName].isBurner) {
+        if (ingredients[machineName]?.isBurner) {
             const fuels = machine[itemName].fuels;
 
             // Find the first available fuel and deduct from it
@@ -315,6 +315,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         }
 
         // payout
+        updateOutputCount(output, 1)
 
         // turn off and loop back
         setMachineStates(prevState => ({
