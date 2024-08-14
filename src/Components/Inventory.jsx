@@ -1,7 +1,7 @@
 import React from 'react';
 import CraftButton from './CraftButton';
 
-const Inventory = ({ unlockables, ores, ingredients, onCraft }) => {
+const Inventory = ({ unlockables, ores, ingredients, getStorage, onCraft }) => {
 
     // Group ingredients by their group property
     const groupedIngredients = Object.entries(ingredients)
@@ -34,7 +34,7 @@ const Inventory = ({ unlockables, ores, ingredients, onCraft }) => {
                                     {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
                                     <ul style={{ listStyleType: 'none', padding: 0 }}>
                                         <li key={ingredientName} style={{ marginLeft: '10px' }}>
-                                            {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
+                                            {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
                                                 <>
                                                     <br /> Idle Count: {ingredientData.idleCount}
                                                 </>
@@ -56,7 +56,7 @@ const Inventory = ({ unlockables, ores, ingredients, onCraft }) => {
                                     {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
                                     <ul style={{ listStyleType: 'none', padding: 0 }}>
                                         <li key={ingredientName} style={{ marginLeft: '10px' }}>
-                                            {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
+                                            {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
                                                 <>
                                                     <br /> Idle Count: {ingredientData.idleCount}
                                                 </>
@@ -75,7 +75,7 @@ const Inventory = ({ unlockables, ores, ingredients, onCraft }) => {
                 {Object.entries(ores)
                     .filter(([_, oreData]) => oreData.unlocked) // Check only unlocked
                     .map(([oreName, oreData]) => (
-                        <li key={oreName}>{oreName}: {oreData.count}</li>
+                        <li key={oreName}>{oreName}: {oreData.count} / {getStorage(oreName)} </li>
                     ))}
             </ul>
             <div className='i3'>
@@ -89,7 +89,7 @@ const Inventory = ({ unlockables, ores, ingredients, onCraft }) => {
                             {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
                             <ul style={{ listStyleType: 'none', padding: 0 }}>
                                 <li key={ingredientName} style={{ marginLeft: '10px' }}>
-                                    {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
+                                    {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
                                         <>
                                             <br /> Idle Count: {ingredientData.idleCount}
                                         </>
@@ -111,7 +111,7 @@ const Inventory = ({ unlockables, ores, ingredients, onCraft }) => {
                             {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
                             <ul style={{ listStyleType: 'none', padding: 0 }}>
                                 <li key={ingredientName} style={{ marginLeft: '10px' }}>
-                                    {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
+                                    {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
                                         <>
                                             <br /> Idle Count: {ingredientData.idleCount}
                                         </>

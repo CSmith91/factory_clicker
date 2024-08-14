@@ -5,7 +5,7 @@ import ironPlate from './Images/iron_plate.png'
 import copperPlate from './Images/copper_plate.png'
 import steel from './Images/steel.png'
 
-const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  handleMachineChange, onAlert }) => {
+const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  getStorage, handleMachineChange, onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
 
@@ -95,7 +95,7 @@ const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  h
                                 {getFurnaceImage(oreName) && (
                                     <>
                                         <img src={getFurnaceImage(oreName)} alt={`${getOutput(oreName)} Image`} />
-                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span> {/* Update this number dynamically as needed */}
+                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0} / {getStorage(getOutput(oreName))}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}
                             </div>
@@ -105,8 +105,10 @@ const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  h
                                 oreName={oreName} 
                                 ingredients={ingredients} 
                                 setOres={setOres} 
-                                setIngredients={setIngredients} 
-                                handleMachineChange={handleMachineChange} 
+                                setIngredients={setIngredients}
+                                getStorage={getStorage}
+                                handleMachineChange={handleMachineChange}
+                                outputCounts={outputCounts}
                                 updateOutputCount={updateOutputCount}
                                 onAlert={onAlert} 
                                 />
@@ -121,7 +123,7 @@ const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  h
                             {getFurnaceImage(ingredientName) && (
                             <>
                                 <img src={getFurnaceImage(ingredientName)} alt={`${getOutput(ingredientName)} Image`} />
-                                <span className="img-number">{outputCounts[getOutput(ingredientName)] || 0}</span> {/* Update this number dynamically as needed */}
+                                <span className="img-number">{outputCounts[getOutput(ingredientName)] || 0} / {getStorage(ingredientName)}</span> {/* Update this number dynamically as needed */}
                             </>
                             )}
                         </div>
@@ -132,7 +134,9 @@ const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  h
                             ingredients={ingredients}
                             setOres={setOres}
                             setIngredients={setIngredients}
+                            getStorage={getStorage}
                             handleMachineChange={handleMachineChange}
+                            outputCounts={outputCounts}
                             updateOutputCount={updateOutputCount}
                             onAlert={onAlert}
                         />

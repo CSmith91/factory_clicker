@@ -1,7 +1,7 @@
 import React from "react";
 import MachineOnSite from "./MachineOnSite";
 
-const Machines = ({ machineType, ores, oreName, ingredients,  setOres, setIngredients, handleMachineChange, updateOutputCount, onAlert }) => {
+const Machines = ({ machineType, ores, oreName, ingredients,  setOres, setIngredients, getStorage, handleMachineChange, triggerProductionCheck, outputCounts, updateOutputCount, onAlert }) => {
 
     const itemName = oreName
     const workableItem = ores[oreName] ? ores[oreName] : ingredients[oreName]
@@ -62,8 +62,11 @@ const Machines = ({ machineType, ores, oreName, ingredients,  setOres, setIngred
                                 ingredients={ingredients} 
                                 setOres={setOres} 
                                 setIngredients={setIngredients} 
+                                getStorage={getStorage}
                                 fuels={fuels} 
-                                handleMachineChange={handleMachineChange} 
+                                handleMachineChange={handleMachineChange}
+                                triggerProductionCheck={triggerProductionCheck}
+                                outputCounts={outputCounts} 
                                 updateOutputCount={updateOutputCount}
                                 onAlert={onAlert} />
                         </div>

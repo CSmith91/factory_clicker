@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
 import stoneFurnace from './Images/stone_furnace.png'
 import steelFurnace from './Images/steel_furnace.png'
+import electricFurnace from './Images/electric_furnace.png'
 import burnerDrill from './Images/burner_drill.png'
 import electricDrill from './Images/electric_drill.png'
 
-const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, fuels, handleMachineChange, updateOutputCount, onAlert }) => {
+const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, getStorage, fuels, handleMachineChange, triggerProductionCheck, outputCounts, updateOutputCount, onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
@@ -17,6 +18,8 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 return stoneFurnace;
             case 'Steel Furnace':
                 return steelFurnace;
+            case 'Electric Furnace':
+                return electricFurnace;
             case 'Burner Drill':
                 return burnerDrill;
             case 'Electric Drill':
@@ -49,7 +52,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         if (machineStates[machineName]) {
             checkProduction(machineStates[machineName]);
         }
-    }, [machineStates[machineName]]); // Dependency array
+    }, [machineStates[machineName], outputCounts]); // Dependency array
 
     // UseEffect to handle the production timing
     useEffect(() => {
@@ -194,58 +197,64 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
 
         // first, check we have any machines
         if(machine[itemName].count > 0){
-            // second, check we aren't aleady running this machine
-            if(!machine[itemName].isRunning){
-                // third, check we have ingredients
+            // second, check we have room in the destination output
+            if(outputCounts[output] < getStorage(output) || !outputCounts[output]){
+                // third, check we aren't aleady running this machine
+                if(!machine[itemName].isRunning){
+                    // fourth, check we have ingredients
 
-                let amount = '';
+                    let amount = '';
 
-                if(ingredients[machineName].isFurnace){
-                    const cost = ingredients[output].cost
-                    const targetName = Object.keys(cost)[0];  // Get the first key, "Stone"
-                    amount = cost[targetName];  // Access the value dynamically
-                    //const haveIngredients = ores[itemName] ? ores[itemName] : ingredients[itemName]
-                    
-                    //console.log(`Current Input: ${machine[itemName].currentInput}, Required Amount: ${amount}`);
-                    //console.log(`Fuel Levels:`, Object.values(fuels));
-                }
+                    if(ingredients[machineName].isFurnace){
+                        const cost = ingredients[output].cost
+                        const targetName = Object.keys(cost)[0];  // Get the first key, "Stone"
+                        amount = cost[targetName];  // Access the value dynamically
+                        //const haveIngredients = ores[itemName] ? ores[itemName] : ingredients[itemName]
+                        
+                        //console.log(`Current Input: ${machine[itemName].currentInput}, Required Amount: ${amount}`);
+                        //console.log(`Fuel Levels:`, Object.values(fuels));
+                    }
 
-                if(machine[itemName].currentInput >= amount || ingredients[machineName].isDrill){
-                    // fourth, check if we require fuel
-                    if(ingredients[machineName].isBurner){
-                        // fifth, check we have fuel
-                        const fuels = machine[itemName].fuels;
-                        const fuelAvailable = Object.values(fuels).some(fuel => fuel.current > 0);
+                    if(machine[itemName].currentInput >= amount || ingredients[machineName].isDrill){
+                        // fifth, check if we require fuel
+                        if(ingredients[machineName].isBurner){
+                            // sixth, check we have fuel
+                            const fuels = machine[itemName].fuels;
+                            const fuelAvailable = Object.values(fuels).some(fuel => fuel.current > 0);
 
-                        if (fuelAvailable) {
-                            turnOnProduction();  // Call the function if any fuel is available
-                        }
-                        else if(itemName === "Coal" && ingredients[machineName].isDrill){
-                            // ** Special event ** we have burner drills on coal with no fuel
-                            if(ores["Coal"].patch.size > 1){
-                                turnOnProduction()
+                            if (fuelAvailable) {
+                                turnOnProduction();  // Call the function if any fuel is available
                             }
-                            else{
+                            else if(itemName === "Coal" && ingredients[machineName].isDrill){
+                                // ** Special event ** we have burner drills on coal with no fuel
+                                if(ores["Coal"].patch.size > 1){
+                                    turnOnProduction()
+                                }
+                                else{
+                                    console.log('Needs fuel');
+                                }
+                            }
+                            else {
                                 console.log('Needs fuel');
                             }
                         }
-                        else {
-                            console.log('Needs fuel');
+                        else{
+                            // electric machine, we can start
+                            turnOnProduction()
                         }
-                    }
-                    else{
-                        // electric machine, we can start
-                        turnOnProduction()
+                    } 
+                    else {
+                        //console.log(`Needs more ${Object.keys(machine)[0]}`);
                     }
                 } 
                 else {
-                    //console.log(`Needs more ${Object.keys(machine)[0]}`);
+                    //console.log(`${machineName}s making ${output} are already running.`);
                 }
             } 
-            else {
-                //console.log(`${machineName}s making ${output} are already running.`);
+            else{
+                console.log(`Output full. ${machineName} cannot work.`);
             }
-        } 
+        }
         else {
             //console.log(`No ${machineName} available.`);
         }
@@ -253,7 +262,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
 
 
     const turnOnProduction = () => {
-        //console.log(`${machineName} is turned on!`)
+
         // Update the running state
         setMachineStates(prevState => ({
             ...prevState,
@@ -268,20 +277,6 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
 
         // this triggers the useEffect to now call the payout script after a delay 
     }
-
-    // const turnOffProduction = (machine, reason) => {
-    //     console.log(`${machineName} is now off!`)
-    //     setMachineStates(prevState => ({
-    //         ...prevState,
-    //         [machineName]: {
-    //             ...prevState[machineName],
-    //             [itemName]: {
-    //                 ...prevState[machineName][itemName],
-    //                 isRunning: false
-    //             }
-    //         }
-    //     }));
-    // }
 
     const payout = (machine) => {
         // deduct input

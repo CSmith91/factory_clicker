@@ -9,7 +9,7 @@ import coal from './Images/coal.png'
 import uraniumOre from './Images/uranium_ore.png'
 import crudeOil from './Images/crude_oil.png'
 
-const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTools, handleMachineChange, onAlert }) => {
+const OreSection = ({ setUnlockables, ores, ingredients, tools, setOres, setIngredients, getStorage, setTools, handleMachineChange, onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
 
@@ -37,6 +37,21 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
 
     // Function to update the output count
     const updateOutputCount = (oreName, manOrMachine) => {
+
+        if(outputCounts[oreName] >= getStorage(oreName)){
+            if(manOrMachine === 'manual'){
+                onAlert(`Storage is full. You cannot mine ${oreName}.`);
+            }
+            setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                storage1: { 
+                  ...prevUnlockables.storage1,
+                  isVisible: true
+                }
+            }))
+            return; // Exit the function if storage is full
+        }
+
         // Check if the tool is usable before incrementing
         const toolName = oreName === 'Wood' ? 'Axe' : 'Pickaxe';
         const tool = tools[toolName];
@@ -142,7 +157,7 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
                                 {getImage(oreName) && (
                                     <>
                                         <img src={getImage(oreName)} alt={`${oreName} Img`} />
-                                        <span className="img-number">{outputCounts[oreName] || 0}</span> {/* Update this number dynamically as needed */}
+                                        <span className="img-number">{outputCounts[oreName] || 0} / {getStorage(oreName)}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}
                                 </div>
@@ -161,8 +176,10 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
                                 oreName={oreName} 
                                 ingredients={ingredients} 
                                 setOres={setOres} 
-                                setIngredients={setIngredients} 
+                                setIngredients={setIngredients}
+                                getStorage={getStorage}
                                 handleMachineChange={handleMachineChange} 
+                                outputCounts={outputCounts}
                                 updateOutputCount={updateOutputCount}
                                 onAlert={onAlert} 
                                 />
