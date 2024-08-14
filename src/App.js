@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
-import OresAndDrills from './Components/OresAndDrills';
-import Furnaces from './Components/Furnaces';
+import ResourceSection from './Components/ResourceSection';
 import Inventory from './Components/Inventory';
 import Research from './Components/Research';
 import TestMode from './Components/TestMode';
@@ -13,7 +12,12 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = false
+  const testMode = true
+  
+  let cheat = 0;
+  if(testMode){
+    cheat = 1000
+  }
 
    // Initial state for ores with unlocked and canHandMine properties
   const [ores, setOres] = useState({
@@ -40,9 +44,9 @@ function App() {
   })
 
   const [storage, setStorage] = useState({
-    Ores: 30,
-    Ingredients: 50,
-    Machines: 20
+    Ores: 30 + cheat,
+    Ingredients: 50 + cheat,
+    Machines: 20 + cheat
   })
 
   const getStorage = (oreName) => {
@@ -174,10 +178,6 @@ function App() {
   // Function to check if any tool has durability less than 100
   const shouldShowRepairTools = () => {
     return Object.values(tools).some(tool => tool.durability < 100);
-  };
-
-  const shouldShowFurnaces = () => {
-    return ingredients["Brick"].unlocked
   };
 
   // Tools
@@ -565,17 +565,7 @@ function App() {
               <StatusSection tools={tools} />
             </div>
 
-            {/* Ore Patch Section */}
-            <div className='section'>
-              <OresAndDrills setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
-            </div>
-
-            {/* Furnaces Section */}
-            {shouldShowFurnaces() && (
-              <div className='section'>
-                <Furnaces setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
-              </div>
-            )}
+            < ResourceSection setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
 
             {/* Inventory Section */}
             <div className='section'>
