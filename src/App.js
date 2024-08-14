@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
-import OreSection from './Components/OreSection';
+import OresAndDrills from './Components/OresAndDrills';
 import Furnaces from './Components/Furnaces';
 import Inventory from './Components/Inventory';
 import Research from './Components/Research';
@@ -567,7 +567,7 @@ function App() {
 
             {/* Ore Patch Section */}
             <div className='section'>
-              <OreSection setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+              <OresAndDrills setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
             </div>
 
             {/* Furnaces Section */}

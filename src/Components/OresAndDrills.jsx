@@ -9,7 +9,7 @@ import coal from './Images/coal.png'
 import uraniumOre from './Images/uranium_ore.png'
 import crudeOil from './Images/crude_oil.png'
 
-const OreSection = ({ setUnlockables, ores, ingredients, tools, setOres, setIngredients, storage, getStorage, setTools, handleMachineChange, onAlert }) => {
+const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setIngredients, storage, getStorage, setTools, handleMachineChange, onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
 
@@ -205,4 +205,4 @@ const OreSection = ({ setUnlockables, ores, ingredients, tools, setOres, setIngr
     );
 };
 
-export default OreSection;
+export default OresAndDrills;
