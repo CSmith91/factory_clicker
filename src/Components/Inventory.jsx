@@ -1,7 +1,7 @@
 import React from 'react';
 import CraftButton from './CraftButton';
 
-const Inventory = ({ ores, ingredients, onCraft }) => {
+const Inventory = ({ unlockables, ores, ingredients, onCraft }) => {
 
     // Group ingredients by their group property
     const groupedIngredients = Object.entries(ingredients)
@@ -20,53 +20,57 @@ const Inventory = ({ ores, ingredients, onCraft }) => {
     return (
         <div>
             <h2>Inventory</h2>
-            <h3>Production</h3>
-            <div className='p3'>
-                {groupedIngredients['p3']?.map(([ingredientName, ingredientData]) => {
-                    const costText = Object.entries(ingredientData.cost)
-                        .map(([resource, amount]) => `${amount} ${resource}`)
-                        .join(', ');
+            {unlockables.furnace1.unlocked && (
+                <>
+                    <h3>Production</h3>
+                    <div className='p3'>
+                        {groupedIngredients['p3']?.map(([ingredientName, ingredientData]) => {
+                            const costText = Object.entries(ingredientData.cost)
+                                .map(([resource, amount]) => `${amount} ${resource}`)
+                                .join(', ');
 
-                    return (
-                        <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {ingredientData.isCraftable && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
-                            <ul style={{ listStyleType: 'none', padding: 0 }}>
-                                <li key={ingredientName} style={{ marginLeft: '10px' }}>
-                                    {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
-                                        <>
-                                            <br /> Idle Count: {ingredientData.idleCount}
-                                        </>
-                                    )}
-                                </li>
-                            </ul>
-                        </div>
-                    );
-                })}
-            </div>
-            <div className='p4'>
-                {groupedIngredients['p4']?.map(([ingredientName, ingredientData]) => {
-                    const costText = Object.entries(ingredientData.cost)
-                        .map(([resource, amount]) => `${amount} ${resource}`)
-                        .join(', ');
+                            return (
+                                <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
+                                    <ul style={{ listStyleType: 'none', padding: 0 }}>
+                                        <li key={ingredientName} style={{ marginLeft: '10px' }}>
+                                            {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
+                                                <>
+                                                    <br /> Idle Count: {ingredientData.idleCount}
+                                                </>
+                                            )}
+                                        </li>
+                                    </ul>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className='p4'>
+                        {groupedIngredients['p4']?.map(([ingredientName, ingredientData]) => {
+                            const costText = Object.entries(ingredientData.cost)
+                                .map(([resource, amount]) => `${amount} ${resource}`)
+                                .join(', ');
 
-                    return (
-                        <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {ingredientData.isCraftable && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
-                            <ul style={{ listStyleType: 'none', padding: 0 }}>
-                                <li key={ingredientName} style={{ marginLeft: '10px' }}>
-                                    {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
-                                        <>
-                                            <br /> Idle Count: {ingredientData.idleCount}
-                                        </>
-                                    )}
-                                </li>
-                            </ul>
-                        </div>
-                    );
-                })}
-            </div>
-            
-            <h3>Intermediate Products</h3>
+                            return (
+                                <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
+                                    <ul style={{ listStyleType: 'none', padding: 0 }}>
+                                        <li key={ingredientName} style={{ marginLeft: '10px' }}>
+                                            {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
+                                                <>
+                                                    <br /> Idle Count: {ingredientData.idleCount}
+                                                </>
+                                            )}
+                                        </li>
+                                    </ul>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    
+                    <h3>Intermediate Products</h3>
+            </>
+            )}
             <ul style={{ listStyleType: 'none', padding: 0 }}>
                 {Object.entries(ores)
                     .filter(([_, oreData]) => oreData.unlocked) // Check only unlocked
@@ -82,7 +86,7 @@ const Inventory = ({ ores, ingredients, onCraft }) => {
 
                     return (
                         <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {ingredientData.isCraftable && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
+                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
                             <ul style={{ listStyleType: 'none', padding: 0 }}>
                                 <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                     {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (
@@ -104,7 +108,7 @@ const Inventory = ({ ores, ingredients, onCraft }) => {
 
                     return (
                         <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {ingredientData.isCraftable && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
+                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
                             <ul style={{ listStyleType: 'none', padding: 0 }}>
                                 <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                     {ingredientName} ({costText}): {ingredientData.count} {ingredientData.idleCount !== undefined && (

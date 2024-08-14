@@ -74,7 +74,7 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
             });
         }
 
-        // Increment the ore count only if the tool had durability
+        // Increment the ore count only if the tool had durability or machine-mined
         setOres(prevOres => {
             const tool = tools[toolName];
             if (tool.durability > 0 || !manOrMachine === 'manual') {
@@ -132,17 +132,22 @@ const OreSection = ({ ores, ingredients, tools, setOres, setIngredients, setTool
                     .map(([oreName, oreData]) => (
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{oreName}</h3>
-                            <div key={oreName+"ImgDiv"} className="imgdiv" onClick={() => handleBank(oreName)} >
+                            <div key={oreName+"Div"} className={'oreDiv'}>
+                                {oreData.canHandMine ? (
+                                    <div style={{marginTop: '-1px'}} >
+                                        <OreButton key={oreName} oreName={oreName} updateOutputCount={updateOutputCount} /> 
+                                    </div>
+                                ) : (<></>)}
+                                <div key={oreName+"ImgDiv"} className="imgdiv" onClick={() => handleBank(oreName)} >
                                 {getImage(oreName) && (
                                     <>
                                         <img src={getImage(oreName)} alt={`${oreName} Img`} />
                                         <span className="img-number">{outputCounts[oreName] || 0}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}
+                                </div>
+
                             </div>
-                            {oreData.canHandMine ? (
-                                <OreButton key={oreName} oreName={oreName} updateOutputCount={updateOutputCount}/> 
-                                ) : (<></>)}
                             {oreData.patch !== undefined ? (
                                 <p>{oreName} patch remaining: {oreData.patch.size}</p> 
                             ) : (

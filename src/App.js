@@ -13,15 +13,15 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = true
+  const testMode = false
 
    // Initial state for ores with unlocked and canHandMine properties
   const [ores, setOres] = useState({
-    Wood: { count: 0, harvested: 0, canHandMine: true, unlocked: true, fuelValue: 2, craftTime: 0.5 },
-    Stone: { count: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 120000}, canFurnace: true, canDrill: true, craftTime: 1 },
-    "Iron Ore": { count: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 350000}, canFurnace: true, canDrill: true, craftTime: 1 },
-    Coal: { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 345000}, canDrill: true, fuelValue: 4, craftTime: 1 },
-    "Copper Ore": { count: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 340000}, canFurnace: true, canDrill: true, craftTime: 1 },
+    Wood: { count: 0, clicked: 0, harvested: 0, canHandMine: true, unlocked: true, fuelValue: 2, craftTime: 0.5 },
+    Stone: { count: 0, clicked: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 120000}, canFurnace: true, canDrill: true, craftTime: 1 },
+    "Iron Ore": { count: 0, clicked: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 350000}, canFurnace: true, canDrill: true, craftTime: 1 },
+    Coal: { count: 0, clicked: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 345000}, canDrill: true, fuelValue: 4, craftTime: 1 },
+    "Copper Ore": { count: 0, clicked: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 340000}, canFurnace: true, canDrill: true, craftTime: 1 },
     "Crude Oil": { count: 0, canHandMine: false, unlocked: testMode, craftTime: 1 },
     "Uranium Ore": { count: 0, canHandMine: false, unlocked: testMode, canDrill: true, needsAcid: true, craftTime: 2 }
   });
@@ -39,10 +39,133 @@ function App() {
   })
 
   // Research items with their costs
-  const researchItems = {
-    "Coal": { cost: {"Stone" : 5, "Wood": 10} },
-    "Copper Ore": { cost: { "Iron Ore": 20 } },
+  const [unlockables, setUnlockables] = useState({
+    furnace1: { 
+      isVisible: true, // Set to true if it should be visible by default
+      unlocked: false, 
+      cost: { "Wood": 5 }, 
+      title: 'Stone Furnace', 
+      desc: 'You can do something with all that stone and iron, you just need the space...'
+    },
+    hammer1: { 
+      isVisible: false, // Change based on when you want it to appear
+      unlocked: false, 
+      cost: { "Stone": 3 }, 
+      title: 'Craft Components', 
+      desc: 'Now let\'s "make" these furnaces, eh?'
+    },
+    smelt1: {
+      isVisible: false,
+      unlocked: false, 
+      cost: { "Brick": 3 }, 
+      title: 'Furnace Stack', 
+      desc: 'We can add our furnace to the brick stack. Adding enough stone and fuel, we can make brick.'
+    },
+    craft1: {
+      isVisible: false,
+      unlocked: false, 
+      cost: { "Steel": 3 }, 
+      title: '###', 
+      desc: '###'
+    },
+    storage1: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Wood": 16 }, 
+      title: 'Wooden Crates', 
+      desc: 'Store more ores and ingredients both at source and in your inventory.'
+    },
+    storage2: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Iron Plate": 64 }, 
+      title: 'Iron Chests', 
+      desc: 'Store much more ores and ingredients both at source and in your inventory.'
+    },
+    axe2: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Wood": 5, "Iron Plate": 4 }, 
+      title: 'Long-Handled Axe', 
+      desc: 'Chop wood faster with this bad boy.'
+    },
+    pick2: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Stone": 5, "Iron Plate": 2 }, 
+      title: 'Actual Iron Pick', 
+      desc: 'Surely there\'s some way to automate this...'
+    },
+    drill1: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Gear": 10 }, 
+      title: 'Drills!', 
+      desc: 'Getting all that ore out the ground manually is tiresome. This is what we need.'
+    },
+    coal1: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Stone": 50 }, 
+      title: 'Black Rock', 
+      desc: 'We\'ve cleared so many trees and dug up so much stone now. I wonder what that black colored rock is...'
+    },
+    belts1: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Gear": 30 }, 
+      title: 'Transport Belts', 
+      desc: 'No more banking! Move goods from mining sites and machines to your inventory automatically.'
+    },
+    copper1: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Stone": 35, "Brick": 15 }, 
+      title: 'Copper', 
+      desc: 'This resource will open a lot of (electronic) doors...'
+    },
+    inserters1: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Copper Ore": 20 }, 
+      title: 'Burner Inserters', 
+      desc: 'Our most basic inserter - add resources to your drills and furnaces automatically.'
+    },
+    bulkPlace1: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "Iron Plate": 50 }, 
+      title: 'Bulk Add', 
+      desc: 'For all you arthritus haters! Add resources to machines in bulk.'
+    },
+    factory1: { 
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "redPack": 10 }, 
+      title: 'Factories', 
+      desc: 'Sounds cool, but how do we even make an automation pack? [You need to code labs & electric being unlocked before]'
+    },
+    steelProcessing: {
+      isVisible: false, 
+      unlocked: false, 
+      cost: { "####": 10 }, 
+      title: 'Steel Processing', 
+      desc: 'text'
+    }
+  });
 
+  // Function to check if any research is available
+  const shouldShowResearch = () => {
+    return Object.values(unlockables).some(unlockable => unlockable.isVisible === true && unlockable.unlocked === false);
+  };  
+  
+  // Function to check if any tool has durability less than 100
+  const shouldShowRepairTools = () => {
+    return Object.values(tools).some(tool => tool.durability < 100);
+  };
+
+  const shouldShowFurnaces = () => {
+    return ingredients["Brick"].unlocked
   };
 
   // Tools
@@ -51,6 +174,8 @@ function App() {
     Pickaxe: { durability: 100, corrodeRate: 0.5, cost: {"Wood": 5}, unlocked: true},
     Hammer: { durability: 100, corrodeRate: 1.5, cost: {"Wood": 5, "Stone": 5}, unlocked: testMode}
   })
+
+
 
   // Messages & sound
   const [messages, setMessages] = useState([])
@@ -97,38 +222,92 @@ function App() {
     }
   }
 
-  // Function to unlock ores
-  const onUnlock = (oreName) => {
-
-    const requiredItems = researchItems[oreName]?.cost;
-    if (!requiredItems) return; // No cost defined for this research item
+  // Function to unlock research
+  const onUnlock = (itemName) => {
+    const requiredItems = unlockables[itemName]?.cost;
+    if (!requiredItems) return;
 
     let canUnlock = true;
     let newOres = { ...ores };
+    let newIngredients = { ...ingredients };
 
-    // Check if the user has enough resources
     for (const [item, quantity] of Object.entries(requiredItems)) {
-      if ((newOres[item]?.count || 0) < quantity) {
-        canUnlock = false;
-        break;
-      }
+        // Check if the item exists in ores or ingredients and if the user has enough resources
+        if ((newOres[item]?.count || 0) < quantity && (newIngredients[item]?.count || 0) < quantity) {
+            canUnlock = false;
+            break;
+        }
     }
 
     if (canUnlock) {
-      // Deduct the required resources
-      for (const [item, quantity] of Object.entries(requiredItems)) {
-        newOres[item].count -= quantity;
+        // Deduct the required resources from ores or ingredients
+        for (const [item, quantity] of Object.entries(requiredItems)) {
+            if (newOres[item]?.count >= quantity) {
+                newOres[item].count -= quantity;
+            } else if (newIngredients[item]?.count >= quantity) {
+                newIngredients[item].count -= quantity;
+            }
+        }
+
+        // Update the state with the new values
+        setOres(newOres);
+        setIngredients(newIngredients);
+        setUnlockables(prevUnlockables => ({
+            ...prevUnlockables,
+            [itemName]: { ...prevUnlockables[itemName], unlocked: true }
+        }));
+
+        // events following unlock
+        switch (itemName) {
+          case 'furnace1':
+            setIngredients(prevIngredients => ({
+              ...prevIngredients,
+              "Stone Furnace": {
+                ...prevIngredients["Stone Furnace"],
+                unlocked: true 
+              }
+            }));
+            setUnlockables(prevUnlockables => ({
+              ...prevUnlockables,
+              ["hammer1"]: { ...prevUnlockables["hammer1"], isVisible: true }
+            }));
+            break;
+          case 'hammer1':
+            setTools(prevTools => ({
+              ...prevTools,
+              "Hammer": {
+                ...prevTools["Hammer"],
+                unlocked: true  // Unlock the Hammer
+              }
+            }));
+            break;
+          case 'smelt1':
+            setIngredients(prevIngredients => ({
+              ...prevIngredients,
+              "Iron Plate": {
+                ...prevIngredients["Iron Plate"],
+                unlocked: true 
+              }
+            }));
+            setIngredients(prevIngredients => ({
+              ...prevIngredients,
+              "Gear": {
+                ...prevIngredients["Gear"],
+                unlocked: true 
+              }
+            }));
+            // onFirst craft, add Brick // on Craftnig 5 brick, spend to unlock iron plate
+            break;
+          default:
+              break;
       }
-      // Unlock the item
-      newOres[oreName] = {
-        ...newOres[oreName],
-        unlocked: true
-      };
-      setOres(newOres);
     } else {
-      onAlert("Not enough resources to unlock this item.");
+        onAlert("Not enough resources to unlock this item.");
     }
   };
+
+  // State to track the number of successful crafts
+  const [craftCount, setCraftCount] = useState(0);
 
   // Function for crafting
   const onCraft = (ingredientName) => {
@@ -194,6 +373,31 @@ function App() {
 
     setOres(updatedOres);
     setIngredients(updatedIngredients);
+
+    // Update craftCount and unlock smelt1 if it’s the first successful craft
+    setCraftCount(prevCount => {
+      const newCount = prevCount + 1;
+
+      if (newCount === 1) { // Check if this is the first successful craft
+        setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          smelt1: { 
+            ...prevUnlockables.smelt1,
+            isVisible: true
+          }
+        }));
+
+        setIngredients(prevIngredients => ({
+          ...prevIngredients,
+          "Brick": {
+            ...prevIngredients["Brick"],
+            unlocked: true 
+          }
+        }));
+      }
+
+      return newCount;
+    });
   };
 
   // Tools function
@@ -318,23 +522,28 @@ function App() {
             </div>
 
             {/* Furnaces Section */}
-            <div className='section'>
-              <Furnaces ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
-            </div>
+            {shouldShowFurnaces() && (
+              <div className='section'>
+                <Furnaces unlockables={unlockables} ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+              </div>
+            )}
 
             {/* Inventory Section */}
             <div className='section'>
-              <Inventory ores={ores} ingredients={ingredients} onCraft={onCraft} useTool={useTool} />
+              <Inventory unlockables={unlockables} setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} onCraft={onCraft} useTool={useTool} />
             </div>
 
             <div className='section'>
               {testMode ? (
                 < TestMode ores={ores} ingredients={ingredients} onCheat={onCheat} />
               ) : (
-                <Research ores={ores} ingredients={ingredients} onUnlock={onUnlock} researchItems={researchItems} />
+                <>
+                {shouldShowResearch() && <Research ores={ores} ingredients={ingredients} onUnlock={onUnlock} unlockables={unlockables} />}
+                </>
               )}
-              <RepairTools tools={tools} onRepair={onRepair} />
-              <CompletedResearch />
+              {shouldShowRepairTools() && <RepairTools tools={tools} onRepair={onRepair} />}
+
+              <CompletedResearch unlockables={unlockables}  />
             </div>
           </div>
       </div>

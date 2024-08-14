@@ -5,7 +5,7 @@ import ironPlate from './Images/iron_plate.png'
 import copperPlate from './Images/copper_plate.png'
 import steel from './Images/steel.png'
 
-const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineChange, onAlert }) => {
+const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  handleMachineChange, onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
 
@@ -73,12 +73,21 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
         }
     };
 
+    const getUnlockStatus = (oreName) => {
+        if(ingredients[getOutput(oreName)]){
+            return ingredients[getOutput(oreName)].unlocked
+        }
+        else{
+            return true
+        }
+    }
+
     return(
         <>
         <h2>Furnaces</h2>
         <h6>|  |  |  collapsable icons  |  |  |</h6>
                 {Object.entries(ores)
-                    .filter(([_, oreData]) => oreData.unlocked && oreData.canFurnace)
+                    .filter(([oreName, oreData]) => getUnlockStatus(oreName) && oreData.canFurnace)
                     .map(([oreName, _]) => (
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{getOutput(oreName)}</h3>
@@ -103,32 +112,32 @@ const Furnaces = ({ ores, ingredients,  setOres, setIngredients,  handleMachineC
                                 />
                         </div>
                     ))}
-                {Object.entries(ingredients)
-                    .filter(([_, oreData]) => oreData.unlocked && oreData.canFurnace)
-                    .map(([oreName, _]) => (
-                        <div key={oreName+"HarvestDiv"}>
-                            <h3>{getOutput(oreName)}</h3>
-                            <div key={oreName+"ImgDiv"} className="imgdiv" onClick={() => handleBank(oreName)} >
-                                {getFurnaceImage(oreName) && (
-                                    <>
-                                        <img src={getFurnaceImage(oreName)} alt={`${getOutput(oreName)} Image`} />
-                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span> {/* Update this number dynamically as needed */}
-                                    </>
-                                )}
-                            </div>
-                                <Machines
-                                    machineType={"furnace"} 
-                                    ores={ores} 
-                                    oreName={oreName} 
-                                    ingredients={ingredients} 
-                                    setOres={setOres} 
-                                    setIngredients={setIngredients} 
-                                    handleMachineChange={handleMachineChange} 
-                                    updateOutputCount={updateOutputCount}
-                                    onAlert={onAlert} 
-                                    />
-                            </div>
-                        ))}
+                    {Object.entries(ingredients || {})
+                    .filter(([ingredientName, ingredientData]) => getUnlockStatus(ingredientName) && ingredientData?.canFurnace)
+                    .map(([ingredientName, _]) => (
+                        <div key={ingredientName + "HarvestDiv"}>
+                        <h3>{getOutput(ingredientName)}</h3>
+                        <div key={ingredientName + "ImgDiv"} className="imgdiv" onClick={() => handleBank(ingredientName)} >
+                            {getFurnaceImage(ingredientName) && (
+                            <>
+                                <img src={getFurnaceImage(ingredientName)} alt={`${getOutput(ingredientName)} Image`} />
+                                <span className="img-number">{outputCounts[getOutput(ingredientName)] || 0}</span> {/* Update this number dynamically as needed */}
+                            </>
+                            )}
+                        </div>
+                        <Machines
+                            machineType={"furnace"}
+                            ores={ores}
+                            oreName={ingredientName}
+                            ingredients={ingredients}
+                            setOres={setOres}
+                            setIngredients={setIngredients}
+                            handleMachineChange={handleMachineChange}
+                            updateOutputCount={updateOutputCount}
+                            onAlert={onAlert}
+                        />
+                        </div>
+                    ))}
         </>
     )
 }
