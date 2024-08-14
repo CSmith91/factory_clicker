@@ -148,6 +148,17 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
             [oreName]: remainingOutputCount
         }));
     };
+
+    const isStorageFull = (oreName) => { 
+        const limit = outputCounts[oreName] || 0
+        if(limit >= getStorage(oreName)){
+            return true
+        }
+        else{
+            return false
+        }
+    }
+
     
 
     return (
@@ -162,15 +173,15 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
                             <h3>{oreName}</h3>
                             <div key={oreName+"Div"} className={'oreDiv'}>
                                 {oreData.canHandMine ? (
-                                    <div style={{marginTop: '-1px'}} >
+                                    <div style={{marginTop: '-5px'}} >
                                         <OreButton key={oreName} oreName={oreName} updateOutputCount={updateOutputCount} /> 
                                     </div>
                                 ) : (<></>)}
-                                <div key={oreName+"ImgDiv"} className="imgdiv" onClick={() => handleBank(oreName)} >
+                                <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(oreName) ? 'red-background' : ''}`} onClick={() => handleBank(oreName)} >
                                 {getImage(oreName) && (
                                     <>
                                         <img src={getImage(oreName)} alt={`${oreName} Img`} />
-                                        <span className="img-number">{outputCounts[oreName] || 0} / {getStorage(oreName)}</span> {/* Update this number dynamically as needed */}
+                                        <span className="img-number">{outputCounts[oreName] || 0}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}
                                 </div>

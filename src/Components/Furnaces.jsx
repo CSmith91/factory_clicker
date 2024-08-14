@@ -103,6 +103,17 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
         }
     }
 
+    const isStorageFull = (oreName) => { 
+        const limit = outputCounts[oreName] || 0
+        if(limit >= getStorage(oreName)){
+            return true
+        }
+        else{
+            return false
+        }
+    }
+
+
     return(
         <>
         <h2>Furnaces</h2>
@@ -112,11 +123,11 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                     .map(([oreName, _]) => (
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{getOutput(oreName)}</h3>
-                            <div key={oreName+"ImgDiv"} className="imgdiv" onClick={() => handleBank(oreName)} >
+                            <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(oreName)) ? 'red-background' : ''}`} onClick={() => handleBank(oreName)} >
                                 {getFurnaceImage(oreName) && (
                                     <>
                                         <img src={getFurnaceImage(oreName)} alt={`${getOutput(oreName)} Image`} />
-                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0} / {getStorage(getOutput(oreName))}</span> {/* Update this number dynamically as needed */}
+                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}
                             </div>
@@ -141,11 +152,11 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                     .map(([ingredientName, _]) => (
                         <div key={ingredientName + "HarvestDiv"}>
                         <h3>{getOutput(ingredientName)}</h3>
-                        <div key={ingredientName + "ImgDiv"} className="imgdiv" onClick={() => handleBank(ingredientName)} >
+                        <div key={ingredientName + "ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(ingredientName)) ? 'red-background' : ''}`} onClick={() => handleBank(ingredientName)} >
                             {getFurnaceImage(ingredientName) && (
                             <>
                                 <img src={getFurnaceImage(ingredientName)} alt={`${getOutput(ingredientName)} Image`} />
-                                <span className="img-number">{outputCounts[getOutput(ingredientName)] || 0} / {getStorage(ingredientName)}</span> {/* Update this number dynamically as needed */}
+                                <span className="img-number">{outputCounts[getOutput(ingredientName)] || 0}</span> {/* Update this number dynamically as needed */}
                             </>
                             )}
                         </div>
