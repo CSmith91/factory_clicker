@@ -9,7 +9,7 @@ import coal from './Images/coal.png'
 import uraniumOre from './Images/uranium_ore.png'
 import crudeOil from './Images/crude_oil.png'
 
-const OreSection = ({ setUnlockables, ores, ingredients, tools, setOres, setIngredients, getStorage, setTools, handleMachineChange, onAlert }) => {
+const OreSection = ({ setUnlockables, ores, ingredients, tools, setOres, setIngredients, storage, getStorage, setTools, handleMachineChange, onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
 
@@ -116,26 +116,39 @@ const OreSection = ({ setUnlockables, ores, ingredients, tools, setOres, setIngr
     };
 
     const handleBank = (oreName) => {
-
         const currentCount = outputCounts[oreName] || 0;
-        if (currentCount > 0) {
-            // Update ingredient
-            const itemName = oreName;
-            setOres(prevIngs => ({
-                ...prevIngs,
-                [itemName]: {
-                    ...prevIngs[itemName],
-                    count: prevIngs[itemName].count + currentCount
-                }
-            }));
-
-            // Reset output count
-            setOutputCounts(prevCounts => ({
-                ...prevCounts,
-                [itemName]: 0
-            }));
+        const ore = ores[oreName];
+        const storageLimit = getStorage(oreName);
+    
+        if (ore.count >= storageLimit) {
+            onAlert(`${oreName} is full.`);
+        } else {
+            const newCount = ore.count + currentCount;
+    
+            if (newCount > storageLimit) {
+                const partialAddCount = storageLimit - ore.count;
+                updateOreAndOutputCounts(oreName, partialAddCount, currentCount - partialAddCount);
+            } else if (currentCount > 0) {
+                updateOreAndOutputCounts(oreName, currentCount, 0);
+            }
         }
     };
+    
+    const updateOreAndOutputCounts = (oreName, oreCountToAdd, remainingOutputCount) => {
+        setOres(prevOres => ({
+            ...prevOres,
+            [oreName]: {
+                ...prevOres[oreName],
+                count: prevOres[oreName].count + oreCountToAdd
+            }
+        }));
+    
+        setOutputCounts(prevCounts => ({
+            ...prevCounts,
+            [oreName]: remainingOutputCount
+        }));
+    };
+    
 
     return (
         <>
@@ -177,6 +190,7 @@ const OreSection = ({ setUnlockables, ores, ingredients, tools, setOres, setIngr
                                 ingredients={ingredients} 
                                 setOres={setOres} 
                                 setIngredients={setIngredients}
+                                storage={storage}
                                 getStorage={getStorage}
                                 handleMachineChange={handleMachineChange} 
                                 outputCounts={outputCounts}

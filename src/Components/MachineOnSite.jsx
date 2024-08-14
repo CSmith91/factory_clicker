@@ -6,7 +6,7 @@ import electricFurnace from './Images/electric_furnace.png'
 import burnerDrill from './Images/burner_drill.png'
 import electricDrill from './Images/electric_drill.png'
 
-const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, getStorage, fuels, handleMachineChange, triggerProductionCheck, outputCounts, updateOutputCount, onAlert }) => {
+const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, handleMachineChange, triggerProductionCheck, outputCounts, updateOutputCount, onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
@@ -52,7 +52,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         if (machineStates[machineName]) {
             checkProduction(machineStates[machineName]);
         }
-    }, [machineStates[machineName], outputCounts]); // Dependency array
+    }, [machineStates[machineName], outputCounts, storage]); // Dependency array
 
     // UseEffect to handle the production timing
     useEffect(() => {
@@ -252,7 +252,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 }
             } 
             else{
-                console.log(`Output full. ${machineName} cannot work.`);
+                //console.log(`Output full. ${machineName} cannot work.`);
             }
         }
         else {

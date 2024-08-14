@@ -5,7 +5,7 @@ import ironPlate from './Images/iron_plate.png'
 import copperPlate from './Images/copper_plate.png'
 import steel from './Images/steel.png'
 
-const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  getStorage, handleMachineChange, onAlert }) => {
+const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,  storage, getStorage, handleMachineChange, onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
 
@@ -52,26 +52,47 @@ const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  g
     const handleBank = (oreName) => {
         const outputName = getOutput(oreName);
         if (!outputName) return;
-
+    
         const currentCount = outputCounts[outputName] || 0;
-        if (currentCount > 0) {
-            // Update ingredient
-            const itemName = outputName;
-            setIngredients(prevIngs => ({
-                ...prevIngs,
-                [itemName]: {
-                    ...prevIngs[itemName],
-                    count: prevIngs[itemName].count + currentCount
-                }
-            }));
-
-            // Reset output count
-            setOutputCounts(prevCounts => ({
-                ...prevCounts,
-                [outputName]: 0
-            }));
+        const ingredient = ingredients[outputName];
+        const storageLimit = getStorage(outputName);
+    
+        if (ingredient.count >= storageLimit) {
+            onAlert(`${outputName} is full.`);
+        } else {
+            const newCount = ingredient.count + currentCount;
+    
+            if (newCount > storageLimit) {
+                const partialAddCount = storageLimit - ingredient.count;
+                setUnlockables(prevUnlockables => ({
+                    ...prevUnlockables,
+                    storage2: { 
+                      ...prevUnlockables.storage1,
+                      isVisible: true
+                    }
+                }))
+                updateIngredientAndResetOutput(outputName, partialAddCount, currentCount - partialAddCount);
+            } else if (currentCount > 0) {
+                updateIngredientAndResetOutput(outputName, currentCount, 0);
+            }
         }
     };
+    
+    const updateIngredientAndResetOutput = (itemName, countToAdd, remainingOutputCount) => {
+        setIngredients(prevIngs => ({
+            ...prevIngs,
+            [itemName]: {
+                ...prevIngs[itemName],
+                count: prevIngs[itemName].count + countToAdd
+            }
+        }));
+    
+        setOutputCounts(prevCounts => ({
+            ...prevCounts,
+            [itemName]: remainingOutputCount
+        }));
+    };
+    
 
     const getUnlockStatus = (oreName) => {
         if(ingredients[getOutput(oreName)]){
@@ -106,6 +127,7 @@ const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  g
                                 ingredients={ingredients} 
                                 setOres={setOres} 
                                 setIngredients={setIngredients}
+                                storage={storage}
                                 getStorage={getStorage}
                                 handleMachineChange={handleMachineChange}
                                 outputCounts={outputCounts}
@@ -134,6 +156,7 @@ const Furnaces = ({ unlockables, ores, ingredients,  setOres, setIngredients,  g
                             ingredients={ingredients}
                             setOres={setOres}
                             setIngredients={setIngredients}
+                            storage={storage}
                             getStorage={getStorage}
                             handleMachineChange={handleMachineChange}
                             outputCounts={outputCounts}

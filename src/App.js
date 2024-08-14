@@ -13,7 +13,7 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = true
+  const testMode = false
 
    // Initial state for ores with unlocked and canHandMine properties
   const [ores, setOres] = useState({
@@ -70,22 +70,22 @@ function App() {
       isVisible: false, // Change based on when you want it to appear
       unlocked: testMode, 
       cost: { "Stone": 3 }, 
-      title: 'Craft Components', 
-      desc: 'Now let\'s "make" these furnaces, eh?'
+      title: 'Hammer', 
+      desc: 'If we have a hammer, we can craft a stone furnace!'
     },
     smelt1: {
       isVisible: false,
       unlocked: testMode, 
       cost: { "Brick": 3 }, 
       title: 'Furnace Stack', 
-      desc: 'We can add our furnace to the brick stack. Adding enough stone and fuel, we can make brick.'
+      desc: 'We can add our furnace to the brick stack. Adding enough stone (TWO per brick) and fuel, we can make brick.'
     },
     craft1: {
       isVisible: false,
       unlocked: testMode, 
-      cost: { "Steel": 3 }, 
-      title: '###', 
-      desc: '###'
+      cost: { "Iron Plate": 2 }, 
+      title: 'Gears', 
+      desc: 'The tutorial ending. Make couple of iron plates and you\'ll see things starting to open up. Remember, you can remove furnaces from one output and redeploy them onto others.'
     },
     storage1: { 
       isVisible: false, 
@@ -301,6 +301,12 @@ function App() {
                 unlocked: true 
               }
             }));
+            setUnlockables(prevUnlockables => ({
+              ...prevUnlockables,
+              ["craft1"]: { ...prevUnlockables["craft1"], isVisible: true }
+            }));
+            break
+          case 'craft1':
             setIngredients(prevIngredients => ({
               ...prevIngredients,
               "Gear": {
@@ -308,8 +314,34 @@ function App() {
                 unlocked: true 
               }
             }));
-            // onFirst craft, add Brick // on Craftnig 5 brick, spend to unlock iron plate
+            setUnlockables(prevUnlockables => ({
+              ...prevUnlockables,
+              ["drill1"]: { ...prevUnlockables["drill1"], isVisible: true }
+            }));
+            break
+          case 'storage1':
+            setStorage(prevStorage => ({
+              ...prevStorage,
+              Ores: prevStorage.Ores + 20,
+              Ingredients: prevStorage.Ingredients + 50
+            }));
             break;
+          case 'storage2':
+            setStorage(prevStorage => ({
+              ...prevStorage,
+              Ores: prevStorage.Ores + 450,
+              Ingredients: prevStorage.Ingredients + 900
+            }));
+            break;
+          case 'drill1':
+            setIngredients(prevIngredients => ({
+              ...prevIngredients,
+              "Burner Drill": {
+                ...prevIngredients["Burner Drill"],
+                unlocked: true 
+              }
+            }));
+            break
           default:
               break;
       }
@@ -535,13 +567,13 @@ function App() {
 
             {/* Ore Patch Section */}
             <div className='section'>
-              <OreSection setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} getStorage={getStorage} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+              <OreSection setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
             </div>
 
             {/* Furnaces Section */}
             {shouldShowFurnaces() && (
               <div className='section'>
-                <Furnaces unlockables={unlockables} ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} getStorage={getStorage} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+                <Furnaces setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
               </div>
             )}
 
