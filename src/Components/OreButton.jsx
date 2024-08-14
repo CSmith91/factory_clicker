@@ -1,6 +1,6 @@
 import React from 'react';
 
-const OreButton = ({ oreName, updateOutputCount }) => {
+const OreButton = ({ ores, oreName, updateOutputCount }) => {
 
     return (
         <div style={{ margin: '10px' }}>

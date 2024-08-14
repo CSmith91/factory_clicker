@@ -111,6 +111,15 @@ button:hover {
   background-color: #808aa0; /* Lightbox overlay color */
 }
 
+/* Additional styles for red background */
+.imgdiv.red-background {
+  background-color: #b22222; /* Dark red */
+}
+
+.imgdiv.red-background:hover {
+  background-color: #ff6347; /* Lighter red (Tomato) */
+}
+
 .imgdiv:active {
   transform: translateY(2px) translateX(2px); /* Moves the div down */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Reduces the shadow to make it appear sunk */

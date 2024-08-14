@@ -12,8 +12,8 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = true
-  
+  const testMode = false
+
   let cheat = 0;
   if(testMode){
     cheat = 1000
@@ -35,7 +35,7 @@ function App() {
     "Electric Drill" : {group: 'p3', count: 0, unlocked: testMode, cost: {"Electronic Circuit": 3, "Gear": 5, "Iron Plate": 10}, isCraftable: true, craftTime: 2, isMachine: true, isDrill: true, machineSpeed: 0.5, idleCount: 0, energy: {"idle": 0, "active": 90}},
     "Stone Furnace": { group: 'p4', count: 0, unlocked: testMode, cost: {"Stone": 5}, isCraftable: true, craftTime: 0.5, isFuel: false, isMachine: true, isFurnace: true, isBurner: true, machineSpeed: 1, idleCount: 0},
     "Steel Furnace": { group: 'p4', count: 0, unlocked: testMode, cost: {"Steel": 6, "Brick": 10}, isCraftable: true, craftTime: 3, isFuel: false, isMachine: true, isFurnace: true, isBurner: true, machineSpeed: 2, idleCount: 0},
-    "Electric Furnace": {group: 'p4', count: 0, unlocked: testMode, cost: {"Advanced Circuit": 5, "Steel": 10, "Brick": 10}, isCraftable: true, craftTime: 5, isFuel: false, isMachine: true, isFurnace: true, isBurner: false, machineSpeed: 2, idleCount: 0},
+    "Electric Furnace": {group: 'p4', count: 0, unlocked: testMode, cost: {"Advanced Circuit": 5, "Steel": 10, "Brick": 10}, isCraftable: true, craftTime: 5, isFuel: false, isMachine: true, isFurnace: true, isBurner: false, machineSpeed: 2, idleCount: 0, energy: {"idle": 6, "active": 180}},
     "Brick": {group: 'i3', count: 0, unlocked: testMode, cost: {"Stone": 2}, craftTime: 3.2},
     "Iron Plate" : { group: 'i3', count: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true},
     "Copper Plate": {group: 'i3', count: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2},

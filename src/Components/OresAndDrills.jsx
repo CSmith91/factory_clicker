@@ -173,8 +173,8 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
                             <h3>{oreName}</h3>
                             <div key={oreName+"Div"} className={'oreDiv'}>
                                 {oreData.canHandMine ? (
-                                    <div style={{marginTop: '-5px'}} >
-                                        <OreButton key={oreName} oreName={oreName} updateOutputCount={updateOutputCount} /> 
+                                    <div style={{marginTop: '-3px'}} >
+                                        <OreButton key={oreName} ores={ores} oreName={oreName} updateOutputCount={updateOutputCount} /> 
                                     </div>
                                 ) : (<></>)}
                                 <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(oreName) ? 'red-background' : ''}`} onClick={() => handleBank(oreName)} >
