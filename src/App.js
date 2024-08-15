@@ -12,7 +12,7 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = true
+  const testMode = false
 
   let cheat = 0;
   if(testMode){
@@ -89,7 +89,7 @@ function App() {
       unlocked: testMode, 
       cost: { "Iron Plate": 2 }, 
       title: 'Gears', 
-      desc: 'The tutorial ending. Make couple of iron plates and you\'ll see things starting to open up. Remember, you can remove furnaces from one output and redeploy them onto others.'
+      desc: 'The \'tutorial\' is ending. Make couple of iron plates and you\'ll see things starting to open up. Remember, you can remove furnaces from one output and redeploy them onto others.'
     },
     storage1: { 
       isVisible: false, 
@@ -116,7 +116,7 @@ function App() {
       isVisible: false, 
       unlocked: testMode, 
       cost: { "Stone": 5, "Iron Plate": 2 }, 
-      title: 'Actual Iron Pick', 
+      title: 'Better Pickaxe', 
       desc: 'Surely there\'s some way to automate this...'
     },
     drill1: { 
@@ -126,6 +126,7 @@ function App() {
       title: 'Drills!', 
       desc: 'Getting all that ore out the ground manually is tiresome. This is what we need.'
     },
+    // the above have all unlock results set
     coal1: { 
       isVisible: false, 
       unlocked: testMode, 
@@ -147,6 +148,7 @@ function App() {
       title: 'Copper', 
       desc: 'This resource will open a lot of (electronic) doors...'
     },
+    // the above all have isVisible conditions set
     inserters1: { 
       isVisible: false, 
       unlocked: testMode, 
@@ -314,10 +316,6 @@ function App() {
                 unlocked: true 
               }
             }));
-            setUnlockables(prevUnlockables => ({
-              ...prevUnlockables,
-              ["drill1"]: { ...prevUnlockables["drill1"], isVisible: true }
-            }));
             break
           case 'storage1':
             setStorage(prevStorage => ({
@@ -341,7 +339,22 @@ function App() {
                 unlocked: true 
               }
             }));
-            break
+            break;
+          case 'pick2':
+            setOres(prevOres => ({
+              ...prevOres,
+              Stone: { ...prevOres.Stone, craftTime: 0.5 },
+              "Iron Ore": { ...prevOres["Iron Ore"], craftTime: 0.5 },
+              Coal: { ...prevOres.Coal, craftTime: 0.5 },
+              "Copper Ore": { ...prevOres["Copper Ore"], craftTime: 0.5 }
+            }));
+            break;
+          case 'axe2':
+            setOres(prevOres => ({
+              ...prevOres,
+              Wood: { ...prevOres.Stone, craftTime: 0.25 }
+            }));
+            break;
           default:
               break;
       }

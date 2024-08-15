@@ -45,6 +45,66 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
 
     // Function to increment the ore count
     const onIncrement = (oreName, toolName, manOrMachine) => {
+
+        if(ores["Stone"].patch.size === 119988){
+            setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                pick2: { 
+                    ...prevUnlockables.pick2,
+                    isVisible: true
+                }
+                }));
+        }
+
+        if(ores["Wood"].harvested === 29){
+            setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                pick2: { 
+                    ...prevUnlockables.pick2,
+                    isVisible: true
+                }
+                }));
+        }
+
+        if(ores["Iron Ore"].patch.size === 349998){
+            setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                drill1: { 
+                    ...prevUnlockables.drill1,
+                    isVisible: true
+                }
+                }));
+        }
+
+        if(ores["Iron Ore"].patch.size === 349972){
+            setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                belts1: { 
+                    ...prevUnlockables.belts1,
+                    isVisible: true
+                }
+                }));
+        }
+
+        if(ores["Iron Ore"].patch.size === 349955){
+            setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                coal1: { 
+                    ...prevUnlockables.coal1,
+                    isVisible: true
+                }
+                }));
+        }
+
+        if(ores["Wood"].harvested === 44){
+            setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                copper1: { 
+                    ...prevUnlockables.copper1,
+                    isVisible: true
+                }
+                }));
+        }
         
         if(manOrMachine === "manual"){
             // Update the tool's durability

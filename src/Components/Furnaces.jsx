@@ -48,7 +48,7 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                 setUnlockables(prevUnlockables => ({
                     ...prevUnlockables,
                     storage2: { 
-                      ...prevUnlockables.storage1,
+                      ...prevUnlockables.storage2,
                       isVisible: true
                     }
                 }))
