@@ -1,7 +1,105 @@
 import React from 'react';
 import CraftButton from './CraftButton';
 
-const Inventory = ({ unlockables, ores, ingredients, getStorage, onCraft }) => {
+const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setOres, setIngredients, setTools, setCraftCount, getStorage, onAlert }) => {
+
+    // Function for crafting
+  const onCraft = (ingredientName) => {
+    const toolName = 'Hammer';
+    const ingredient = ingredients[ingredientName];
+
+    if (!ingredient || !ingredient.cost) return;
+
+    if(ingredients[ingredientName].count >= getStorage(ingredientName)){
+      onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
+      return; // Exit the function if storage is full
+    }
+
+    // Check if the hammer has durability
+    const tool = tools[toolName];
+    if (!tool || tool.durability <= 0) {
+        onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
+        return; // Exit the function if the tool is broken
+    }
+
+    // Check if there are enough resources to craft
+    const hasEnoughResources = Object.entries(ingredient.cost).every(
+      ([resourceName, amountRequired]) => {
+        const resource = ores[resourceName] || ingredients[resourceName];
+        return resource?.count >= amountRequired;
+      }
+    );
+
+    if (!hasEnoughResources) {
+      onAlert(`Not enough resources to craft ${ingredientName}`);
+      return;
+    }
+
+    // Proceed with crafting if there are enough resources
+    setTools(prevTools => {
+        const tool = prevTools[toolName];
+        const updatedDurability = tool.durability - tool.corrodeRate;
+
+        // Update the tool's durability
+        return {
+            ...prevTools,
+            [toolName]: {
+                ...tool,
+                durability: Math.max(0, updatedDurability)
+            }
+        };
+    });
+
+    // Deduct the costs from the resources
+    const updatedOres = { ...ores };
+    const updatedIngredients = { ...ingredients };
+
+    Object.entries(ingredient.cost).forEach(([resourceName, amountRequired]) => {
+      if (updatedOres[resourceName]) {
+        updatedOres[resourceName].count -= amountRequired;
+      } else if (updatedIngredients[resourceName]) {
+        updatedIngredients[resourceName].count -= amountRequired;
+      }
+    });
+
+    // Increment the crafted ingredient count
+    updatedIngredients[ingredientName].count += 1;
+
+    // Increment the idleCount if the ingredient is a machine
+    if (ingredient.isMachine) {
+      updatedIngredients[ingredientName].idleCount += 1;
+    }
+
+    setOres(updatedOres);
+    setIngredients(updatedIngredients);
+
+    // Update craftCount and unlock smelt1 if it’s the first successful craft
+    setCraftCount(prevCount => {
+      const newCount = prevCount + 1;
+
+      if (newCount === 1) { // Check if this is the first successful craft
+        setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          smelt1: { 
+            ...prevUnlockables.smelt1,
+            isVisible: true
+          }
+        }));
+
+        setIngredients(prevIngredients => ({
+          ...prevIngredients,
+          "Brick": {
+            ...prevIngredients["Brick"],
+            unlocked: true 
+          }
+        }));
+      }
+
+      return newCount;
+    });
+  };
+
+
 
     // Group ingredients by their group property
     const groupedIngredients = Object.entries(ingredients)
