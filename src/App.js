@@ -9,10 +9,11 @@ import AudioPlayer from './Components/AudioPlayer';
 import StatusSection from './Components/StatusSection';
 import RepairTools from './Components/RepairTools';
 import CompletedResearch from './Components/CompletedResearch';
+import Craft from './Components/Craft';
 
 function App() {
 
-  const testMode = false
+  const testMode = true
 
   let cheat = 0;
   if(testMode){
@@ -189,10 +190,10 @@ function App() {
 
 
 
-  // Messages & sound
+  // Messages, sound & VFX
   const [messages, setMessages] = useState([])
   const [playAudio, setPlayAudio] = useState(false); // State to trigger audio playback
-
+  //const [isAnimating, setIsAnimating] = useState(false);
 
   // Function to add alerts for the player
   const onAlert = (message) => {
@@ -350,17 +351,20 @@ function App() {
     }
   };
 
-  // State to track the number of successful crafts
-  const [craftCount, setCraftCount] = useState(0);
+  // Track crafting stats
+  const [craftCount, setCraftCount] = useState(0); // purely for unlocking a research item
+  const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
 
   // Function for crafting
   const onCraft = (ingredientName) => {
+    console.log(`onCraft called for ${ingredientName}`);
+    
     const toolName = 'Hammer';
     const ingredient = ingredients[ingredientName];
 
     if (!ingredient || !ingredient.cost) return;
 
-    if(ingredients[ingredientName].count >= getStorage(ingredientName)){
+    if (ingredients[ingredientName].count >= getStorage(ingredientName)) {
       onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
       return; // Exit the function if storage is full
     }
@@ -368,8 +372,8 @@ function App() {
     // Check if the hammer has durability
     const tool = tools[toolName];
     if (!tool || tool.durability <= 0) {
-        onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
-        return; // Exit the function if the tool is broken
+      onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
+      return; // Exit the function if the tool is broken
     }
 
     // Check if there are enough resources to craft
@@ -385,21 +389,6 @@ function App() {
       return;
     }
 
-    // Proceed with crafting if there are enough resources
-    setTools(prevTools => {
-        const tool = prevTools[toolName];
-        const updatedDurability = tool.durability - tool.corrodeRate;
-
-        // Update the tool's durability
-        return {
-            ...prevTools,
-            [toolName]: {
-                ...tool,
-                durability: Math.max(0, updatedDurability)
-            }
-        };
-    });
-
     // Deduct the costs from the resources
     const updatedOres = { ...ores };
     const updatedIngredients = { ...ingredients };
@@ -412,42 +401,70 @@ function App() {
       }
     });
 
-    // Increment the crafted ingredient count
-    updatedIngredients[ingredientName].count += 1;
-
-    // Increment the idleCount if the ingredient is a machine
-    if (ingredient.isMachine) {
-      updatedIngredients[ingredientName].idleCount += 1;
-    }
+    console.log('Resources deducted:', updatedOres, updatedIngredients);
 
     setOres(updatedOres);
     setIngredients(updatedIngredients);
 
-    // Update craftCount and unlock smelt1 if it’s the first successful craft
-    setCraftCount(prevCount => {
-      const newCount = prevCount + 1;
-
-      if (newCount === 1) { // Check if this is the first successful craft
-        setUnlockables(prevUnlockables => ({
-          ...prevUnlockables,
-          smelt1: { 
-            ...prevUnlockables.smelt1,
-            isVisible: true
-          }
-        }));
-
-        setIngredients(prevIngredients => ({
-          ...prevIngredients,
-          "Brick": {
-            ...prevIngredients["Brick"],
-            unlocked: true 
-          }
-        }));
-      }
-
-      return newCount;
+    // Add the item to the crafting queue
+    setCraftQueue(prevQueue => {
+      console.log('Adding to craft queue:', ingredientName);
+      return [...prevQueue, ingredientName];
     });
+
+    // Delay the increment of the crafted ingredient count
+    setTimeout(() => {
+      setIngredients(prevIngredients => {
+        const newUpdatedIngredients = { ...prevIngredients };
+
+        // Only increment the count once per craft
+        if (newUpdatedIngredients[ingredientName]) {
+          newUpdatedIngredients[ingredientName].count += 1;
+          if (ingredient.isMachine) {
+            newUpdatedIngredients[ingredientName].idleCount += 1;
+          }
+        }
+
+        console.log(`Crafted ${ingredientName}, new count:`, newUpdatedIngredients[ingredientName]?.count);
+
+        return newUpdatedIngredients;
+      });
+
+      // Remove the item from the crafting queue once completed
+      setCraftQueue(prevQueue => {
+        console.log('Removing from craft queue:', ingredientName);
+        return prevQueue.filter(item => item !== ingredientName);
+      });
+
+      // Update craftCount and unlock smelt1 if it’s the first successful craft
+      setCraftCount(prevCount => {
+        const newCount = prevCount + 1;
+
+        if (newCount === 1) {
+          setUnlockables(prevUnlockables => ({
+            ...prevUnlockables,
+            smelt1: { 
+              ...prevUnlockables.smelt1,
+              isVisible: true
+            }
+          }));
+
+          setIngredients(prevIngredients => ({
+            ...prevIngredients,
+            "Brick": {
+              ...prevIngredients["Brick"],
+              unlocked: true 
+            }
+          }));
+        }
+
+        return newCount;
+      });
+
+    }, ingredient.craftTime * 1000); // Delay by craftTime
   };
+
+
 
   // Tools function
   const useTool = (toolName) => {
@@ -560,6 +577,10 @@ function App() {
               <AudioPlayer play={playAudio} />
             </div>
 
+            <div className='craftList'>
+              <Craft craftQueue={craftQueue} />
+            </div>
+
             {/* Status Section */}
             <div className='section'>
               <StatusSection tools={tools} />
@@ -569,7 +590,7 @@ function App() {
 
             {/* Inventory Section */}
             <div className='section'>
-              <Inventory unlockables={unlockables} setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} getStorage={getStorage} onCraft={onCraft} useTool={useTool} />
+              <Inventory unlockables={unlockables} ores={ores} ingredients={ingredients} getStorage={getStorage} onCraft={onCraft} useTool={useTool} />
             </div>
 
             <div className='section'>
