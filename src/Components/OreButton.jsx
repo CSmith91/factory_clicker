@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 
 const OreButton = ({ ores, oreName, updateOutputCount }) => {
     const [isAnimating, setIsAnimating] = useState(false);
+    const craftTime = ores[oreName].craftTime;
 
     const handleClick = () => {
-        const craftTime = ores[oreName].craftTime;
 
         // Start the animation
         setIsAnimating(true);
@@ -23,7 +23,8 @@ const OreButton = ({ ores, oreName, updateOutputCount }) => {
             <button 
                 onClick={handleClick}
                 className={`mine-button ${isAnimating ? 'animating' : ''}`}
-                disabled={isAnimating}>
+                disabled={isAnimating}
+                style={{ '--craft-time': `${craftTime}s` }}>
                 Get {oreName}
             </button>
         </div>
