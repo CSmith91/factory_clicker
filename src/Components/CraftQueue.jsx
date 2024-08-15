@@ -7,22 +7,20 @@ const CraftQueue = ({ craftQueue, setCraftQueue }) => {
 
 
   return (
-    <div>
-      <h3>Currently Crafting:</h3>
-      <ul>
+    <div className='craftSection'>
+      <div className='craftQueue'>
         {craftQueue.map((item, index) => (
-          <li key={index}>
+          <div key={index} className='craftItem'>
             {/* <div>{item.ingredientName}</div> */}
             <img
               src={images[item.ingredientName]} // Get the image corresponding to the ingredientName
               alt={item.ingredientName}
-              style={{ width: '50px', height: '50px' }} // Adjust size as needed
+              style={{ width: '30px', height: '30px' }} // Adjust size as needed
             />
             {/* <div>Details: {JSON.stringify(item)}</div> */}
-            {/* You can format the display based on your needs */}
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

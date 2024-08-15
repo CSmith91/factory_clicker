@@ -158,7 +158,10 @@ const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updated
     return (
         <div>
             <div className='craftList'>
-              <CraftQueue craftQueue={craftQueue} setCraftQueue={setCraftQueue} />
+                {/* Render CraftQueue only if craftQueue has items */}
+                {craftQueue.length > 0 && (
+                    <CraftQueue craftQueue={craftQueue} setCraftQueue={setCraftQueue} />
+                )}
             </div>
 
             <h2>Inventory</h2>

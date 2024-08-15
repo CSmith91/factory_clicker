@@ -154,3 +154,32 @@ button:not(:disabled):hover {
 .mine-button.animating {
   background-position: bottom; /* Move to reveal aquamarine */
 }
+
+/* Craft section */
+.craftSection {
+  position: fixed; /* Fixed positioning so it stays in the same place on scroll */
+  bottom: 0;       /* Align to the bottom */
+  left: 0;        /* Align to the left */
+  margin: 10px;    /* Optional: add some margin for spacing from edges */
+  padding: 10px;   /* Optional: add padding for internal spacing */
+  background: rgba(0, 0, 0, 0.7); /* Optional: add a background with transparency */
+  border-radius: 8px; /* Optional: rounded corners for aesthetics */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Optional: add shadow for depth */
+  z-index: 1000;   /* Ensure it is on top of other content */
+}
+
+/* Ensure items in craftQueue are displayed in a single line */
+.craftQueue {
+  display: flex;           /* Use flexbox to align items in a row */
+  align-items: center;     /* Vertically center items */
+  margin: 5px;             /* Add margin between items if needed */
+}
+
+/* Style for individual images */
+.craftItem {
+  margin: 0px 7px;  /* Space between images */
+  padding: 5px;
+  border-radius: 4px; /* Optional: rounded corners for images */
+  box-shadow: 0 4px 8px rgba(136, 136, 136, 0.3); /* Adding shadow */
+  background-color: #3a3f4a;
+}
