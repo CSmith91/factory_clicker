@@ -184,13 +184,17 @@ button:not(:disabled):hover {
 .craftItem {
   margin: 0px 6px;  /* Space between images */
   padding: 5px;
-  border-radius: 4px; 
+  border-radius: 4px; /* Optional: rounded corners for images */
   box-shadow: 0 4px 8px rgba(136, 136, 136, 0.3); /* Adding shadow */
   position: relative;
   overflow: hidden;
   z-index: 1;
-  background: #3a3f4a;
-  transition: none; /* Disable transition when not animating */
+  background-color: #3a3f4a;
+  background: linear-gradient(to bottom, orangered 50%, #3a3f4a 50%);
+  background-size: 100% 200%; /* Make background twice as tall */
+  background-position: top; /* Start with orangered fully covering */
+  transition: background-position var(--craft-time) linear;
+  animation: none; /* Ensure no animation is applied initially */
 }
 
 @keyframes dropBackground {
@@ -203,7 +207,10 @@ button:not(:disabled):hover {
 }
 
 .craftItem.animating {
-  background: linear-gradient(to bottom, orangered 50%, #3a3f4a 50%);
-  background-size: 100% 200%; /* Make background twice as tall */
   animation: dropBackground var(--craft-time) linear forwards;
+}
+
+/* To handle the case where animation may need to be reset */
+.craftItem.resetAnimation {
+  animation: none; /* Reset animation */
 }

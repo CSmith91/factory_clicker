@@ -153,7 +153,7 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
           }, ingredient.craftTime * 1000);
         }
       }, [craftQueue, currentCrafting]);
-
+      
 
     // Group ingredients by their group property
     const groupedIngredients = Object.entries(ingredients)
