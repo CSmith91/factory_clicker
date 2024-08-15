@@ -35,7 +35,6 @@ button:not(:disabled):hover {
   top: 0;       /* Align to the bottom */
   right: 0;        /* Align to the right */
   margin: 10px;    /* Optional: add some margin for spacing from edges */
-  padding-right: 50px;
   padding: 10px;   /* Optional: add padding for internal spacing */
   background: rgba(0, 0, 0, 0.7); /* Optional: add a background with transparency */
   border-radius: 8px; /* Optional: rounded corners for aesthetics */
