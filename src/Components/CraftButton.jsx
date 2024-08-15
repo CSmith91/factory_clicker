@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 
-const CraftButton = ({ ingredients, ingredientName, checkCraft, isAnimating }) => {
-
-    const craftTime = ingredients[ingredientName].craftTime;
+const CraftButton = ({ ingredientName, checkCraft }) => {
 
     return (
         <div>
             <button 
-                onClick={() => checkCraft(ingredientName, craftTime)}
-                className={`mine-button ${isAnimating ? 'animating' : ''}`}
-                disabled={isAnimating}
-                style={{ '--craft-time': `${craftTime}s` }}>
+                onClick={() => checkCraft(ingredientName)}>
                 Craft
             </button>
         </div>

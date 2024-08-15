@@ -7,7 +7,7 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
     const [isAnimating, setIsAnimating] = useState(false);
 
     // Function for crafting
-    const checkCraft = (ingredientName, craftTime) => {
+    const checkCraft = (ingredientName) => {
     const toolName = 'Hammer';
     const ingredient = ingredients[ingredientName];
 
@@ -37,6 +37,7 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
       onAlert(`Not enough resources to craft ${ingredientName}`);
     }
     else{
+        const craftTime = ingredients[ingredientName].craftTime;
         onCraft(ingredientName, ingredient, craftTime)
     }
     }
@@ -176,7 +177,7 @@ const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updated
 
                             return (
                                 <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} isAnimating={isAnimating} />}
+                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} checkCraft={checkCraft} />}
                                     <ul style={{ listStyleType: 'none', padding: 0 }}>
                                         <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                             {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
@@ -198,7 +199,7 @@ const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updated
 
                             return (
                                 <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} isAnimating={isAnimating} />}
+                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} checkCraft={checkCraft} />}
                                     <ul style={{ listStyleType: 'none', padding: 0 }}>
                                         <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                             {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (

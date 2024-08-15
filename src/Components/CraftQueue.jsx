@@ -15,7 +15,7 @@ const CraftQueue = ({ craftQueue, setCraftQueue }) => {
             <img
               src={images[item.ingredientName]} // Get the image corresponding to the ingredientName
               alt={item.ingredientName}
-              style={{ width: '30px', height: '30px' }} // Adjust size as needed
+              style={{ width: '30px', height: '30px', marginBottom: '-5px'}} // Adjust size as needed
             />
             {/* <div>Details: {JSON.stringify(item)}</div> */}
           </div>
