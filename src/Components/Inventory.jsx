@@ -4,8 +4,6 @@ import CraftButton from './CraftButton';
 
 const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setOres, setIngredients, setTools, setCraftCount, getStorage, onAlert }) => {
 
-    const [isAnimating, setIsAnimating] = useState(false);
-
     // Function for crafting
     const checkCraft = (ingredientName) => {
     const toolName = 'Hammer';
@@ -42,104 +40,95 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
     }
     }
 
-const onCraft = (ingredientName, ingredient, craftTime) => {
-    // Update the hammer's durability
-    setTools(prevTools => {
-        const toolName = "Hammer"
-        const tool = prevTools[toolName];
-        const updatedDurability = tool.durability - tool.corrodeRate;
+    const onCraft = (ingredientName, ingredient, craftTime) => {
+        // Update the hammer's durability
+        setTools(prevTools => {
+            const toolName = "Hammer"
+            const tool = prevTools[toolName];
+            const updatedDurability = tool.durability - tool.corrodeRate;
 
 
-        return {
-            ...prevTools,
-            [toolName]: {
-                ...tool,
-                durability: Math.max(0, updatedDurability)
-            }
-        };
-    });
+            return {
+                ...prevTools,
+                [toolName]: {
+                    ...tool,
+                    durability: Math.max(0, updatedDurability)
+                }
+            };
+        });
 
-    // Deduct the costs from the resources
-    const updatedOres = { ...ores };
-    const updatedIngredients = { ...ingredients };
+        // Deduct the costs from the resources
+        const updatedOres = { ...ores };
+        const updatedIngredients = { ...ingredients };
 
-    Object.entries(ingredient.cost).forEach(([resourceName, amountRequired]) => {
-      if (updatedOres[resourceName]) {
-        updatedOres[resourceName].count -= amountRequired;
-      } else if (updatedIngredients[resourceName]) {
-        updatedIngredients[resourceName].count -= amountRequired;
-      }
-    });
+        Object.entries(ingredient.cost).forEach(([resourceName, amountRequired]) => {
+        if (updatedOres[resourceName]) {
+            updatedOres[resourceName].count -= amountRequired;
+        } else if (updatedIngredients[resourceName]) {
+            updatedIngredients[resourceName].count -= amountRequired;
+        }
+        });
 
-    addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres)
+        addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres)
 
-    //craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres)
-
-    // Below animates all craft buttons - you can move onCraft into the button component level
-    // but this wont achieve what you're ultimately after, hence leaving here for legacy
-    // delete and or reuse once you've sorted out the craft queue mechanic
-
-    // setIsAnimating(true)
-
-    // setTimeout(() => {
-    //         craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres)
-    //         setIsAnimating(false);
-    //     }, craftTime * 1000);
-};
-
-const craftPayout = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
-
-    // Increment the crafted ingredient count
-    updatedIngredients[ingredientName].count += 1;
-
-    // Increment the idleCount if the ingredient is a machine
-    if (ingredient.isMachine) {
-      updatedIngredients[ingredientName].idleCount += 1;
-    }
-
-    setOres(updatedOres);
-    setIngredients(updatedIngredients);
-
-    // Update craftCount and unlock smelt1 if it’s the first successful craft
-    setCraftCount(prevCount => {
-      const newCount = prevCount + 1;
-
-      if (newCount === 1) { // Check if this is the first successful craft
-        setUnlockables(prevUnlockables => ({
-          ...prevUnlockables,
-          smelt1: { 
-            ...prevUnlockables.smelt1,
-            isVisible: true
-          }
-        }));
-
-        setIngredients(prevIngredients => ({
-          ...prevIngredients,
-          "Brick": {
-            ...prevIngredients["Brick"],
-            unlocked: true 
-          }
-        }));
-      }
-
-      return newCount;
-    });
-
-  }
-
-const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
-const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
-    // Create a new item object with the parameters
-    const newItem = {
-      ingredientName,
-      ingredient,
-      updatedIngredients,
-      updatedOres,
+        //craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres)
     };
 
-    // Update the craftQueue state with the new item
-    setCraftQueue(prevQueue => [...prevQueue, newItem]);
-  };
+    const craftPayout = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
+
+        // Increment the crafted ingredient count
+        updatedIngredients[ingredientName].count += 1;
+
+        // Increment the idleCount if the ingredient is a machine
+        if (ingredient.isMachine) {
+        updatedIngredients[ingredientName].idleCount += 1;
+        }
+
+        setOres(updatedOres);
+        setIngredients(updatedIngredients);
+
+        // Update craftCount and unlock smelt1 if it’s the first successful craft
+        setCraftCount(prevCount => {
+        const newCount = prevCount + 1;
+
+        if (newCount === 1) { // Check if this is the first successful craft
+            setUnlockables(prevUnlockables => ({
+            ...prevUnlockables,
+            smelt1: { 
+                ...prevUnlockables.smelt1,
+                isVisible: true
+            }
+            }));
+
+            setIngredients(prevIngredients => ({
+            ...prevIngredients,
+            "Brick": {
+                ...prevIngredients["Brick"],
+                unlocked: true 
+            }
+            }));
+        }
+
+        return newCount;
+        });
+
+    }
+
+
+    // queue logic
+    const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
+    const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
+        // Create a new item object with the parameters
+        const newItem = {
+        ingredientName,
+        ingredient,
+        updatedIngredients,
+        updatedOres,
+        };
+
+        // Update the craftQueue state with the new item
+        setCraftQueue(prevQueue => [...prevQueue, newItem]);
+    };
 
 
     // Group ingredients by their group property
@@ -232,7 +221,7 @@ const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updated
 
                     return (
                         <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} isAnimating={isAnimating} />}
+                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} />}
                             <ul style={{ listStyleType: 'none', padding: 0 }}>
                                 <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                     {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
@@ -254,7 +243,7 @@ const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updated
 
                     return (
                         <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} isAnimating={isAnimating} />}
+                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} />}
                             <ul style={{ listStyleType: 'none', padding: 0 }}>
                                 <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                     {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (

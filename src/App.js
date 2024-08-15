@@ -460,7 +460,9 @@ function App() {
 
             {/* Alert Section */}
             <div className='alerts'>
-              <Messages messages={messages} />
+              {messages.length > 0 && (
+                <Messages messages={messages} />
+              )}
               <AudioPlayer play={playAudio} />
             </div>
 

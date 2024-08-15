@@ -28,13 +28,19 @@ button:not(:disabled):hover {
   max-width: 100%;
 }
 
-.alerts {
-  position: absolute;
-  left: 84%;
-  top: 0;
+.messages {
+  font-size: 14px; 
   text-align: center;
-  width: 15%;
-  font-size: 12px;
+  position: fixed; /* Fixed positioning so it stays in the same place on scroll */
+  top: 0;       /* Align to the bottom */
+  right: 0;        /* Align to the right */
+  margin: 10px;    /* Optional: add some margin for spacing from edges */
+  padding-right: 50px;
+  padding: 10px;   /* Optional: add padding for internal spacing */
+  background: rgba(0, 0, 0, 0.7); /* Optional: add a background with transparency */
+  border-radius: 8px; /* Optional: rounded corners for aesthetics */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Optional: add shadow for depth */
+  z-index: 1000;   /* Ensure it is on top of other content */
 }
 
 .machineButtons{

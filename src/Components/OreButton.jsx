@@ -9,7 +9,6 @@ const OreButton = ({ ores, oreName, outputCounts, updateOutputCount, getStorage 
         // check the bank isn't full
         if(outputCounts[oreName]){
             if(outputCounts[oreName] >= getStorage(oreName)){
-                console.log('i worked!')
                 return;
             }
             else{

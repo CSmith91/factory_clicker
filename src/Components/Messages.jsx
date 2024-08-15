@@ -4,9 +4,9 @@ const Messages = ({ messages }) => {
     return (
         <div className="messages">
           {messages.length > 0 ? (
-            <ul style={{backgroundColor: "#3a3f4a"}}>
+            <ul style={{textAlign: 'center'}}>
             {messages.map((message) => (
-                <li key={message.id} style={{ listStyle: "none", marginBottom: "15px"}}>{message.text}</li>
+                <li key={message.id} style={{ listStyle: "none", marginBottom: "15px", paddingRight: '35px'}}>{message.text}</li>
             ))}
             </ul>
             ) : (
