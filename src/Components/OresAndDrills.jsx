@@ -137,7 +137,7 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
         <>
             <div>
                 <h2>Resource Patches</h2>
-                <h6>|  |  |  collapsable icons  |  |  |</h6>
+                {/* <h6>|  |  |  collapsable icons  |  |  |</h6> */}
                 {Object.entries(ores)
                     .filter(([_, oreData]) => oreData.unlocked)
                     .map(([oreName, oreData]) => (

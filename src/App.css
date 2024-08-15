@@ -187,4 +187,19 @@ button:not(:disabled):hover {
   border-radius: 4px; /* Optional: rounded corners for images */
   box-shadow: 0 4px 8px rgba(136, 136, 136, 0.3); /* Adding shadow */
   background-color: #3a3f4a;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  background: linear-gradient(to bottom, orangered 50%, #3a3f4a 50%);
+  background-size: 100% 200%; /* Make background twice as tall */
+  background-position: top; /* Start with orangered fully covering */
+  transition: background-position var(--craft-time) linear;
 }
+
+.craftItem.animating {
+  background-position: bottom; /* Move to reveal aquamarine */
+}
+
+/* :root {
+  --craft-time: 2s;
+} */

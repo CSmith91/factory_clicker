@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import noise from './Audio/cannot.mp3'
+import noise from './Audio/cannot.wav'
 
 const AudioPlayer = ({ play }) => {
   const audioRef = useRef(null);

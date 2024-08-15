@@ -1,8 +1,10 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import CraftQueue from './CraftQueue';
 import CraftButton from './CraftButton';
 
 const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setOres, setIngredients, setTools, setCraftCount, getStorage, onAlert }) => {
+
+
 
     // Function for crafting
     const checkCraft = (ingredientName) => {
@@ -117,6 +119,8 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
 
     // queue logic
     const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
+    const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
+    const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
     const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
         // Create a new item object with the parameters
         const newItem = {
@@ -129,6 +133,26 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
         // Update the craftQueue state with the new item
         setCraftQueue(prevQueue => [...prevQueue, newItem]);
     };
+
+    useEffect(() => {
+        // If there's something in the queue and nothing is currently crafting
+        if (craftQueue.length > 0 && !currentCrafting) {
+          const [nextItem] = craftQueue; // Get the first item in the queue
+          setCurrentCrafting(nextItem); // Set the current item as crafting
+          setIsAnimating(true); // Start the animation
+    
+          const { ingredientName, ingredient, updatedIngredients, updatedOres } = nextItem;
+    
+          setTimeout(() => {
+            craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres); // Process crafting
+            setIsAnimating(false); // End the animation
+            setCurrentCrafting(null); // Reset current crafting item
+    
+            // Remove the first item from the queue
+            setCraftQueue(prevQueue => prevQueue.slice(1));
+          }, ingredient.craftTime * 1000);
+        }
+      }, [craftQueue, currentCrafting]);
 
 
     // Group ingredients by their group property
@@ -150,7 +174,10 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
             <div className='craftList'>
                 {/* Render CraftQueue only if craftQueue has items */}
                 {craftQueue.length > 0 && (
-                    <CraftQueue craftQueue={craftQueue} setCraftQueue={setCraftQueue} />
+                    <CraftQueue 
+                        craftQueue={craftQueue}
+                        currentCrafting={currentCrafting}
+                        isAnimating={isAnimating} />
                 )}
             </div>
 

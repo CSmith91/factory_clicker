@@ -98,7 +98,7 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
     return(
         <>
         <h2>Furnaces</h2>
-        <h6>|  |  |  collapsable icons  |  |  |</h6>
+        {/* <h6>|  |  |  collapsable icons  |  |  |</h6> */}
                 {Object.entries(ores)
                     .filter(([oreName, oreData]) => getUnlockStatus(oreName) && oreData.canFurnace)
                     .map(([oreName, _]) => (
