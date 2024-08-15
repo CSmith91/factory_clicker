@@ -7,8 +7,6 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
 
 
     // const handleClick = (ingredientName) => {
-
-    //     const craftTime = ingredients[ingredientName].craftTime;
         
     //     // Start the animation
     //     setIsAnimating(true);
@@ -24,7 +22,7 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
 
 
     // Function for crafting
-    const checkCraft = (ingredientName) => {
+    const checkCraft = (ingredientName, craftTime) => {
     const toolName = 'Hammer';
     const ingredient = ingredients[ingredientName];
 
@@ -54,11 +52,11 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
       onAlert(`Not enough resources to craft ${ingredientName}`);
     }
     else{
-        onCraft(ingredientName, ingredient)
+        onCraft(ingredientName, ingredient, craftTime)
     }
     }
 
-const onCraft = (ingredientName, ingredient) => {
+const onCraft = (ingredientName, ingredient, craftTime) => {
     // Update the hammer's durability
     setTools(prevTools => {
         const toolName = "Hammer"
@@ -86,6 +84,11 @@ const onCraft = (ingredientName, ingredient) => {
         updatedIngredients[resourceName].count -= amountRequired;
       }
     });
+
+    craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres)
+  };
+
+  const craftPayout = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
 
     // Increment the crafted ingredient count
     updatedIngredients[ingredientName].count += 1;
@@ -122,7 +125,8 @@ const onCraft = (ingredientName, ingredient) => {
 
       return newCount;
     });
-  };
+
+  }
 
 
 
