@@ -105,7 +105,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                     return newCounter;
                 });
             } else if (!result && action === 'increment') {
-                onAlert(`You need to craft more ${machineName}s`);
+                onAlert(`No idle ${machineName}s`);
             }
         })
     };
