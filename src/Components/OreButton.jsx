@@ -1,11 +1,27 @@
 import React, { useState } from 'react';
 
-const OreButton = ({ ores, oreName, updateOutputCount }) => {
+const OreButton = ({ ores, oreName, outputCounts, updateOutputCount, getStorage }) => {
     const [isAnimating, setIsAnimating] = useState(false);
     const craftTime = ores[oreName].craftTime;
 
     const handleClick = () => {
 
+        // check the bank isn't full
+        if(outputCounts[oreName]){
+            if(outputCounts[oreName] >= getStorage(oreName)){
+                console.log('i worked!')
+                return;
+            }
+            else{
+                startMine()
+            }
+        }
+        else{
+            startMine()
+        }
+    }
+
+    const startMine = () => {
         // Start the animation
         setIsAnimating(true);
 

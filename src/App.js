@@ -9,7 +9,6 @@ import AudioPlayer from './Components/AudioPlayer';
 import StatusSection from './Components/StatusSection';
 import RepairTools from './Components/RepairTools';
 import CompletedResearch from './Components/CompletedResearch';
-import Craft from './Components/Craft';
 
 function App() {
 
@@ -353,7 +352,6 @@ function App() {
 
   // Track crafting stats
   const [craftCount, setCraftCount] = useState(0); // purely for unlocking a research item
-  const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
 
   // Tools function
   const useTool = (toolName) => {
@@ -464,10 +462,6 @@ function App() {
             <div className='alerts'>
               <Messages messages={messages} />
               <AudioPlayer play={playAudio} />
-            </div>
-
-            <div className='craftList'>
-              <Craft craftQueue={craftQueue} />
             </div>
 
             {/* Status Section */}

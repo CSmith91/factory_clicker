@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import Machines from "./Machines";
-import brick from './Images/brick.png'
-import ironPlate from './Images/iron_plate.png'
-import copperPlate from './Images/copper_plate.png'
-import steel from './Images/steel.png'
+import images from './Images/images';
 
 const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,  storage, getStorage, handleMachineChange, onAlert }) => {
 
@@ -20,22 +17,6 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                 return 'Copper Plate';
             case 'Iron Plate':
                 return 'Steel';
-            default:
-                return null
-        }
-    }
-
-    // load image of ingredient
-    const getFurnaceImage  = (oreName) => {
-        switch (oreName) {
-            case 'Stone':
-                return brick;
-            case 'Iron Ore':
-                return ironPlate;
-            case 'Copper Ore':
-                return copperPlate;
-            case 'Iron Plate':
-                return steel;
             default:
                 return null
         }
@@ -124,9 +105,9 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{getOutput(oreName)}</h3>
                             <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(oreName)) ? 'red-background' : ''}`} onClick={() => handleBank(oreName)} >
-                                {getFurnaceImage(oreName) && (
+                                {images[getOutput(oreName)] && (
                                     <>
-                                        <img src={getFurnaceImage(oreName)} alt={`${getOutput(oreName)} Image`} />
+                                        <img src={images[getOutput(oreName)]} alt={`${getOutput(oreName)} Image`} />
                                         <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}
@@ -153,9 +134,9 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                         <div key={ingredientName + "HarvestDiv"}>
                         <h3>{getOutput(ingredientName)}</h3>
                         <div key={ingredientName + "ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(ingredientName)) ? 'red-background' : ''}`} onClick={() => handleBank(ingredientName)} >
-                            {getFurnaceImage(ingredientName) && (
+                            {images[getOutput(ingredientName)] && (
                             <>
-                                <img src={getFurnaceImage(ingredientName)} alt={`${getOutput(ingredientName)} Image`} />
+                                <img src={images[getOutput(ingredientName)]} alt={`${getOutput(ingredientName)} Image`} />
                                 <span className="img-number">{outputCounts[getOutput(ingredientName)] || 0}</span> {/* Update this number dynamically as needed */}
                             </>
                             )}

@@ -1,39 +1,11 @@
 import React, { useState } from 'react';
 import Machines from './Machines';
 import OreButton from './OreButton';
-import wood from './Images/wood.png'
-import ironOre from './Images/iron_ore.png'
-import copperOre from './Images/copper_ore.png'
-import stone from './Images/stone.png'
-import coal from './Images/coal.png'
-import uraniumOre from './Images/uranium_ore.png'
-import crudeOil from './Images/crude_oil.png'
+import images from './Images/images';
 
 const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setIngredients, storage, getStorage, setTools, handleMachineChange, onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
-
-    // load image of ingredient
-    const getImage  = (oreName) => {
-        switch (oreName) {
-            case 'Wood':
-                return wood;
-            case 'Iron Ore':
-                return ironOre;
-            case 'Copper Ore':
-                return copperOre;
-            case 'Stone':
-                return stone;
-            case 'Coal':
-                return coal;
-            case 'Crude Oil':
-                return crudeOil;
-            case 'Uranium Ore':
-                return uraniumOre;
-            default:
-                return null
-        }
-    }
 
     // Function to update the output count
     const updateOutputCount = (oreName, manOrMachine) => {
@@ -174,13 +146,13 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
                             <div key={oreName+"Div"} className={'oreDiv'}>
                                 {oreData.canHandMine ? (
                                     <div style={{marginTop: '-3px'}} >
-                                        <OreButton key={oreName} ores={ores} oreName={oreName} updateOutputCount={updateOutputCount} /> 
+                                        <OreButton key={oreName} ores={ores} oreName={oreName} outputCounts={outputCounts} updateOutputCount={updateOutputCount} getStorage={getStorage} /> 
                                     </div>
                                 ) : (<></>)}
                                 <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(oreName) ? 'red-background' : ''}`} onClick={() => handleBank(oreName)} >
-                                {getImage(oreName) && (
+                                {images[oreName] && (
                                     <>
-                                        <img src={getImage(oreName)} alt={`${oreName} Img`} />
+                                        <img src={images[oreName]} alt={`${oreName} Img`} />
                                         <span className="img-number">{outputCounts[oreName] || 0}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}

@@ -1,25 +1,10 @@
 import React, {useState} from 'react';
+import CraftQueue from './CraftQueue';
 import CraftButton from './CraftButton';
 
 const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setOres, setIngredients, setTools, setCraftCount, getStorage, onAlert }) => {
 
     const [isAnimating, setIsAnimating] = useState(false);
-
-
-    // const handleClick = (ingredientName) => {
-        
-    //     // Start the animation
-    //     setIsAnimating(true);
-
-    //     // Delay the execution of updateOutputCount
-    //     setTimeout(() => {
-    //         onCraft(ingredientName);
-
-    //         // End the animation
-    //         setIsAnimating(false);
-    //     }, craftTime * 1000);
-    // };
-
 
     // Function for crafting
     const checkCraft = (ingredientName, craftTime) => {
@@ -85,10 +70,23 @@ const onCraft = (ingredientName, ingredient, craftTime) => {
       }
     });
 
-    craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres)
-  };
+    addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres)
 
-  const craftPayout = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
+    //craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres)
+
+    // Below animates all craft buttons - you can move onCraft into the button component level
+    // but this wont achieve what you're ultimately after, hence leaving here for legacy
+    // delete and or reuse once you've sorted out the craft queue mechanic
+
+    // setIsAnimating(true)
+
+    // setTimeout(() => {
+    //         craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres)
+    //         setIsAnimating(false);
+    //     }, craftTime * 1000);
+};
+
+const craftPayout = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
 
     // Increment the crafted ingredient count
     updatedIngredients[ingredientName].count += 1;
@@ -128,7 +126,19 @@ const onCraft = (ingredientName, ingredient, craftTime) => {
 
   }
 
+const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
+const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
+    // Create a new item object with the parameters
+    const newItem = {
+      ingredientName,
+      ingredient,
+      updatedIngredients,
+      updatedOres,
+    };
 
+    // Update the craftQueue state with the new item
+    setCraftQueue(prevQueue => [...prevQueue, newItem]);
+  };
 
 
     // Group ingredients by their group property
@@ -147,6 +157,10 @@ const onCraft = (ingredientName, ingredient, craftTime) => {
 
     return (
         <div>
+            <div className='craftList'>
+              <CraftQueue craftQueue={craftQueue} setCraftQueue={setCraftQueue} />
+            </div>
+
             <h2>Inventory</h2>
             {unlockables.furnace1.unlocked && (
                 <>
