@@ -357,14 +357,12 @@ function App() {
 
   // Function for crafting
   const onCraft = (ingredientName) => {
-    console.log(`onCraft called for ${ingredientName}`);
-    
     const toolName = 'Hammer';
     const ingredient = ingredients[ingredientName];
 
     if (!ingredient || !ingredient.cost) return;
 
-    if (ingredients[ingredientName].count >= getStorage(ingredientName)) {
+    if(ingredients[ingredientName].count >= getStorage(ingredientName)){
       onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
       return; // Exit the function if storage is full
     }
@@ -372,8 +370,8 @@ function App() {
     // Check if the hammer has durability
     const tool = tools[toolName];
     if (!tool || tool.durability <= 0) {
-      onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
-      return; // Exit the function if the tool is broken
+        onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
+        return; // Exit the function if the tool is broken
     }
 
     // Check if there are enough resources to craft
@@ -389,6 +387,21 @@ function App() {
       return;
     }
 
+    // Proceed with crafting if there are enough resources
+    setTools(prevTools => {
+        const tool = prevTools[toolName];
+        const updatedDurability = tool.durability - tool.corrodeRate;
+
+        // Update the tool's durability
+        return {
+            ...prevTools,
+            [toolName]: {
+                ...tool,
+                durability: Math.max(0, updatedDurability)
+            }
+        };
+    });
+
     // Deduct the costs from the resources
     const updatedOres = { ...ores };
     const updatedIngredients = { ...ingredients };
@@ -401,67 +414,41 @@ function App() {
       }
     });
 
-    console.log('Resources deducted:', updatedOres, updatedIngredients);
+    // Increment the crafted ingredient count
+    updatedIngredients[ingredientName].count += 1;
+
+    // Increment the idleCount if the ingredient is a machine
+    if (ingredient.isMachine) {
+      updatedIngredients[ingredientName].idleCount += 1;
+    }
 
     setOres(updatedOres);
     setIngredients(updatedIngredients);
 
-    // Add the item to the crafting queue
-    setCraftQueue(prevQueue => {
-      console.log('Adding to craft queue:', ingredientName);
-      return [...prevQueue, ingredientName];
-    });
+    // Update craftCount and unlock smelt1 if it’s the first successful craft
+    setCraftCount(prevCount => {
+      const newCount = prevCount + 1;
 
-    // Delay the increment of the crafted ingredient count
-    setTimeout(() => {
-      setIngredients(prevIngredients => {
-        const newUpdatedIngredients = { ...prevIngredients };
-
-        // Only increment the count once per craft
-        if (newUpdatedIngredients[ingredientName]) {
-          newUpdatedIngredients[ingredientName].count += 1;
-          if (ingredient.isMachine) {
-            newUpdatedIngredients[ingredientName].idleCount += 1;
+      if (newCount === 1) { // Check if this is the first successful craft
+        setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          smelt1: { 
+            ...prevUnlockables.smelt1,
+            isVisible: true
           }
-        }
+        }));
 
-        console.log(`Crafted ${ingredientName}, new count:`, newUpdatedIngredients[ingredientName]?.count);
+        setIngredients(prevIngredients => ({
+          ...prevIngredients,
+          "Brick": {
+            ...prevIngredients["Brick"],
+            unlocked: true 
+          }
+        }));
+      }
 
-        return newUpdatedIngredients;
-      });
-
-      // Remove the item from the crafting queue once completed
-      setCraftQueue(prevQueue => {
-        console.log('Removing from craft queue:', ingredientName);
-        return prevQueue.filter(item => item !== ingredientName);
-      });
-
-      // Update craftCount and unlock smelt1 if it’s the first successful craft
-      setCraftCount(prevCount => {
-        const newCount = prevCount + 1;
-
-        if (newCount === 1) {
-          setUnlockables(prevUnlockables => ({
-            ...prevUnlockables,
-            smelt1: { 
-              ...prevUnlockables.smelt1,
-              isVisible: true
-            }
-          }));
-
-          setIngredients(prevIngredients => ({
-            ...prevIngredients,
-            "Brick": {
-              ...prevIngredients["Brick"],
-              unlocked: true 
-            }
-          }));
-        }
-
-        return newCount;
-      });
-
-    }, ingredient.craftTime * 1000); // Delay by craftTime
+      return newCount;
+    });
   };
 
 
