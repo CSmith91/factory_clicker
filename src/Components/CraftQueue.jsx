@@ -1,23 +1,29 @@
-import React, { useEffect} from 'react';
+import React, { useEffect, useRef} from 'react';
 import images from './Images/images';
 
 
 const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
 
+  const previousCraftingRef = useRef(null);
+
   const toggleAnimation = (index) => {
     const element = document.querySelector(`.craftItem-${index}`);
-    element.classList.remove('animating');
-    void element.offsetWidth; // trigger reflow
-    element.classList.add('animating');
+    if (element) {
+      element.classList.remove('animating');
+      void element.offsetWidth; // Trigger reflow
+      element.classList.add('animating');
+    }
   };
 
-  // Effect to apply animation whenever currentCrafting or isAnimating changes
   useEffect(() => {
-    if (isAnimating) {
+    // Check if currentCrafting has changed
+    if (currentCrafting !== previousCraftingRef.current) {
       const index = craftQueue.findIndex(item => item === currentCrafting);
       if (index !== -1) {
         toggleAnimation(index);
       }
+      // Update the previousCraftingRef with the current crafting item
+      previousCraftingRef.current = currentCrafting;
     }
   }, [currentCrafting, isAnimating, craftQueue]);
 
