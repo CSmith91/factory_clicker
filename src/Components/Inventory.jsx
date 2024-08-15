@@ -1,10 +1,30 @@
-import React from 'react';
+import React, {useState} from 'react';
 import CraftButton from './CraftButton';
 
 const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setOres, setIngredients, setTools, setCraftCount, getStorage, onAlert }) => {
 
+    const [isAnimating, setIsAnimating] = useState(false);
+
+
+    // const handleClick = (ingredientName) => {
+
+    //     const craftTime = ingredients[ingredientName].craftTime;
+        
+    //     // Start the animation
+    //     setIsAnimating(true);
+
+    //     // Delay the execution of updateOutputCount
+    //     setTimeout(() => {
+    //         onCraft(ingredientName);
+
+    //         // End the animation
+    //         setIsAnimating(false);
+    //     }, craftTime * 1000);
+    // };
+
+
     // Function for crafting
-  const onCraft = (ingredientName) => {
+    const checkCraft = (ingredientName) => {
     const toolName = 'Hammer';
     const ingredient = ingredients[ingredientName];
 
@@ -32,15 +52,20 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
 
     if (!hasEnoughResources) {
       onAlert(`Not enough resources to craft ${ingredientName}`);
-      return;
+    }
+    else{
+        onCraft(ingredientName, ingredient)
+    }
     }
 
-    // Proceed with crafting if there are enough resources
+const onCraft = (ingredientName, ingredient) => {
+    // Update the hammer's durability
     setTools(prevTools => {
+        const toolName = "Hammer"
         const tool = prevTools[toolName];
         const updatedDurability = tool.durability - tool.corrodeRate;
 
-        // Update the tool's durability
+
         return {
             ...prevTools,
             [toolName]: {
@@ -101,6 +126,7 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
 
 
 
+
     // Group ingredients by their group property
     const groupedIngredients = Object.entries(ingredients)
     .filter(([_, ingredientData]) => ingredientData.unlocked) // Check only unlocked
@@ -129,7 +155,7 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
 
                             return (
                                 <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
+                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} isAnimating={isAnimating} />}
                                     <ul style={{ listStyleType: 'none', padding: 0 }}>
                                         <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                             {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
@@ -151,7 +177,7 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
 
                             return (
                                 <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
+                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} isAnimating={isAnimating} />}
                                     <ul style={{ listStyleType: 'none', padding: 0 }}>
                                         <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                             {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
@@ -184,7 +210,7 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
 
                     return (
                         <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
+                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} isAnimating={isAnimating} />}
                             <ul style={{ listStyleType: 'none', padding: 0 }}>
                                 <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                     {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
@@ -206,7 +232,7 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
 
                     return (
                         <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} onCraft={onCraft} />}
+                            {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredients={ingredients} ingredientName={ingredientName} checkCraft={checkCraft} isAnimating={isAnimating} />}
                             <ul style={{ listStyleType: 'none', padding: 0 }}>
                                 <li key={ingredientName} style={{ marginLeft: '10px' }}>
                                     {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
