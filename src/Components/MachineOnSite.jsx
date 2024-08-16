@@ -6,7 +6,11 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
-    const [animation, setAnimation] = useState('outputFull')
+    const [animation, setAnimation] = useState('inputReq')
+
+    // useEffect(() => {
+
+    // }), [animation, setAnimation]
 
     // State to hold all machine-related data
     const [machineStates, setMachineStates] = useState({
@@ -214,7 +218,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                                 }
                             }
                             else {
-                                console.log('Needs fuel');
+                                setAnimation('fuelReq');
                             }
                         }
                         else{

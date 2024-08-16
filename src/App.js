@@ -12,7 +12,7 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = true
+  const testMode = false
 
   let cheat = 0;
   if(testMode){
