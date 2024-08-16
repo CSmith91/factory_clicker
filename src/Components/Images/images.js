@@ -22,6 +22,9 @@ import inserter from './inserter.png'
 import longInserter from './long_inserter.png'
 import fastInserter from './fast_inserter.png'
 import stackInserter from './stack_inserter.png'
+import belt from './belt.png'
+import fastBelt from './fast_belt.png'
+import expressBelt from './express_belt.png'
 
 const images = {
     // Ores
@@ -34,6 +37,9 @@ const images = {
     'Uranium Ore': uraniumOre,
   
     // Ingredients
+    "Transport Belt": belt,
+    "Fast Transport Belt": fastBelt,
+    "Express Transport Belt": expressBelt,
     "Burner Inserter": burnerInserter,
     "Inserter": inserter,
     "Long Inserter": longInserter,

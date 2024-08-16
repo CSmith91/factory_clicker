@@ -6,7 +6,7 @@ import Research from './Components/Research';
 import TestMode from './Components/TestMode';
 import Messages from './Components/Messages';
 import AudioPlayer from './Components/AudioPlayer';
-import StatusSection from './Components/StatusSection';
+import FactorySection from './Components/FactorySection';
 import RepairTools from './Components/RepairTools';
 import CompletedResearch from './Components/CompletedResearch';
 
@@ -31,6 +31,9 @@ function App() {
   });
 
   const [ingredients, setIngredients] = useState({
+    "Transport Belt": { group: 'l2', count: 0, unlocked: testMode, cost: {"Gear": 1, "Iron Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5, beltSpeed: 1.875},
+    "Fast Transport Belt": { group: 'l2', count: 0, unlocked: testMode, cost: {"Gear": 5, "Transport Belt": 1}, isCraftable: true, craftTime: 0.5, beltSpeed: 3.75},
+    "Express Transport Belt": { group: 'l2', count: 0, unlocked: testMode, cost: {"Advanced Transport Belt": 1, "Gear": 10, "Lubricant": 20 }, isCraftable: false, craftTime: 0.5, beltSpeed: 5.625},
     "Burner Inserter": { group: 'l3', count: 0, unlocked: testMode, cost: {"Gear": 1, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5, isMachine: true, isInserter: true, isBurner: true, maxCarry: 1, machineSpeed: 0.6, idleCount: 0},
     "Inserter": { group: 'l3', count: 0, unlocked: testMode, cost: {"Electronic Circuit": 1, "Gear": 1, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5, isMachine: true, isInserter: true, maxCarry: 1, machineSpeed: 0.83, idleCount: 0, energy: {"idle": 0.4, "active": 13}},
     "Long Inserter": { group: 'l3', count: 0, unlocked: testMode, cost: {"Inserter": 1, "Gear": 1, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5, isMachine: true, isInserter: true, maxCarry: 1, machineSpeed: 1.2, idleCount: 0, energy: {"idle": 0.4, "active": 18}},
@@ -46,6 +49,12 @@ function App() {
     "Copper Plate": {group: 'i3', count: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2},
     "Steel": {group: 'i3', count: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16},
     "Gear" : { group: 'i5', count: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }
+  })
+
+  const [networks, setNetworks] = useState({
+    "Slow Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, idleCount: 0},
+    "Middle Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, idleCount: 0},
+    "Fast Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, idleCount: 0}
   })
 
   const [storage, setStorage] = useState({
@@ -491,16 +500,16 @@ function App() {
               <AudioPlayer play={playAudio} />
             </div>
 
-            {/* Status Section */}
+            {/* Factory Section */}
             <div className='section'>
-              <StatusSection tools={tools} />
+              <FactorySection unlockables={unlockables} tools={tools} networks={networks} setNetworks={setNetworks} />
             </div>
 
             < ResourceSection setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
 
             {/* Inventory Section */}
             <div className='section'>
-              <Inventory unlockables={unlockables} setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} setTools={setTools} setCraftCount={setCraftCount} getStorage={getStorage} useTool={useTool} onAlert={onAlert}/>
+              <Inventory unlockables={unlockables} setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} setTools={setTools} setCraftCount={setCraftCount} getStorage={getStorage} useTool={useTool} networks={networks} setNetworks={setNetworks} onAlert={onAlert}/>
             </div>
 
             <div className='section'>
