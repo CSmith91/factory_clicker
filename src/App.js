@@ -163,6 +163,13 @@ function App() {
       title: 'Bulk Add', 
       desc: 'For all you arthritus haters! Add resources to machines in bulk.'
     },
+    redPack: { 
+      isVisible: true, 
+      unlocked: testMode, 
+      cost: { "Red Science": 1 }, 
+      title: 'Advanced Research', 
+      desc: 'Opens the door to ALL automation.'
+    },
     factory1: { 
       isVisible: false, 
       unlocked: testMode, 
@@ -352,7 +359,7 @@ function App() {
           case 'axe2':
             setOres(prevOres => ({
               ...prevOres,
-              Wood: { ...prevOres.Stone, craftTime: 0.25 }
+              Wood: { ...prevOres.Wood, craftTime: 0.25 }
             }));
             break;
           default:
