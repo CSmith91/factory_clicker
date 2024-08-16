@@ -182,6 +182,33 @@ const Inventory = ({ unlockables, setUnlockables, ores, ingredients, tools, setO
             </div>
 
             <h2>Inventory</h2>
+            {unlockables.inserters1.unlocked && (
+                <>
+                    <h3>Logistics</h3>
+                    <div className='l3'>
+                        {groupedIngredients['l3']?.map(([ingredientName, ingredientData]) => {
+                            const costText = Object.entries(ingredientData.cost)
+                                .map(([resource, amount]) => `${amount} ${resource}`)
+                                .join(', ');
+
+                            return (
+                                <div key={"div-" + ingredientName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {ingredientData.isCraftable && unlockables.hammer1.unlocked && <CraftButton key={"Craft" + ingredientName} ingredientName={ingredientName} checkCraft={checkCraft} />}
+                                    <ul style={{ listStyleType: 'none', padding: 0 }}>
+                                        <li key={ingredientName} style={{ marginLeft: '10px' }}>
+                                            {ingredientName} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.idleCount !== undefined && (
+                                                <>
+                                                    <br /> Idle Count: {ingredientData.idleCount}
+                                                </>
+                                            )}
+                                        </li>
+                                    </ul>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
             {unlockables.furnace1.unlocked && (
                 <>
                     <h3>Production</h3>

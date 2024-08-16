@@ -17,6 +17,11 @@ import ironPlate from './iron_plate.png'
 import copperPlate from './copper_plate.png'
 import steel from './steel.png'
 import gear from './gear.png'
+import burnerInserter from './burner_inserter.png'
+import inserter from './inserter.png'
+import longInserter from './long_inserter.png'
+import fastInserter from './fast_inserter.png'
+import stackInserter from './stack_inserter.png'
 
 const images = {
     // Ores
@@ -29,6 +34,11 @@ const images = {
     'Uranium Ore': uraniumOre,
   
     // Ingredients
+    "Burner Inserter": burnerInserter,
+    "Inserter": inserter,
+    "Long Inserter": longInserter,
+    "Fast Inserter": fastInserter, 
+    "Stack Inserter": stackInserter,
     'Burner Drill': burnerDrill,
     'Electric Drill': electricDrill,
     'Stone Furnace': stoneFurnace,
