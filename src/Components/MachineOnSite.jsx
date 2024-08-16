@@ -1,34 +1,12 @@
 import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
-import stoneFurnace from './Images/stone_furnace.png'
-import steelFurnace from './Images/steel_furnace.png'
-import electricFurnace from './Images/electric_furnace.png'
-import burnerDrill from './Images/burner_drill.png'
-import electricDrill from './Images/electric_drill.png'
+import images from './Images/images';
 
 const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, handleMachineChange, triggerProductionCheck, outputCounts, updateOutputCount, onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
-
-    // load image of machine
-    const getMachineImage  = (machineName) => {
-        switch (machineName) {
-            case 'Stone Furnace':
-                return stoneFurnace;
-            case 'Steel Furnace':
-                return steelFurnace;
-            case 'Electric Furnace':
-                return electricFurnace;
-            case 'Burner Drill':
-                return burnerDrill;
-            case 'Electric Drill':
-                return electricDrill;
-            default:
-                return null
-        }
-    } 
-    const machineImg = getMachineImage(machineName);
+    const [animation, setAnimation] = useState('outputFull')
 
     // State to hold all machine-related data
     const [machineStates, setMachineStates] = useState({
@@ -223,6 +201,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                             const fuelAvailable = Object.values(fuels).some(fuel => fuel.current > 0);
 
                             if (fuelAvailable) {
+                                setAnimation('active');
                                 turnOnProduction();  // Call the function if any fuel is available
                             }
                             else if(itemName === "Coal" && ingredients[machineName].isDrill){
@@ -231,7 +210,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                                     turnOnProduction()
                                 }
                                 else{
-                                    console.log('Needs fuel');
+                                    setAnimation('fuelReq');
                                 }
                             }
                             else {
@@ -239,12 +218,16 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                             }
                         }
                         else{
-                            // electric machine, we can start
+                            // electric machine. Power check here -- NOT YET CODED
+                            setAnimation('active');
                             turnOnProduction()
+                            // checks can also lead to 
+                            // setAnimation('noPower');
+                            // setAnimation('lowPower'); <-- this still turns on production but with a delay // you may want to add this check later where the time delay is calculated
                         }
                     } 
                     else {
-                        //console.log(`Needs more ${Object.keys(machine)[0]}`);
+                        setAnimation('inputReq');
                     }
                 } 
                 else {
@@ -252,7 +235,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 }
             } 
             else{
-                //console.log(`Output full. ${machineName} cannot work.`);
+                setAnimation('outputFull');
             }
         }
         else {
@@ -415,7 +398,9 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                     </div>
                 </div>
                 <div className="machine-div" style={{marginBottom: "5%"}}>
-                    {machineImg && <img src={machineImg} alt={`${machineName} Image`} style={{ width: '32px', height: 'auto' }} />}
+                    <div className={`machineOnSite ${animation}`}>
+                        {images[machineName] && <img src={images[machineName]} alt={`${machineName} Image`} style={{ width: '32px', height: 'auto' }} />}
+                    </div>
                     <div className="machine-inputs">
                         {machineParent.isFurnace && (
                             <p>{itemName}: {currentMachineState[itemName].currentInput} / {currentMachineState[itemName].inputMax || 0}</p>

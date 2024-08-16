@@ -56,11 +56,11 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
                 }));
         }
 
-        if(ores["Wood"].harvested === 29){
+        if(ores["Wood"].harvested === 20){
             setUnlockables(prevUnlockables => ({
                 ...prevUnlockables,
-                pick2: { 
-                    ...prevUnlockables.pick2,
+                axe2: { 
+                    ...prevUnlockables.axe2,
                     isVisible: true
                 }
                 }));
@@ -96,7 +96,7 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
                 }));
         }
 
-        if(ores["Wood"].harvested === 44){
+        if(ores["Wood"].harvested === 45){
             setUnlockables(prevUnlockables => ({
                 ...prevUnlockables,
                 copper1: { 

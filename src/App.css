@@ -214,3 +214,55 @@ button:not(:disabled):hover {
 .craftItem.resetAnimation {
   animation: none; /* Reset animation */
 }
+
+
+/* Animation for MachinesOnSite */
+.machineOnSite {
+  transition: all 0.5s ease-in-out;
+  padding: 5px
+}
+
+/* Active State Animation: Radial Green Gradient */
+.machineOnSite.active {
+  background: radial-gradient(circle, #32cd32, #006400); /* Light green to dark green */
+  animation: activeAnimation 1s infinite;
+}
+
+@keyframes activeAnimation {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+/* No Input / No Fuel State Animation: Flashing Radial Red Gradient */
+.machineOnSite.noInput, .machineOnSite.noFuel {
+  background: radial-gradient(circle, tomato, darkred);
+  animation: noInputNoFuelAnimation 2s infinite;
+}
+
+@keyframes noInputNoFuelAnimation {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+
+/* Output Full State Animation: Radial Amber Gradient */
+.machineOnSite.outputFull {
+  background: radial-gradient(circle, #ffcc00, #ff9900); /* Light amber to dark amber */
+  animation: outputFullAnimation 1s infinite;
+}
+
+@keyframes outputFullAnimation {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
