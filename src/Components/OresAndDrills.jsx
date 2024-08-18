@@ -14,13 +14,6 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
             if(manOrMachine === 'manual'){
                 onAlert(`Storage is full. You cannot mine ${oreName}.`);
             }
-            setUnlockables(prevUnlockables => ({
-                ...prevUnlockables,
-                storage1: { 
-                  ...prevUnlockables.storage1,
-                  isVisible: true
-                }
-            }))
             return; // Exit the function if storage is full
         }
 
@@ -184,6 +177,13 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
     const isStorageFull = (oreName) => { 
         const limit = outputCounts[oreName] || 0
         if(limit >= getStorage(oreName)){
+            setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                storage1: { 
+                  ...prevUnlockables.storage1,
+                  isVisible: true
+                }
+            }))
             return true
         }
         else{
