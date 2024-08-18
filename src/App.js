@@ -52,9 +52,9 @@ function App() {
   })
 
   const [networks, setNetworks] = useState({
-    "Slow Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, craftTime: 25, idleCount: 0},
-    "Middle Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, craftTime: 25, idleCount: 0},
-    "Fast Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, craftTime: 25, idleCount: 0},
+    "Belt Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, craftTime: 25, idleCount: 0},
+    "Advanced Belt Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, craftTime: 25, idleCount: 0},
+    "Express Belt Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, craftTime: 25, idleCount: 0},
   })
 
   const [belts, setBelts] = useState({
@@ -672,7 +672,12 @@ const checkCraft = (ingredientName) => {
 
             {/* Factory Section */}
             <div className='section'>
-              <FactorySection unlockables={unlockables} tools={tools} networks={networks} setNetworks={setNetworks} />
+              <FactorySection 
+              unlockables={unlockables} 
+              tools={tools} 
+              checkCraft={checkCraft}
+              networks={networks} 
+              setNetworks={setNetworks} />
             </div>
 
             < ResourceSection 
