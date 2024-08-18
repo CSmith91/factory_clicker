@@ -52,9 +52,9 @@ function App() {
   })
 
   const [networks, setNetworks] = useState({
-    "Belt Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, craftTime: 25, idleCount: 0},
-    "Advanced Belt Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, craftTime: 25, idleCount: 0},
-    "Express Belt Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, craftTime: 25, idleCount: 0},
+    "Belt Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, craftTime: 25, isNetwork: true, isBelt: true, idleCount: 0},
+    "Advanced Belt Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, craftTime: 25, isNetwork: true, isBelt: true, idleCount: 0},
+    "Express Belt Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, craftTime: 25, isNetwork: true, isBelt: true, idleCount: 0},
   })
 
   const [belts, setBelts] = useState({
@@ -80,6 +80,9 @@ function App() {
     }
     else if(ingredients[oreName]?.isMachine && !ingredients[oreName]?.isInserter){
         return storage["Machines"]
+    }
+    else if(networks[oreName]){
+        return networks[oreName].max;
     }
     else{
         return storage["Ingredients"]
@@ -507,25 +510,33 @@ function App() {
 
 // Function for crafting
 const checkCraft = (ingredientName) => {
-  const toolName = 'Hammer';
-  const ingredient = ingredients[ingredientName];
+  const toolName = ingredients[ingredientName] ? 'Hammer' : null;
+  const items = ingredients[ingredientName] ? ingredients : networks;
+  const item = items[ingredientName]
 
-  if (!ingredient || !ingredient.cost) return;
+  if (!item || !item.cost) return;
 
-  if(ingredients[ingredientName].count >= getStorage(ingredientName)){
-    onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
+  if(items[ingredientName].count >= getStorage(ingredientName)){
+    if(toolName){
+      onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
+    }
+    else{
+      onAlert(`You've reach the max number of lanes for ${ingredientName}.`);
+    }
     return; // Exit the function if storage is full
   }
 
   // Check if the hammer has durability
-  const tool = tools[toolName];
-  if (!tool || tool.durability <= 0) {
-      onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
-      return; // Exit the function if the tool is broken
+  if(toolName){
+    const tool = tools[toolName];
+    if (!tool || tool.durability <= 0) {
+        onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
+        return; // Exit the function if the tool is broken
+    }
   }
 
   // Check if there are enough resources to craft
-  const hasEnoughResources = Object.entries(ingredient.cost).every(
+  const hasEnoughResources = Object.entries(item.cost).every(
     ([resourceName, amountRequired]) => {
       const resource = ores[resourceName] || ingredients[resourceName];
       return resource?.count >= amountRequired;
@@ -536,31 +547,34 @@ const checkCraft = (ingredientName) => {
     onAlert(`Not enough resources to craft ${ingredientName}`);
   }
   else{
-      const craftTime = ingredients[ingredientName].craftTime;
-      onCraft(ingredientName, ingredient, craftTime)
+      const craftTime = items[ingredientName].craftTime;
+      onCraft(ingredientName, item, craftTime)
   }
   }
 
   const onCraft = (ingredientName, ingredient, craftTime) => {
-      // Update the hammer's durability
-      setTools(prevTools => {
-          const toolName = "Hammer"
-          const tool = prevTools[toolName];
-          const updatedDurability = tool.durability - tool.corrodeRate;
+      // Update the hammer's durability, if applicable
+      if(ingredients[ingredientName]){
+        setTools(prevTools => {
+            const toolName = "Hammer"
+            const tool = prevTools[toolName];
+            const updatedDurability = tool.durability - tool.corrodeRate;
 
 
-          return {
-              ...prevTools,
-              [toolName]: {
-                  ...tool,
-                  durability: Math.max(0, updatedDurability)
-              }
-          };
-      });
+            return {
+                ...prevTools,
+                [toolName]: {
+                    ...tool,
+                    durability: Math.max(0, updatedDurability)
+                }
+            };
+        });
+      }
 
       // Deduct the costs from the resources
       const updatedOres = { ...ores };
       const updatedIngredients = { ...ingredients };
+      const updatedNetworks = { ...networks};
 
       Object.entries(ingredient.cost).forEach(([resourceName, amountRequired]) => {
       if (updatedOres[resourceName]) {
@@ -570,17 +584,17 @@ const checkCraft = (ingredientName) => {
       }
       });
 
-      addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres)
-
-      //craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres)
+      addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks)
   };
 
-  const craftPayout = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
+  const craftPayout = (ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks) => {
 
+    // check if ingredient -- if not, it's a network item
+    if(ingredients[ingredientName]){
       // check its not 1 to many
       const multiplier = ingredients[ingredientName].multiplier ? ingredients[ingredientName].multiplier : 1;
       
-                  // Increment the crafted ingredient count
+      // Increment the crafted ingredient count
       updatedIngredients[ingredientName].count += multiplier;
 
       // Increment the idleCount if the ingredient is a machine
@@ -615,7 +629,12 @@ const checkCraft = (ingredientName) => {
 
       return newCount;
       });
-
+    }
+    // craft a network item instead
+    else{
+      updatedNetworks[ingredientName].count += 1;
+      setNetworks(updatedNetworks);
+    }
   }
 
 
@@ -623,13 +642,14 @@ const checkCraft = (ingredientName) => {
   const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
   const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
   const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
-  const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
+  const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks) => {
       // Create a new item object with the parameters
       const newItem = {
       ingredientName,
       ingredient,
       updatedIngredients,
       updatedOres,
+      updatedNetworks,
       };
 
       // Update the craftQueue state with the new item
@@ -643,10 +663,10 @@ const checkCraft = (ingredientName) => {
         setCurrentCrafting(nextItem); // Set the current item as crafting
         setIsAnimating(true); // Start the animation
   
-        const { ingredientName, ingredient, updatedIngredients, updatedOres } = nextItem;
+        const { ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks } = nextItem;
   
         setTimeout(() => {
-          craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres); // Process crafting
+          craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks); // Process crafting
           setIsAnimating(false); // End the animation
           setCurrentCrafting(null); // Reset current crafting item
   

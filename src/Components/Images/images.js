@@ -25,6 +25,10 @@ import stackInserter from './stack_inserter.png'
 import belt from './belt.png'
 import fastBelt from './fast_belt.png'
 import expressBelt from './express_belt.png'
+// networks
+import beltLane1 from './underground_belt.png'
+import beltLane2 from './fast_underground_belt.png'
+import beltLane3 from './express_underground_belt.png'
 
 const images = {
     // Ores
@@ -55,6 +59,11 @@ const images = {
     'Copper Plate': copperPlate,
     'Steel': steel,
     'Gear': gear,
+
+    // Networks
+    "Belt Lane": beltLane1,
+    "Advanced Belt Lane": beltLane2,
+    "Express Belt Lane": beltLane3,
   };
   
   export default images;
