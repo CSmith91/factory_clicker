@@ -2,6 +2,7 @@ import OresAndDrills from './OresAndDrills';
 import Furnaces from './Furnaces'
 
 const ResourceSection = ({
+    unlockables,
     setUnlockables,
     ores,
     ingredients,
@@ -13,6 +14,8 @@ const ResourceSection = ({
     setTools,
     useTool,
     handleMachineChange,
+    networks,
+    setNetworks,
     onAlert
 }) => {
 
@@ -24,13 +27,40 @@ const ResourceSection = ({
         <>
             {/* Ore Patch Section */}
             <div className='section'>
-              <OresAndDrills setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+              <OresAndDrills 
+                unlockables={unlockables}
+                setUnlockables={setUnlockables} 
+                ores={ores} 
+                ingredients={ingredients} 
+                tools={tools} 
+                setOres={setOres} 
+                setIngredients={setIngredients} 
+                storage={storage} getStorage={getStorage} 
+                setTools={setTools} 
+                useTool={useTool} 
+                handleMachineChange={handleMachineChange} 
+                networks={networks}
+                setNetworks={setNetworks}
+                onAlert={onAlert} />
             </div>
 
             {/* Furnaces Section */}
             {shouldShowFurnaces() && (
               <div className='section'>
-                <Furnaces setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+                <Furnaces 
+                  unlockables={unlockables}
+                  setUnlockables={setUnlockables} 
+                  ores={ores} 
+                  ingredients={ingredients} 
+                  setOres={setOres} 
+                  setIngredients={setIngredients} 
+                  storage={storage} 
+                  getStorage={getStorage} 
+                  useTool={useTool} 
+                  handleMachineChange={handleMachineChange} 
+                  networks={networks}
+                  setNetworks={setNetworks}
+                  onAlert={onAlert} />
               </div>
             )}
         </>

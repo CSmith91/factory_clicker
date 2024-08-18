@@ -52,9 +52,20 @@ function App() {
   })
 
   const [networks, setNetworks] = useState({
-    "Slow Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, idleCount: 0},
-    "Middle Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, idleCount: 0},
-    "Fast Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, idleCount: 0}
+    "Slow Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, craftTime: 25, idleCount: 0},
+    "Middle Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, craftTime: 25, idleCount: 0},
+    "Fast Lane": { count: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, craftTime: 25, idleCount: 0},
+  })
+
+  const [belts, setBelts] = useState({
+    route1: {isUnlocked: true, isClear: true},
+    route2: {isUnlocked: true, isClear: false, speed: 0 },
+    route3: { isUnlocked: true, isClear: false, speed: 0 },
+    route4: { isUnlocked: false, isClear: false, speed: 0 },
+    route5: { isUnlocked: false, isClear: false, speed: 0 },
+    route6: { isUnlocked: false, isClear: false, speed: 0 },
+    route7: { isUnlocked: false, isClear: false, speed: 0 },
+    route8:  {isUnlocked: false, isClear: false, speed: 0 }
   })
 
   const [storage, setStorage] = useState({
@@ -160,15 +171,22 @@ function App() {
       unlocked: testMode, 
       cost: { "Stone": 35, "Brick": 15 }, 
       title: 'Copper', 
-      desc: 'This resource will open a lot of (electronic) doors...'
+      desc: 'This resource will open a lot of (electronic) doors...' // unlocks copper ore, plate and wire
     },
     // the above all have isVisible conditions set
     inserters1: { 
       isVisible: false, 
       unlocked: testMode, 
-      cost: { "Copper Ore": 20 }, 
+      cost: { "Copper Ore": 30 }, 
       title: 'Burner Inserters', 
       desc: 'Our most basic inserter - add resources to your drills and furnaces automatically.'
+    },
+    chip1: { 
+      isVisible: false, // make visible after 25 clicks
+      unlocked: testMode, 
+      cost: { "Wire": 50 }, 
+      title: 'Green Chips', 
+      desc: 'Unlock the power of the computer chip!'
     },
     bulkPlace1: { 
       isVisible: false, 
@@ -505,7 +523,22 @@ function App() {
               <FactorySection unlockables={unlockables} tools={tools} networks={networks} setNetworks={setNetworks} />
             </div>
 
-            < ResourceSection setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} storage={storage} getStorage={getStorage} setTools={setTools} useTool={useTool} handleMachineChange={handleMachineChange} onAlert={onAlert} />
+            < ResourceSection 
+              unlockables={unlockables}
+              setUnlockables={setUnlockables} 
+              ores={ores} 
+              ingredients={ingredients} 
+              tools={tools} 
+              setOres={setOres} 
+              setIngredients={setIngredients} 
+              storage={storage} 
+              getStorage={getStorage} 
+              setTools={setTools} 
+              useTool={useTool} 
+              handleMachineChange={handleMachineChange} 
+              networks={networks}
+              setNetworks={setNetworks}
+              onAlert={onAlert} />
 
             {/* Inventory Section */}
             <div className='section'>

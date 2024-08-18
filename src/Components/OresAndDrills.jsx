@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
 import Machines from './Machines';
 import OreButton from './OreButton';
+import Bus from './Bus'
 import images from './Images/images';
 
-const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setIngredients, storage, getStorage, setTools, handleMachineChange, onAlert }) => {
+const OresAndDrills = ({ 
+    unlockables,
+    setUnlockables, 
+    ores, 
+    ingredients, 
+    tools, 
+    setOres, 
+    setIngredients, 
+    storage, 
+    getStorage, 
+    setTools, 
+    handleMachineChange, 
+    networks,
+    setNetworks,
+    onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
 
@@ -219,6 +234,9 @@ const OresAndDrills = ({ setUnlockables, ores, ingredients, tools, setOres, setI
                                 </div>
 
                             </div>
+                            {unlockables.belts1.unlocked && (
+                                <Bus itemName={oreName} networks={networks} setNetworks={setNetworks}/>
+                            )}
                             {oreData.patch !== undefined ? (
                                 <p>{oreName} patch remaining: {oreData.patch.size}</p> 
                             ) : (
