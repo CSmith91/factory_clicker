@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import ResourceSection from './Components/ResourceSection';
 import Inventory from './Components/Inventory';
@@ -505,6 +505,158 @@ function App() {
   });
 };
 
+// Function for crafting
+const checkCraft = (ingredientName) => {
+  const toolName = 'Hammer';
+  const ingredient = ingredients[ingredientName];
+
+  if (!ingredient || !ingredient.cost) return;
+
+  if(ingredients[ingredientName].count >= getStorage(ingredientName)){
+    onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
+    return; // Exit the function if storage is full
+  }
+
+  // Check if the hammer has durability
+  const tool = tools[toolName];
+  if (!tool || tool.durability <= 0) {
+      onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
+      return; // Exit the function if the tool is broken
+  }
+
+  // Check if there are enough resources to craft
+  const hasEnoughResources = Object.entries(ingredient.cost).every(
+    ([resourceName, amountRequired]) => {
+      const resource = ores[resourceName] || ingredients[resourceName];
+      return resource?.count >= amountRequired;
+    }
+  );
+
+  if (!hasEnoughResources) {
+    onAlert(`Not enough resources to craft ${ingredientName}`);
+  }
+  else{
+      const craftTime = ingredients[ingredientName].craftTime;
+      onCraft(ingredientName, ingredient, craftTime)
+  }
+  }
+
+  const onCraft = (ingredientName, ingredient, craftTime) => {
+      // Update the hammer's durability
+      setTools(prevTools => {
+          const toolName = "Hammer"
+          const tool = prevTools[toolName];
+          const updatedDurability = tool.durability - tool.corrodeRate;
+
+
+          return {
+              ...prevTools,
+              [toolName]: {
+                  ...tool,
+                  durability: Math.max(0, updatedDurability)
+              }
+          };
+      });
+
+      // Deduct the costs from the resources
+      const updatedOres = { ...ores };
+      const updatedIngredients = { ...ingredients };
+
+      Object.entries(ingredient.cost).forEach(([resourceName, amountRequired]) => {
+      if (updatedOres[resourceName]) {
+          updatedOres[resourceName].count -= amountRequired;
+      } else if (updatedIngredients[resourceName]) {
+          updatedIngredients[resourceName].count -= amountRequired;
+      }
+      });
+
+      addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres)
+
+      //craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres)
+  };
+
+  const craftPayout = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
+
+      // check its not 1 to many
+      const multiplier = ingredients[ingredientName].multiplier ? ingredients[ingredientName].multiplier : 1;
+      
+                  // Increment the crafted ingredient count
+      updatedIngredients[ingredientName].count += multiplier;
+
+      // Increment the idleCount if the ingredient is a machine
+      if (ingredient.isMachine) {
+      updatedIngredients[ingredientName].idleCount += multiplier;
+      }
+
+      setOres(updatedOres);
+      setIngredients(updatedIngredients);
+
+      // Update craftCount and unlock smelt1 if it’s the first successful craft
+      setCraftCount(prevCount => {
+      const newCount = prevCount + 1;
+
+      if (newCount === 1) { // Check if this is the first successful craft
+          setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          smelt1: { 
+              ...prevUnlockables.smelt1,
+              isVisible: true
+          }
+          }));
+
+          setIngredients(prevIngredients => ({
+          ...prevIngredients,
+          "Brick": {
+              ...prevIngredients["Brick"],
+              unlocked: true 
+          }
+          }));
+      }
+
+      return newCount;
+      });
+
+  }
+
+
+  // queue logic
+  const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
+  const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
+  const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
+  const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updatedOres) => {
+      // Create a new item object with the parameters
+      const newItem = {
+      ingredientName,
+      ingredient,
+      updatedIngredients,
+      updatedOres,
+      };
+
+      // Update the craftQueue state with the new item
+      setCraftQueue(prevQueue => [...prevQueue, newItem]);
+  };
+
+  useEffect(() => {
+      // If there's something in the queue and nothing is currently crafting
+      if (craftQueue.length > 0 && !currentCrafting) {
+        const [nextItem] = craftQueue; // Get the first item in the queue
+        setCurrentCrafting(nextItem); // Set the current item as crafting
+        setIsAnimating(true); // Start the animation
+  
+        const { ingredientName, ingredient, updatedIngredients, updatedOres } = nextItem;
+  
+        setTimeout(() => {
+          craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres); // Process crafting
+          setIsAnimating(false); // End the animation
+          setCurrentCrafting(null); // Reset current crafting item
+  
+          // Remove the first item from the queue
+          setCraftQueue(prevQueue => prevQueue.slice(1));
+        }, ingredient.craftTime * 1000);
+      }
+    }, [craftQueue, currentCrafting]);
+    
+
   return (
     <>
       <div className="App" style={{ padding: '20px' }}>
@@ -542,7 +694,16 @@ function App() {
 
             {/* Inventory Section */}
             <div className='section'>
-              <Inventory unlockables={unlockables} setUnlockables={setUnlockables} ores={ores} ingredients={ingredients} tools={tools} setOres={setOres} setIngredients={setIngredients} setTools={setTools} setCraftCount={setCraftCount} getStorage={getStorage} useTool={useTool} networks={networks} setNetworks={setNetworks} onAlert={onAlert}/>
+              <Inventory 
+                unlockables={unlockables} 
+                ores={ores} 
+                ingredients={ingredients} 
+                getStorage={getStorage} 
+                checkCraft={checkCraft}
+                craftQueue={craftQueue}
+                currentCrafting={currentCrafting}
+                isAnimating={isAnimating}
+              />
             </div>
 
             <div className='section'>
