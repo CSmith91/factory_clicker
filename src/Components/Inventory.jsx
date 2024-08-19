@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import CraftQueue from './CraftQueue';
 import CraftButton from './CraftButton';
 

@@ -15,9 +15,9 @@ function App() {
   const testMode = true
 
   let cheat = 0;
-  if(testMode){
-    cheat = 1000
-  }
+  // if(testMode){
+  //   cheat = 1000
+  // }
 
    // Initial state for ores with unlocked and canHandMine properties
   const [ores, setOres] = useState({
@@ -513,10 +513,11 @@ const checkCraft = (ingredientName) => {
   const toolName = ingredients[ingredientName] ? 'Hammer' : null;
   const items = ingredients[ingredientName] ? ingredients : networks;
   const item = items[ingredientName]
+  const totalCount = item.count + item.tempCount
 
   if (!item || !item.cost) return;
 
-  if(items[ingredientName].count >= getStorage(ingredientName)){
+  if(totalCount >= getStorage(ingredientName)){
     if(toolName){
       onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
     }
@@ -539,6 +540,13 @@ const checkCraft = (ingredientName) => {
   const hasEnoughResources = Object.entries(item.cost).every(
     ([resourceName, amountRequired]) => {
       const resource = ores[resourceName] || ingredients[resourceName];
+
+      // If the resource has an idleCount, check that it's also sufficient
+      if (resource?.idleCount !== undefined) {
+        return resource.idleCount >= amountRequired;
+      }
+
+      // Otherwise, just check the regular count
       return resource?.count >= amountRequired;
     }
   );
@@ -559,8 +567,6 @@ const checkCraft = (ingredientName) => {
             const toolName = "Hammer"
             const tool = prevTools[toolName];
             const updatedDurability = tool.durability - tool.corrodeRate;
-
-
             return {
                 ...prevTools,
                 [toolName]: {
@@ -581,6 +587,19 @@ const checkCraft = (ingredientName) => {
           updatedOres[resourceName].count -= amountRequired;
       } else if (updatedIngredients[resourceName]) {
           updatedIngredients[resourceName].count -= amountRequired;
+          if(updatedIngredients[resourceName].idleCount){
+            updatedIngredients[resourceName].idleCount -= amountRequired
+          }
+      }
+      if(updatedIngredients[ingredientName]){
+        updatedIngredients[ingredientName].tempCount += (updatedIngredients[ingredientName].multiplier || 1);
+        console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
+      } else if(updatedNetworks[ingredientName]){
+        updatedNetworks[ingredientName].tempCount += 1;
+        console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
+      }
+      else{
+        console.log("Something went wrong onCraft!")
       }
       });
 
@@ -596,7 +615,8 @@ const checkCraft = (ingredientName) => {
       
       // Increment the crafted ingredient count
       updatedIngredients[ingredientName].count += multiplier;
-
+      updatedIngredients[ingredientName].tempCount -= multiplier;
+  
       // Increment the idleCount if the ingredient is a machine
       if (ingredient.isMachine) {
       updatedIngredients[ingredientName].idleCount += multiplier;
@@ -604,6 +624,8 @@ const checkCraft = (ingredientName) => {
 
       setOres(updatedOres);
       setIngredients(updatedIngredients);
+
+      console.log(`${ingredientName} tempCount is: ${ingredients[ingredientName].tempCount}`)
 
       // Update craftCount and unlock smelt1 if it’s the first successful craft
       setCraftCount(prevCount => {
@@ -633,7 +655,9 @@ const checkCraft = (ingredientName) => {
     // craft a network item instead
     else{
       updatedNetworks[ingredientName].count += 1;
+      updatedNetworks[ingredientName].tempCount -= 1; 
       setNetworks(updatedNetworks);
+      console.log(`${ingredientName} tempCount is: ${networks[ingredientName].tempCount}`)
     }
   }
 
@@ -642,6 +666,7 @@ const checkCraft = (ingredientName) => {
   const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
   const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
   const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
+  
   const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks) => {
       // Create a new item object with the parameters
       const newItem = {
