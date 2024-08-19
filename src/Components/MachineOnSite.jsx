@@ -60,10 +60,14 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             if (result) {
                 setCounter(prevCounter => {
                     let newCounter = prevCounter;
-                    if (action === 'increment') {
+                    const updatedIngredients = {... ingredients}
+                    const machineObject = updatedIngredients[machineName]
+                    if (action === 'increment' && machineObject.idleCount > 0) {
                         newCounter = prevCounter + 1;
-                    } else if (action === 'decrement') {
+                        updatedIngredients[machineName].idleCount -= 1;
+                    } else if (action === 'decrement' && machineObject.idleCount <= machineObject.count) {
                         newCounter = prevCounter > 0 ? prevCounter - 1 : prevCounter;
+                        updatedIngredients[machineName].idleCount += 1;
                     }
 
                     // Update machine states dynamically based on the new counter
@@ -79,6 +83,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                         }
                     };
 
+                    setIngredients(updatedIngredients);
                     setMachineStates(updatedMachineStates);
                     return newCounter;
                 });
