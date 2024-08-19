@@ -18,6 +18,8 @@ const OresAndDrills = ({
     handleMachineChange, 
     networks,
     setNetworks,
+    lanes,
+    setLanes,
     onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
@@ -235,7 +237,7 @@ const OresAndDrills = ({
 
                             </div>
                             {unlockables.belts1.unlocked && (
-                                <Bus itemName={oreName} networks={networks} setNetworks={setNetworks}/>
+                                <Bus itemName={oreName} lanes={lanes} setLanes={setLanes}/>
                             )}
                             {oreData.patch !== undefined ? (
                                 <p>{oreName} patch remaining: {oreData.patch.size}</p> 

@@ -22,12 +22,12 @@ function App() {
    // Initial state for ores with unlocked and canHandMine properties
   const [ores, setOres] = useState({
     Wood: { count: 0, tempCount: 0, clicked: 0, harvested: 0, canHandMine: true, unlocked: true, fuelValue: 2, craftTime: 0.5 },
-    Stone: { count: 0, tempCount: 0, clicked: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 120000}, canFurnace: true, canDrill: true, craftTime: 1 },
-    "Iron Ore": { count: 0, tempCount: 0, clicked: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 350000}, canFurnace: true, canDrill: true, craftTime: 1 },
-    Coal: { count: 0, tempCount: 0, clicked: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 345000}, canDrill: true, fuelValue: 4, craftTime: 1 },
-    "Copper Ore": { count: 0, tempCount: 0, clicked: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 340000}, canFurnace: true, canDrill: true, craftTime: 1 },
+    Stone: { count: 0, tempCount: 0, clicked: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 120000}, canFurnace: true, canDrill: true, canBus: true, craftTime: 1 },
+    "Iron Ore": { count: 0, tempCount: 0, clicked: 0, canHandMine: true, unlocked: true, patch: { number: 1, size: 350000}, canFurnace: true, canDrill: true, canBus: true, craftTime: 1 },
+    Coal: { count: 0, tempCount: 0, clicked: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 345000}, canDrill: true, fuelValue: 4, canBus: true, craftTime: 1 },
+    "Copper Ore": { count: 0, tempCount: 0, clicked: 0, canHandMine: true, unlocked: testMode, patch: { number: 1, size: 340000}, canFurnace: true, canDrill: true, canBus: true, craftTime: 1 },
     "Crude Oil": { count: 0, tempCount: 0, canHandMine: false, unlocked: testMode, craftTime: 1 },
-    "Uranium Ore": { count: 0, tempCount: 0, canHandMine: false, unlocked: testMode, canDrill: true, needsAcid: true, craftTime: 2 }
+    "Uranium Ore": { count: 0, tempCount: 0, canHandMine: false, unlocked: testMode, canDrill: true, canBus: true, needsAcid: true, craftTime: 2 }
   });
 
   const [ingredients, setIngredients] = useState({
@@ -44,10 +44,10 @@ function App() {
     "Stone Furnace": { group: 'p4', count: 0, tempCount: 0, unlocked: testMode, cost: {"Stone": 5}, isCraftable: true, craftTime: 0.5, isFuel: false, isMachine: true, isFurnace: true, isBurner: true, machineSpeed: 1, idleCount: 0},
     "Steel Furnace": { group: 'p4', count: 0, tempCount: 0, unlocked: testMode, cost: {"Steel": 6, "Brick": 10}, isCraftable: true, craftTime: 3, isFuel: false, isMachine: true, isFurnace: true, isBurner: true, machineSpeed: 2, idleCount: 0},
     "Electric Furnace": {group: 'p4', count: 0, tempCount: 0, unlocked: testMode, cost: {"Advanced Circuit": 5, "Steel": 10, "Brick": 10}, isCraftable: true, craftTime: 5, isFuel: false, isMachine: true, isFurnace: true, isBurner: false, machineSpeed: 2, idleCount: 0, energy: {"idle": 6, "active": 180}},
-    "Brick": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Stone": 2}, craftTime: 3.2},
-    "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true},
-    "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2},
-    "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16},
+    "Brick": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Stone": 2}, craftTime: 3.2, canBus: true},
+    "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
+    "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
+    "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
     "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }
   })
 
@@ -57,16 +57,42 @@ function App() {
     "Express Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, craftTime: 30, isNetwork: true, isBelt: true, idleCount: 0},
   })
 
-  const [belts, setBelts] = useState({
-    route1: {isUnlocked: true, isClear: true},
-    route2: {isUnlocked: true, isClear: false, speed: 0 },
-    route3: { isUnlocked: true, isClear: false, speed: 0 },
-    route4: { isUnlocked: false, isClear: false, speed: 0 },
-    route5: { isUnlocked: false, isClear: false, speed: 0 },
-    route6: { isUnlocked: false, isClear: false, speed: 0 },
-    route7: { isUnlocked: false, isClear: false, speed: 0 },
-    route8:  {isUnlocked: false, isClear: false, speed: 0 }
-  })
+  const basicBus = {
+    lane1: { clear: false, unlocked: true, speed: 0 },
+    lane2: { clear: false, unlocked: true, speed: 0 },
+    lane3: { clear: false, unlocked: false, speed: 0 },
+    lane4: { clear: false, unlocked: false, speed: 0 },
+    lane5: { clear: false, unlocked: false, speed: 0 },
+    lane6: { clear: false, unlocked: false, speed: 0 },
+    lane7: { clear: false, unlocked: false, speed: 0 },
+    lane8: { clear: false, unlocked: false, speed: 0 },
+  }
+
+  const [lanes, setLanes] = useState({})
+
+  const createLanes = () => {
+    const itemsWithProperties = {};
+
+    // Checking ores for canBus properties
+    for (const [key, value] of Object.entries(ores)) {
+      if (value.canBus) {
+        itemsWithProperties[key] = { ...basicBus };
+      }
+    }
+
+    // Checking ingredients for canBus properties properties
+    for (const [key, value] of Object.entries(ingredients)) {
+      if (value.canBus) {
+        itemsWithProperties[key] = { ...basicBus };
+      }
+    }
+
+    setLanes(itemsWithProperties);
+  };
+
+  React.useEffect(() => {
+    createLanes();
+  }, []);
 
   const [storage, setStorage] = useState({
     Ores: 30 + cheat,
@@ -214,6 +240,17 @@ function App() {
     }
   });
 
+  // Base expansion
+  const [expandables, setExpandables] = useState({
+    beltLanes1: { 
+      isVisible: true,
+      unlocked: false, 
+      cost: { "Brick": 50 },
+      title: 'Four Additional Lanes', 
+      desc: 'Clear space for more lanes to run through your factory.'
+    }
+  })
+
   // Function to check if any research is available
   const shouldShowResearch = () => {
     return Object.values(unlockables).some(unlockable => unlockable.isVisible === true && unlockable.unlocked === false);
@@ -280,7 +317,7 @@ function App() {
 
   // Function to unlock research
   const onUnlock = (itemName) => {
-    const requiredItems = unlockables[itemName]?.cost;
+    const requiredItems = unlockables[itemName] ? unlockables[itemName].cost : expandables[itemName]?.cost
     if (!requiredItems) return;
 
     let canUnlock = true;
@@ -308,97 +345,130 @@ function App() {
         // Update the state with the new values
         setOres(newOres);
         setIngredients(newIngredients);
-        setUnlockables(prevUnlockables => ({
+        if(unlockables[itemName]){
+          setUnlockables(prevUnlockables => ({
+              ...prevUnlockables,
+              [itemName]: { ...prevUnlockables[itemName], unlocked: true }
+          }));
+        }
+        else{
+          setExpandables(prevUnlockables => ({
             ...prevUnlockables,
             [itemName]: { ...prevUnlockables[itemName], unlocked: true }
-        }));
+          }));
+        }
 
         // events following unlock
-        switch (itemName) {
-          case 'furnace1':
-            setIngredients(prevIngredients => ({
-              ...prevIngredients,
-              "Stone Furnace": {
-                ...prevIngredients["Stone Furnace"],
-                unlocked: true 
-              }
-            }));
-            setUnlockables(prevUnlockables => ({
-              ...prevUnlockables,
-              ["hammer1"]: { ...prevUnlockables["hammer1"], isVisible: true }
-            }));
-            break;
-          case 'hammer1':
-            setTools(prevTools => ({
-              ...prevTools,
-              "Hammer": {
-                ...prevTools["Hammer"],
-                unlocked: true  // Unlock the Hammer
-              }
-            }));
-            break;
-          case 'smelt1':
-            setIngredients(prevIngredients => ({
-              ...prevIngredients,
-              "Iron Plate": {
-                ...prevIngredients["Iron Plate"],
-                unlocked: true 
-              }
-            }));
-            setUnlockables(prevUnlockables => ({
-              ...prevUnlockables,
-              ["craft1"]: { ...prevUnlockables["craft1"], isVisible: true }
-            }));
-            break
-          case 'craft1':
-            setIngredients(prevIngredients => ({
-              ...prevIngredients,
-              "Gear": {
-                ...prevIngredients["Gear"],
-                unlocked: true 
-              }
-            }));
-            break
-          case 'storage1':
-            setStorage(prevStorage => ({
-              ...prevStorage,
-              Ores: prevStorage.Ores + 20,
-              Ingredients: prevStorage.Ingredients + 50
-            }));
-            break;
-          case 'storage2':
-            setStorage(prevStorage => ({
-              ...prevStorage,
-              Ores: prevStorage.Ores + 450,
-              Ingredients: prevStorage.Ingredients + 900
-            }));
-            break;
-          case 'drill1':
-            setIngredients(prevIngredients => ({
-              ...prevIngredients,
-              "Burner Drill": {
-                ...prevIngredients["Burner Drill"],
-                unlocked: true 
-              }
-            }));
-            break;
-          case 'pick2':
-            setOres(prevOres => ({
-              ...prevOres,
-              Stone: { ...prevOres.Stone, craftTime: 0.5 },
-              "Iron Ore": { ...prevOres["Iron Ore"], craftTime: 0.5 },
-              Coal: { ...prevOres.Coal, craftTime: 0.5 },
-              "Copper Ore": { ...prevOres["Copper Ore"], craftTime: 0.5 }
-            }));
-            break;
-          case 'axe2':
-            setOres(prevOres => ({
-              ...prevOres,
-              Wood: { ...prevOres.Wood, craftTime: 0.25 }
-            }));
-            break;
-          default:
+        if(unlockables[itemName]){
+          switch (itemName) {
+            case 'furnace1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Stone Furnace": {
+                  ...prevIngredients["Stone Furnace"],
+                  unlocked: true 
+                }
+              }));
+              setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                ["hammer1"]: { ...prevUnlockables["hammer1"], isVisible: true }
+              }));
               break;
+            case 'hammer1':
+              setTools(prevTools => ({
+                ...prevTools,
+                "Hammer": {
+                  ...prevTools["Hammer"],
+                  unlocked: true  // Unlock the Hammer
+                }
+              }));
+              break;
+            case 'smelt1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Iron Plate": {
+                  ...prevIngredients["Iron Plate"],
+                  unlocked: true 
+                }
+              }));
+              setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                ["craft1"]: { ...prevUnlockables["craft1"], isVisible: true }
+              }));
+              break
+            case 'craft1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Gear": {
+                  ...prevIngredients["Gear"],
+                  unlocked: true 
+                }
+              }));
+              break
+            case 'storage1':
+              setStorage(prevStorage => ({
+                ...prevStorage,
+                Ores: prevStorage.Ores + 20,
+                Ingredients: prevStorage.Ingredients + 50
+              }));
+              break;
+            case 'storage2':
+              setStorage(prevStorage => ({
+                ...prevStorage,
+                Ores: prevStorage.Ores + 450,
+                Ingredients: prevStorage.Ingredients + 900
+              }));
+              break;
+            case 'drill1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Burner Drill": {
+                  ...prevIngredients["Burner Drill"],
+                  unlocked: true 
+                }
+              }));
+              break;
+            case 'pick2':
+              setOres(prevOres => ({
+                ...prevOres,
+                Stone: { ...prevOres.Stone, craftTime: 0.5 },
+                "Iron Ore": { ...prevOres["Iron Ore"], craftTime: 0.5 },
+                Coal: { ...prevOres.Coal, craftTime: 0.5 },
+                "Copper Ore": { ...prevOres["Copper Ore"], craftTime: 0.5 }
+              }));
+              break;
+            case 'axe2':
+              setOres(prevOres => ({
+                ...prevOres,
+                Wood: { ...prevOres.Wood, craftTime: 0.25 }
+              }));
+              break;
+            default:
+                break;
+            }
+        } else{
+            switch (itemName) {
+              case 'beltLanes1':
+                setNetworks(prevNetworks => {
+                  const updatedNetworks = {};
+              
+                  // Iterate through each network item
+                  Object.keys(prevNetworks).forEach(networkName => {
+                    const networkItem = prevNetworks[networkName];
+              
+                    // Update the 'max' value by adding 4
+                    updatedNetworks[networkName] = {
+                      ...networkItem,
+                      max: networkItem.max + 4,
+                    };
+                  });
+              
+                  return updatedNetworks;
+                });
+                break;
+                default:
+                  break;
+          }
       }
     } else {
         onAlert("Not enough resources to unlock this item.");
@@ -657,6 +727,7 @@ const checkCraft = (ingredientName) => {
     // craft a network item instead
     else{
       updatedNetworks[ingredientName].count += 1;
+      updatedNetworks[ingredientName].idleCount += 1;
       updatedNetworks[ingredientName].tempCount -= 1; 
       setNetworks(updatedNetworks);
       //console.log(`${ingredientName} tempCount is: ${networks[ingredientName].tempCount}`)
@@ -721,7 +792,11 @@ const checkCraft = (ingredientName) => {
             <div className='section'>
               <FactorySection 
               unlockables={unlockables} 
+              expandables={expandables}
+              ores={ores} 
+              ingredients={ingredients} 
               tools={tools} 
+              onUnlock={onUnlock}
               checkCraft={checkCraft}
               networks={networks} 
               setNetworks={setNetworks} />
@@ -742,6 +817,8 @@ const checkCraft = (ingredientName) => {
               handleMachineChange={handleMachineChange} 
               networks={networks}
               setNetworks={setNetworks}
+              lanes={lanes}
+              setLanes={setLanes}
               onAlert={onAlert} />
 
             {/* Inventory Section */}

@@ -16,6 +16,8 @@ const ResourceSection = ({
     handleMachineChange,
     networks,
     setNetworks,
+    lanes,
+    setLanes,
     onAlert
 }) => {
 
@@ -41,6 +43,8 @@ const ResourceSection = ({
                 handleMachineChange={handleMachineChange} 
                 networks={networks}
                 setNetworks={setNetworks}
+                lanes={lanes}
+                setLanes={setLanes}
                 onAlert={onAlert} />
             </div>
 
@@ -60,6 +64,8 @@ const ResourceSection = ({
                   handleMachineChange={handleMachineChange} 
                   networks={networks}
                   setNetworks={setNetworks}
+                  lanes={lanes}
+                  setLanes={setLanes}
                   onAlert={onAlert} />
               </div>
             )}

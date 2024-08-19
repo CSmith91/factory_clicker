@@ -3,7 +3,21 @@ import Machines from "./Machines";
 import Bus from "./Bus";
 import images from './Images/images';
 
-const Furnaces = ({ unlockables, setUnlockables, ores, ingredients,  setOres, setIngredients,  storage, getStorage, handleMachineChange, networks, setNetworks, onAlert }) => {
+const Furnaces = ({ 
+    unlockables, 
+    setUnlockables, 
+    ores, 
+    ingredients,  
+    setOres, 
+    setIngredients,  
+    storage, 
+    getStorage, 
+    handleMachineChange, 
+    networks, 
+    setNetworks,               
+    lanes,
+    setLanes,
+    onAlert }) => {
 
     const [outputCounts, setOutputCounts] = useState({});
 
@@ -114,7 +128,7 @@ const Furnaces = ({ unlockables, setUnlockables, ores, ingredients,  setOres, se
                                 )}
                             </div>
                             {unlockables.belts1.unlocked && (
-                                <Bus itemName={getOutput(oreName)} networks={networks} setNetworks={setNetworks}/>
+                                <Bus itemName={getOutput(oreName)} lanes={lanes} setLanes={setLanes}/>
                             )}
                             <Machines
                                 machineType={"furnace"}
@@ -146,7 +160,7 @@ const Furnaces = ({ unlockables, setUnlockables, ores, ingredients,  setOres, se
                             )}
                         </div>
                         {unlockables.belts1.unlocked && (
-                                <Bus itemName={getOutput(ingredientName)} networks={networks} setNetworks={setNetworks}/>
+                                <Bus itemName={getOutput(ingredientName)} lanes={lanes} setLanes={setLanes}/>
                             )}
                         <Machines
                             machineType={"furnace"}

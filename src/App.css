@@ -248,8 +248,22 @@ button:not(:disabled):hover {
   background: radial-gradient(circle, #ffcc00, #3a3f4a); /* Light amber to dark amber */
 }
 
-.bus-div{
+.bus-div {
   border: 1px dashed #ccc;
   padding: 5px;
   border-radius: 10px;
+  display: flex;
+  justify-content: center;  /* Center lanes within bus-div */
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.bus-lane {
+  border: 1px dashed #ccc;
+  padding: 5px;
+  border-radius: 10px;
+  flex: 0 1 20px;        /* Allow each lane to grow and shrink, with a minimum width */
+  min-width: 34px;
+  text-align: center;
 }
