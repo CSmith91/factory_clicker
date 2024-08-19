@@ -247,3 +247,9 @@ button:not(:disabled):hover {
 .machineOnSite.outputFull {
   background: radial-gradient(circle, #ffcc00, #3a3f4a); /* Light amber to dark amber */
 }
+
+.bus-div{
+  border: 1px dashed #ccc;
+  padding: 5px;
+  border-radius: 10px;
+}
