@@ -8,10 +8,6 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
     const [counter, setCounter] = useState(0) // initialises state
     const [animation, setAnimation] = useState('inputReq')
 
-    // useEffect(() => {
-
-    // }), [animation, setAnimation]
-
     // State to hold all machine-related data
     const [machineStates, setMachineStates] = useState({
         [machineName]: {

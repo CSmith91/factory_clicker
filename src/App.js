@@ -583,25 +583,27 @@ const checkCraft = (ingredientName) => {
       const updatedNetworks = { ...networks};
 
       Object.entries(ingredient.cost).forEach(([resourceName, amountRequired]) => {
-      if (updatedOres[resourceName]) {
-          updatedOres[resourceName].count -= amountRequired;
-      } else if (updatedIngredients[resourceName]) {
-          updatedIngredients[resourceName].count -= amountRequired;
-          if(updatedIngredients[resourceName].idleCount){
-            updatedIngredients[resourceName].idleCount -= amountRequired
-          }
-      }
+        if (updatedOres[resourceName]) {
+            updatedOres[resourceName].count -= amountRequired;
+        } else if (updatedIngredients[resourceName]) {
+            updatedIngredients[resourceName].count -= amountRequired;
+            if(updatedIngredients[resourceName].idleCount){
+              updatedIngredients[resourceName].idleCount -= amountRequired
+            }
+        }
+      });
+
       if(updatedIngredients[ingredientName]){
         updatedIngredients[ingredientName].tempCount += (updatedIngredients[ingredientName].multiplier || 1);
-        console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
+        //console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
       } else if(updatedNetworks[ingredientName]){
         updatedNetworks[ingredientName].tempCount += 1;
-        console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
+        //console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
       }
       else{
         console.log("Something went wrong onCraft!")
       }
-      });
+
 
       addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks)
   };
@@ -625,7 +627,7 @@ const checkCraft = (ingredientName) => {
       setOres(updatedOres);
       setIngredients(updatedIngredients);
 
-      console.log(`${ingredientName} tempCount is: ${ingredients[ingredientName].tempCount}`)
+      //console.log(`${ingredientName} tempCount is: ${ingredients[ingredientName].tempCount}`)
 
       // Update craftCount and unlock smelt1 if it’s the first successful craft
       setCraftCount(prevCount => {
@@ -657,7 +659,7 @@ const checkCraft = (ingredientName) => {
       updatedNetworks[ingredientName].count += 1;
       updatedNetworks[ingredientName].tempCount -= 1; 
       setNetworks(updatedNetworks);
-      console.log(`${ingredientName} tempCount is: ${networks[ingredientName].tempCount}`)
+      //console.log(`${ingredientName} tempCount is: ${networks[ingredientName].tempCount}`)
     }
   }
 
