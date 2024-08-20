@@ -1,11 +1,70 @@
-const Expansion = ({ores, ingredients, onUnlock, expandables}) => {
+const Expansion = ({ores, ingredients, onUnlock, handleBeltUnlock, expandables, lanes, setLanes}) => {
 
+    // const busItems = [
+    //     ...Object.keys(ores).filter(key => ores[key].canBus),
+    //     ...Object.keys(ingredients).filter(key => ingredients[key].canBus)
+    // ];
 
+    // busItems.forEach(itemName =>{
+    //     if(lanes[itemName][0]){
+
+    //     }
+    // })
+
+    const bus = lanes;
+
+    const renderBus = () => {
+        return Object.keys(bus).map(itemName => {
+          const lanes = bus[itemName];
+          const firstUnlockedUnclearedLaneKey = Object.keys(lanes).find(
+            lane => lanes[lane].unlocked && !lanes[lane].clear
+          );
+      
+          // Ensure firstUnlockedUnclearedLaneKey is valid before proceeding
+          if (!firstUnlockedUnclearedLaneKey) {
+            return null;
+          }
+      
+          const firstUnlockedUnclearedLane = lanes[firstUnlockedUnclearedLaneKey];
+          const cost = firstUnlockedUnclearedLane.cost;
+          const gain = firstUnlockedUnclearedLane.gain;
+      
+          // Check if the user has enough resources to unlock this item
+          const canUnlock = Object.entries(cost).every(([item, quantity]) => {
+            const oreCount = ores[item]?.count || 0;
+            const ingredientCount = ingredients[item]?.count || 0;
+            return (oreCount + ingredientCount) >= quantity;
+          });
+      
+          return (
+            <div key={itemName+'div'} style={{ margin: '10px' }}>
+              <button 
+                onClick={() => handleBeltUnlock(itemName, firstUnlockedUnclearedLaneKey)}
+                disabled={!canUnlock}
+                style={{ padding: '10px', borderRadius: '10px', margin: '5px', backgroundColor: canUnlock ? 'lightgreen' : 'lightcoral' }}>
+                
+                {itemName}: Clear lane {firstUnlockedUnclearedLane.no || "No available lane"}
+                <br />
+                {canUnlock ? 
+                  `Use ${Object.entries(cost).map(([item, quantity]) => `${quantity} ${item}`).join(', ')}` : 
+                  `(Requires ${Object.entries(cost).map(([item, quantity]) => `${quantity} ${item}`).join(', ')})`
+                }
+                <br />
+                Gain: {Object.entries(gain).map(([item, quantity]) => `${quantity} ${item}`).join(', ')}
+              </button>
+            </div>
+          );
+        });
+      };
+    
 
     return(
         <>
             <h3>Expansion</h3>
-            <h4>Belts</h4>    
+            <h4>Belts</h4>
+            <div>
+                {renderBus()}
+            </div>
             {Object.keys(expandables)
             .filter(itemName => !expandables[itemName]?.unlocked) // Filter out already unlocked items
             .map(itemName => {

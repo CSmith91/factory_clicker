@@ -52,20 +52,20 @@ function App() {
   })
 
   const [networks, setNetworks] = useState({
-    "Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, craftTime: 10, isNetwork: true, isBelt: true, idleCount: 0},
-    "Advanced Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, craftTime: 20, isNetwork: true, isBelt: true, idleCount: 0},
+    "Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, craftTime: 1, isNetwork: true, isBelt: true, idleCount: 0},
+    "Fast Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, craftTime: 20, isNetwork: true, isBelt: true, idleCount: 0},
     "Express Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, craftTime: 30, isNetwork: true, isBelt: true, idleCount: 0},
   })
 
   const basicBus = {
-    lane1: { clear: false, unlocked: true, speed: 0 },
-    lane2: { clear: false, unlocked: true, speed: 0 },
-    lane3: { clear: false, unlocked: false, speed: 0 },
-    lane4: { clear: false, unlocked: false, speed: 0 },
-    lane5: { clear: false, unlocked: false, speed: 0 },
-    lane6: { clear: false, unlocked: false, speed: 0 },
-    lane7: { clear: false, unlocked: false, speed: 0 },
-    lane8: { clear: false, unlocked: false, speed: 0 },
+    lane1: { no: 1, clear: false, unlocked: true, cost: {"Stone": 20}, gain: {"Wood": 30}, speed: 0 },
+    lane2: { no: 2, clear: false, unlocked: true, cost: {"Stone": 25}, gain: {"Wood": 30}, speed: 0 },
+    lane3: { no: 3, clear: false, unlocked: false, cost: {"Stone": 30}, gain: {"Wood": 30}, speed: 0 },
+    lane4: { no: 4, clear: false, unlocked: false, cost: {"Stone": 35}, gain: {"Wood": 30}, speed: 0 },
+    lane5: { no: 5, clear: false, unlocked: false, cost: {"Brick": 20}, gain: {"Wood": 30}, speed: 0 },
+    lane6: { no: 6, clear: false, unlocked: false, cost: {"Brick": 25}, gain: {"Wood": 30}, speed: 0 },
+    lane7: { no: 7, clear: false, unlocked: false, cost: {"Brick": 30}, gain: {"Wood": 30}, speed: 0 },
+    lane8: { no: 8, clear: false, unlocked: false, cost: {"Brick": 35}, gain: {"Wood": 30}, speed: 0 },
   }
 
   const [lanes, setLanes] = useState({})
@@ -245,9 +245,9 @@ function App() {
     beltLanes1: { 
       isVisible: true,
       unlocked: false, 
-      cost: { "Brick": 50 },
-      title: 'Four Additional Lanes', 
-      desc: 'Clear space for more lanes to run through your factory.'
+      cost: { "Splitter": 30 },
+      title: 'Larger Bus', 
+      desc: 'Increase the belt lane limit for your factory.'
     }
   })
 
@@ -474,6 +474,62 @@ function App() {
         onAlert("Not enough resources to unlock this item.");
     }
   };
+
+  // Function to expand belt lanes
+  const handleBeltUnlock = (busName, laneNumber) =>{
+
+    let canUnlock = true;
+    let newOres = JSON.parse(JSON.stringify(ores));
+    let newIngredients = JSON.parse(JSON.stringify(ingredients));
+    let newLanes = JSON.parse(JSON.stringify(lanes));
+    
+        // first we check the cost and gains
+    const lane = newLanes[busName][laneNumber];
+    const cost = lane.cost;
+    const gain = lane.gain;
+
+    for (const [item, quantity] of Object.entries(cost)) {
+        // Check if the item exists in ores or ingredients and if the user has enough resources
+        if ((newOres[item]?.count || 0) < quantity && (newIngredients[item]?.count || 0) < quantity) {
+            canUnlock = false;
+            break;
+        }
+    }
+
+    if (canUnlock) {
+        // Deduct the required resources from ores or ingredients
+        for (const [item, quantity] of Object.entries(cost)) {
+            if (newOres[item]?.count >= quantity) {
+                newOres[item].count -= quantity;
+            } else if (newIngredients[item]?.count >= quantity) {
+                newIngredients[item].count -= quantity;
+            }
+        }
+        // Add the gains
+        for (const [item, quantity] of Object.entries(gain)) {
+          if (newOres[item]) {
+              newOres[item].count += quantity;
+              if(item === "Wood"){
+                newOres[item].harvested += quantity
+              }
+          } else if (newIngredients[item]) {
+              newIngredients[item].count += quantity;
+          }
+      }      
+      
+        // we update this lane to be 'clear'
+        newLanes[busName][laneNumber].clear = true;
+
+        // Update the states with the new values
+        setOres(newOres);
+        setIngredients(newIngredients);
+        setLanes(newLanes);
+
+    }else {
+      onAlert("Not enough resources to unlock this item.");
+    }
+    
+  }
 
   // Track crafting stats
   const [craftCount, setCraftCount] = useState(0); // purely for unlocking a research item
@@ -797,9 +853,13 @@ const checkCraft = (ingredientName) => {
               ingredients={ingredients} 
               tools={tools} 
               onUnlock={onUnlock}
+              handleBeltUnlock={handleBeltUnlock}
               checkCraft={checkCraft}
               networks={networks} 
-              setNetworks={setNetworks} />
+              setNetworks={setNetworks}
+              lanes={lanes}
+              setLanes={setLanes}
+               />
             </div>
 
             < ResourceSection 

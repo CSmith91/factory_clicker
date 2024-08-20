@@ -357,8 +357,9 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         // else, payout
         else{
             // check its not 1 to many
-            const multiplier = ingredients[output].multiplier ? ingredients[output].multiplier : 1;
-            console.log(`output: ${JSON.stringify(output)}`)
+            const oreOrIngredient = ingredients[output] ? ingredients[output] : ores[output]
+            const multiplier = oreOrIngredient.multiplier ? oreOrIngredient.multiplier : 1;
+            //console.log(`output: ${JSON.stringify(output)}`)
             updateOutputCount(output, multiplier)
         }
 

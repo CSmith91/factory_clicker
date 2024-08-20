@@ -160,7 +160,7 @@ const Furnaces = ({
                             )}
                         </div>
                         {unlockables.belts1.unlocked && (
-                                <Bus itemName={getOutput(ingredientName)} lanes={lanes} setLanes={setLanes}/>
+                                <Bus itemName={getOutput(ingredientName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} onAlert={onAlert}/>
                             )}
                         <Machines
                             machineType={"furnace"}
