@@ -117,7 +117,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 (chosenMachineState.fuels[item] && chosenMachineState.fuels[item].current < chosenMachineState.inputMax)
             );
             if (canAddMore) {
-                if (item === itemName) {
+                if (item === itemName && item !== "Coal") {
                     // Update the current input if the item is the main input item
                     setMachineStates(prevState => ({
                         ...prevState,

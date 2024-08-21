@@ -77,6 +77,16 @@ const OresAndDrills = ({
                 }));
         }
 
+        if(ores["Wood"].harvested === 30){
+            setUnlockables(prevUnlockables => ({
+                ...prevUnlockables,
+                storage1: { 
+                    ...prevUnlockables.storage1,
+                    isVisible: true
+                }
+            }));
+        }
+
         if(ores["Iron Ore"].patch.size === 349998){
             setUnlockables(prevUnlockables => ({
                 ...prevUnlockables,
@@ -212,13 +222,6 @@ const OresAndDrills = ({
         const storageLimit = getStorage(oreName);
     
         if (currentStorage >= storageLimit) {
-            setUnlockables(prevUnlockables => ({
-                ...prevUnlockables,
-                storage1: { 
-                    ...prevUnlockables.storage1,
-                    isVisible: true
-                }
-            }));
             return true;
         }
         return false;
