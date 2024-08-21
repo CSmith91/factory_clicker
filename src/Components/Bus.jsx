@@ -8,6 +8,32 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
     const laneSet = lanes[itemName]
 
     const checkBelts = (itemName, routeNo, beltType, action) => {
+
+      if(action === "upgrade"){
+        if(beltType === "Fast Transport Belt"){
+          let requirement = networks["Express Belt Lane"].idleCount > 0 ? true : false;
+          if(requirement){
+            addBelt(beltType, itemName, routeNo, action)
+          }
+          else{
+            onAlert(`You need an available express belt lane to upgrade to.`)
+          }
+        }
+        else if(beltType === "Transport Belt"){
+          let requirement = networks["Fast Belt Lane"].idleCount > 0 ? true : false;
+          if(requirement){
+            addBelt(beltType, itemName, routeNo, action)
+          }
+          else{
+            onAlert(`You need an available express belt lane to upgrade to.`)
+          }
+        }
+        else{
+          console.log(`Error with belt lane upgrade.`)
+        }
+        return
+      }
+
       // check we have spare routes
       const beltNames = Object.keys(networks);  // Get the keys and reverse the order
   
@@ -75,6 +101,30 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
         updatedLanes[itemName][routeNo].speed = speed;
         updatedLanes[itemName][routeNo].active = false;
       }
+      else if(action === 'upgrade'){
+        let old = ''
+        let upgrade = ''
+        let newBelt = ''
+        if(beltName === "Transport Belt"){
+          old = "Belt Lane";
+          upgrade = "Fast Belt Lane"
+          newBelt = "Fast Transport Belt"
+          speed = ingredients["Fast Transport Belt"].beltSpeed;
+        }
+        else if(beltName === "Fast Transport Belt"){
+          old = "Fast Belt Lane";
+          upgrade = "Express Belt Lane"
+          newBelt = "Express Transport Belt"
+          speed = ingredients["Express Transport Belt"].beltSpeed;
+        }
+        else{
+          console.log(`Something went wrong looking up Belt Lane!`)
+        }
+        //console.log(`beltName is ${beltName}`)
+        updatedNetworks[old].idleCount += 1;
+        updatedNetworks[upgrade].idleCount -= 1;
+        updatedLanes[itemName][routeNo].speed = speed;
+      }
 
       setNetworks(updatedNetworks);
       setLanes(updatedLanes);
@@ -118,10 +168,12 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
                     )} 
                     {laneSet[routeNo].active && (
                       <div className="belt-change">
-                        <button>
-                          ^
-                        </button>
-                        
+                          <button
+                            onClick={() => checkBelts(itemName, routeNo, beltName, "upgrade")}
+                            style={{ visibility: laneSet[routeNo].speed < 5 ? 'visible' : 'hidden' }}
+                          >
+                            ^
+                          </button>
                         <img src={images[beltName]} alt="belt" />
                         <button
                         onClick={() => checkBelts(itemName, routeNo, beltName, "remove")}
