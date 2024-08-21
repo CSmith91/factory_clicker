@@ -5,7 +5,6 @@ import images from './Images/images';
 
 const Furnaces = ({ 
     unlockables, 
-    setUnlockables, 
     ores, 
     ingredients,  
     setOres, 
@@ -61,13 +60,6 @@ const Furnaces = ({
     
             if (newCount > storageLimit) {
                 const partialAddCount = storageLimit - ingredient.count;
-                setUnlockables(prevUnlockables => ({
-                    ...prevUnlockables,
-                    storage2: { 
-                      ...prevUnlockables.storage2,
-                      isVisible: true
-                    }
-                }))
                 updateIngredientAndResetOutput(outputName, partialAddCount, currentCount - partialAddCount);
             } else if (currentCount > 0) {
                 updateIngredientAndResetOutput(outputName, currentCount, 0);

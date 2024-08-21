@@ -117,6 +117,16 @@ const OresAndDrills = ({
                 }));
         }
 
+        if(ores["Iron Ore"].patch.size === 349935){
+        setUnlockables(prevUnlockables => ({
+            ...prevUnlockables,
+            storage2: { 
+              ...prevUnlockables.storage2,
+              isVisible: true
+            }
+        }))
+        }
+
         if(ores["Wood"].harvested === 45){
             setUnlockables(prevUnlockables => ({
                 ...prevUnlockables,

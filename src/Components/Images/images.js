@@ -62,7 +62,7 @@ const images = {
 
     // Networks
     "Belt Lane": beltLane1,
-    "Advanced Belt Lane": beltLane2,
+    "Fast Belt Lane": beltLane2,
     "Express Belt Lane": beltLane3,
   };
   

@@ -1,6 +1,5 @@
 import OresAndDrills from './OresAndDrills';
 import Furnaces from './Furnaces'
-import { useEffect } from 'react';
 
 const ResourceSection = ({
     unlockables,
@@ -31,7 +30,23 @@ const ResourceSection = ({
     // }, [onIncrement])
     
     const checkBus = (itemName) => {
-      console.log(`The ${itemName} bus have been checked`)
+      console.log(`Our lanes[itemName] is: ${JSON.stringify(lanes[itemName])}`)
+
+      // first, we check if there are any resources to move
+
+      // second, we check if the target storage has space
+
+      let bus = lanes[itemName]
+
+      // lastly iterate through the bus. Any lanes that are active then trigger the payout
+      for (let lane in bus) {
+        if (bus[lane].active) {
+            let speed = bus[lane].speed;
+        }
+      }
+      // something like this
+      // turnOnBelt(itemName, lane)
+
     }
 
     return (
@@ -63,7 +78,6 @@ const ResourceSection = ({
               <div className='section'>
                 <Furnaces 
                   unlockables={unlockables}
-                  setUnlockables={setUnlockables} 
                   ores={ores} 
                   ingredients={ingredients} 
                   setOres={setOres} 
