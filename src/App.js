@@ -58,14 +58,14 @@ function App() {
   })
 
   const basicBus = {
-    lane1: { no: 1, clear: false, unlocked: true, cost: {"Stone": 20}, gain: {"Wood": 30}, speed: 0 },
-    lane2: { no: 2, clear: false, unlocked: true, cost: {"Stone": 25}, gain: {"Wood": 30}, speed: 0 },
-    lane3: { no: 3, clear: false, unlocked: false, cost: {"Stone": 30}, gain: {"Wood": 30}, speed: 0 },
-    lane4: { no: 4, clear: false, unlocked: false, cost: {"Stone": 35}, gain: {"Wood": 30}, speed: 0 },
-    lane5: { no: 5, clear: false, unlocked: false, cost: {"Brick": 20}, gain: {"Wood": 30}, speed: 0 },
-    lane6: { no: 6, clear: false, unlocked: false, cost: {"Brick": 25}, gain: {"Wood": 30}, speed: 0 },
-    lane7: { no: 7, clear: false, unlocked: false, cost: {"Brick": 30}, gain: {"Wood": 30}, speed: 0 },
-    lane8: { no: 8, clear: false, unlocked: false, cost: {"Brick": 35}, gain: {"Wood": 30}, speed: 0 },
+    lane1: { no: 1, active: false, clear: false, unlocked: true, cost: {"Stone": 20}, gain: {"Wood": 30}, speed: 0 },
+    lane2: { no: 2, active: false, clear: false, unlocked: true, cost: {"Stone": 25}, gain: {"Wood": 30}, speed: 0 },
+    lane3: { no: 3, active: false, clear: false, unlocked: testMode, cost: {"Stone": 30}, gain: {"Wood": 30}, speed: 0 },
+    lane4: { no: 4, active: false, clear: false, unlocked: testMode, cost: {"Stone": 35}, gain: {"Wood": 30}, speed: 0 },
+    lane5: { no: 5, active: false, clear: false, unlocked: testMode, cost: {"Brick": 20}, gain: {"Wood": 30}, speed: 0 },
+    lane6: { no: 6, active: false, clear: false, unlocked: testMode, cost: {"Brick": 25}, gain: {"Wood": 30}, speed: 0 },
+    lane7: { no: 7, active: false, clear: false, unlocked: testMode, cost: {"Brick": 30}, gain: {"Wood": 30}, speed: 0 },
+    lane8: { no: 8, active: false, clear: false, unlocked: testMode, cost: {"Brick": 35}, gain: {"Wood": 30}, speed: 0 },
   }
 
   const [lanes, setLanes] = useState({})
@@ -634,56 +634,56 @@ function App() {
   });
 };
 
-// Function for crafting
-const checkCraft = (ingredientName) => {
-  const toolName = ingredients[ingredientName] ? 'Hammer' : null;
-  const items = ingredients[ingredientName] ? ingredients : networks;
-  const item = items[ingredientName]
-  const totalCount = item.count + item.tempCount
+  // Function for crafting
+  const checkCraft = (ingredientName) => {
+    const toolName = ingredients[ingredientName] ? 'Hammer' : null;
+    const items = ingredients[ingredientName] ? ingredients : networks;
+    const item = items[ingredientName]
+    const totalCount = item.count + item.tempCount
 
-  if (!item || !item.cost) return;
+    if (!item || !item.cost) return;
 
-  if(totalCount >= getStorage(ingredientName)){
+    if(totalCount >= getStorage(ingredientName)){
+      if(toolName){
+        onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
+      }
+      else{
+        onAlert(`You've reach the max number of lanes for ${ingredientName}.`);
+      }
+      return; // Exit the function if storage is full
+    }
+
+    // Check if the hammer has durability
     if(toolName){
-      onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
+      const tool = tools[toolName];
+      if (!tool || tool.durability <= 0) {
+          onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
+          return; // Exit the function if the tool is broken
+      }
+    }
+
+    // Check if there are enough resources to craft
+    const hasEnoughResources = Object.entries(item.cost).every(
+      ([resourceName, amountRequired]) => {
+        const resource = ores[resourceName] || ingredients[resourceName];
+
+        // If the resource has an idleCount, check that it's also sufficient
+        if (resource?.idleCount !== undefined) {
+          return resource.idleCount >= amountRequired;
+        }
+
+        // Otherwise, just check the regular count
+        return resource?.count >= amountRequired;
+      }
+    );
+
+    if (!hasEnoughResources) {
+      onAlert(`Not enough resources to craft ${ingredientName}`);
     }
     else{
-      onAlert(`You've reach the max number of lanes for ${ingredientName}.`);
+        const craftTime = items[ingredientName].craftTime;
+        onCraft(ingredientName, item, craftTime)
     }
-    return; // Exit the function if storage is full
-  }
-
-  // Check if the hammer has durability
-  if(toolName){
-    const tool = tools[toolName];
-    if (!tool || tool.durability <= 0) {
-        onAlert(`Your ${toolName} is broken. You cannot craft ${ingredientName}.`);
-        return; // Exit the function if the tool is broken
-    }
-  }
-
-  // Check if there are enough resources to craft
-  const hasEnoughResources = Object.entries(item.cost).every(
-    ([resourceName, amountRequired]) => {
-      const resource = ores[resourceName] || ingredients[resourceName];
-
-      // If the resource has an idleCount, check that it's also sufficient
-      if (resource?.idleCount !== undefined) {
-        return resource.idleCount >= amountRequired;
-      }
-
-      // Otherwise, just check the regular count
-      return resource?.count >= amountRequired;
-    }
-  );
-
-  if (!hasEnoughResources) {
-    onAlert(`Not enough resources to craft ${ingredientName}`);
-  }
-  else{
-      const craftTime = items[ingredientName].craftTime;
-      onCraft(ingredientName, item, craftTime)
-  }
   }
 
   const onCraft = (ingredientName, ingredient, craftTime) => {

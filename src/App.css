@@ -15,6 +15,7 @@ button {
   font-size: 16px;
   background-color: aquamarine;
   border-radius: 5px;
+  cursor: pointer;
 }
 
 button:not(:disabled):hover {
@@ -255,15 +256,36 @@ button:not(:disabled):hover {
   display: flex;
   justify-content: center;  /* Center lanes within bus-div */
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 2px;
   align-items: center;
 }
 
 .bus-lane {
-  border: 1px dashed #ccc;
-  padding: 5px;
   border-radius: 10px;
   flex: 0 1 20px;        /* Allow each lane to grow and shrink, with a minimum width */
   min-width: 34px;
   text-align: center;
+  margin: 1px;
+}
+
+.add-lane button {
+  background-color: #3a3f4a;
+  border: none; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */
+}
+
+.belt-change button {
+  color: white;
+  background-color: #3a3f4a;
+  height: 20px; 
+  width: 20px;
+  padding: 0%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: none;  
+}
+
+.belt-change button:hover {
+  background-color:#808aa0;
 }

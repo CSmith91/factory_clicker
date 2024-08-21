@@ -1,5 +1,6 @@
 import OresAndDrills from './OresAndDrills';
 import Furnaces from './Furnaces'
+import { useEffect } from 'react';
 
 const ResourceSection = ({
     unlockables,
@@ -25,6 +26,14 @@ const ResourceSection = ({
         return ingredients["Brick"].unlocked
       };
 
+    // useEffect(() => {
+    //   checkBus(itemName)
+    // }, [onIncrement])
+    
+    const checkBus = (itemName) => {
+      console.log(`The ${itemName} bus have been checked`)
+    }
+
     return (
         <>
             {/* Ore Patch Section */}
@@ -43,6 +52,7 @@ const ResourceSection = ({
                 handleMachineChange={handleMachineChange} 
                 networks={networks}
                 setNetworks={setNetworks}
+                checkBus={checkBus}
                 lanes={lanes}
                 setLanes={setLanes}
                 onAlert={onAlert} />
@@ -64,6 +74,7 @@ const ResourceSection = ({
                   handleMachineChange={handleMachineChange} 
                   networks={networks}
                   setNetworks={setNetworks}
+                  checkBus={checkBus}
                   lanes={lanes}
                   setLanes={setLanes}
                   onAlert={onAlert} />

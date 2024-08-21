@@ -18,6 +18,7 @@ const OresAndDrills = ({
     handleMachineChange, 
     networks,
     setNetworks,
+    checkBus,
     lanes,
     setLanes,
     onAlert }) => {
@@ -161,30 +162,45 @@ const OresAndDrills = ({
         const currentCount = outputCounts[oreName] || 0;
         const ore = ores[oreName];
         const storageLimit = getStorage(oreName);
+
+        if (!ore) {
+            console.error(`Ore ${oreName} not found.`);
+            return;
+        }
     
         if (ore.count >= storageLimit) {
             onAlert(`${oreName} is full.`);
-        } else {
-            const newCount = ore.count + currentCount;
-    
-            if (newCount > storageLimit) {
-                const partialAddCount = storageLimit - ore.count;
-                updateOreAndOutputCounts(oreName, partialAddCount, currentCount - partialAddCount);
-            } else if (currentCount > 0) {
-                updateOreAndOutputCounts(oreName, currentCount, 0);
-            }
+            return
         }
+
+        const newCount = ore.count + currentCount;
+
+        if (newCount > storageLimit) {
+            const partialAddCount = storageLimit - ore.count;
+            updateOreAndOutputCounts(oreName, partialAddCount, currentCount - partialAddCount);
+        } else if (currentCount > 0) {
+            updateOreAndOutputCounts(oreName, currentCount, 0);
+        }
+        
     };
     
     const updateOreAndOutputCounts = (oreName, oreCountToAdd, remainingOutputCount) => {
-        setOres(prevOres => ({
-            ...prevOres,
-            [oreName]: {
-                ...prevOres[oreName],
-                count: prevOres[oreName].count + oreCountToAdd
+        setOres(prevOres => {
+            const ore = prevOres[oreName];
+            if (!ore) {
+                console.error(`Ore ${oreName} not found in state.`);
+                return prevOres;
             }
-        }));
-    
+
+            return {
+                ...prevOres,
+                [oreName]: {
+                    ...ore,
+                    count: ore.count + oreCountToAdd
+                }
+            };
+        });
+
         setOutputCounts(prevCounts => ({
             ...prevCounts,
             [oreName]: remainingOutputCount
@@ -192,21 +208,21 @@ const OresAndDrills = ({
     };
 
     const isStorageFull = (oreName) => { 
-        const limit = outputCounts[oreName] || 0
-        if(limit >= getStorage(oreName)){
+        const currentStorage = outputCounts[oreName] || 0;
+        const storageLimit = getStorage(oreName);
+    
+        if (currentStorage >= storageLimit) {
             setUnlockables(prevUnlockables => ({
                 ...prevUnlockables,
                 storage1: { 
-                  ...prevUnlockables.storage1,
-                  isVisible: true
+                    ...prevUnlockables.storage1,
+                    isVisible: true
                 }
-            }))
-            return true
+            }));
+            return true;
         }
-        else{
-            return false
-        }
-    }
+        return false;
+    };
 
     
 
@@ -237,7 +253,7 @@ const OresAndDrills = ({
 
                             </div>
                             {unlockables.belts1.unlocked && (
-                                <Bus itemName={oreName} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} onAlert={onAlert} />
+                                <Bus itemName={oreName} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBus={checkBus} onAlert={onAlert} />
                             )}
                             {oreData.patch !== undefined ? (
                                 <p>{oreName} patch remaining: {oreData.patch.size}</p> 
