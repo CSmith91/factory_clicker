@@ -174,7 +174,10 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
                           >
                             ^
                           </button>
-                        <img src={images[beltName]} alt="belt" />
+                        <img 
+                          id={`belt-${itemName}-${routeNo}`}  // Unique ID using itemName and routeNo
+                          src={images[beltName]} 
+                          alt="belt" />
                         <button
                         onClick={() => checkBelts(itemName, routeNo, beltName, "remove")}
                         >-</button>

@@ -289,3 +289,28 @@ button:not(:disabled):hover {
 .belt-change button:hover {
   background-color:#808aa0;
 }
+
+/* Basic flashing animation */
+@keyframes flash {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Flashing for slow belts */
+.flashing-slow {
+  animation: flash 1.5s infinite; /* Longer duration for slower flashing */
+}
+
+/* Flashing for medium belts */
+.flashing-medium {
+  animation: flash 1s infinite; /* Medium duration */
+}
+
+/* Flashing for fast belts */
+.flashing-fast {
+  animation: flash 0.5s infinite; /* Shorter duration for faster flashing */
+}
