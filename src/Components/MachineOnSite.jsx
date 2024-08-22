@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
 import images from './Images/images';
 
-const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, handleMachineChange, outputCounts, updateOutputCount, onAlert }) => {
+const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, handleMachineChange, pendingMachineOutput, setPendingMachineOutput, outputCounts, updateOutputCount, onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
@@ -39,9 +39,20 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         
         if (currentMachineState?.isRunning) {
             const makeTime = ingredients[machineName].isDrill ? ores[output].craftTime : ingredients[output].craftTime
+            const multiplier = 
+            (ingredients[output]?.multiplier !== undefined) ? ingredients[output].multiplier :
+            (ores[output]?.multiplier !== undefined) ? ores[output].multiplier : 
+            1;
             const waitTime = makeTime / currentMachineState.count;
+
             const timeoutId = setTimeout(() => {
+                // deduct pending first, then add actual through payout, as payout goes on to checkProduction again
+                setPendingMachineOutput(prevPending => ({
+                    ...prevPending,
+                    [output]: prevPending[output] - multiplier
+                }));
                 payout(machineStates[machineName]);
+
             }, waitTime / machineSpeed * 1000);
             
             return () => clearTimeout(timeoutId); // Cleanup timeout on unmount or dependency change
@@ -181,7 +192,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         // first, check we have any machines
         if(machine[itemName].count > 0){
             // second, check we have room in the destination output
-            if(outputCounts[output] < getStorage(output) || !outputCounts[output]){
+            if(outputCounts[output] + pendingMachineOutput[output] < getStorage(output) || !outputCounts[output]){
                 // third, check we aren't aleady running this machine
                 if(!machine[itemName].isRunning){
                     // fourth, check we have ingredients
@@ -263,6 +274,17 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             }
         }));
 
+        const multiplier = 
+        (ingredients[output]?.multiplier !== undefined) ? ingredients[output].multiplier :
+        (ores[output]?.multiplier !== undefined) ? ores[output].multiplier : 
+        1;
+        console.log(`multiplier: ${JSON.stringify(multiplier)}`)
+        // Update the pending machine output
+        setPendingMachineOutput(prevPending => ({
+            ...prevPending,
+            [output]: (prevPending[output] || 0) + multiplier
+        }));
+        console.log(`pendingOutputCounts: ${JSON.stringify(pendingMachineOutput)}`)
         // this triggers the useEffect to now call the payout script after a delay 
     }
 

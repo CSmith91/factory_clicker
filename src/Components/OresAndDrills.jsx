@@ -14,6 +14,8 @@ const OresAndDrills = ({
     getStorage, 
     isStorageFull,
     handleMachineChange, 
+    pendingMachineOutput,
+    setPendingMachineOutput, 
     handleBank,
     outputCounts,
     updateOutputCount,
@@ -37,7 +39,15 @@ const OresAndDrills = ({
                             <div key={oreName+"Div"} className={'oreDiv'}>
                                 {oreData.canHandMine ? (
                                     <div style={{marginTop: '-3px'}} >
-                                        <OreButton key={oreName} ores={ores} oreName={oreName} outputCounts={outputCounts} updateOutputCount={updateOutputCount} getStorage={getStorage} /> 
+                                        <OreButton 
+                                            key={oreName} 
+                                            ores={ores} 
+                                            oreName={oreName} 
+                                            outputCounts={outputCounts}                                 
+                                            pendingMachineOutput={pendingMachineOutput}
+                                            setPendingMachineOutput={setPendingMachineOutput} 
+                                            updateOutputCount={updateOutputCount} 
+                                            getStorage={getStorage} /> 
                                     </div>
                                 ) : (<></>)}
                                 <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(oreName) ? 'red-background' : ''}`} onClick={() => handleBank(oreName)} >
@@ -70,6 +80,8 @@ const OresAndDrills = ({
                                 storage={storage}
                                 getStorage={getStorage}
                                 handleMachineChange={handleMachineChange} 
+                                pendingMachineOutput={pendingMachineOutput}
+                                setPendingMachineOutput={setPendingMachineOutput}
                                 outputCounts={outputCounts}
                                 updateOutputCount={updateOutputCount}
                                 onAlert={onAlert} 

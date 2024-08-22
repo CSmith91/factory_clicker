@@ -26,6 +26,8 @@ const ResourceSection = ({
     };
 
   const [outputCounts, setOutputCounts] = useState({});
+  const [pendingMachineOutput, setPendingMachineOutput] = useState({});
+  const [pendingBeltOutput, setPendingBeltOutput] = useState({});
 
   const handleBank = (itemName) => {
     const currentCount = outputCounts[itemName] || 0;
@@ -79,6 +81,7 @@ const ResourceSection = ({
         ...prevCounts,
         [itemName]: remainingOutputCount
     }));
+    //console.log(`outputCounts: ${JSON.stringify(outputCounts)}`)
   };
 
   // Function to update the output count
@@ -348,6 +351,8 @@ const ResourceSection = ({
               getStorage={getStorage} 
               isStorageFull={isStorageFull}
               handleMachineChange={handleMachineChange}
+              pendingMachineOutput={pendingMachineOutput}
+              setPendingMachineOutput={setPendingMachineOutput}
               handleBank={handleBank}
               outputCounts={outputCounts}
               updateOutputCount={updateOutputCount}
@@ -372,6 +377,8 @@ const ResourceSection = ({
                 getStorage={getStorage} 
                 isStorageFull={isStorageFull}
                 handleMachineChange={handleMachineChange} 
+                pendingMachineOutput={pendingMachineOutput}
+                setPendingMachineOutput={setPendingMachineOutput}
                 handleBank={handleBank}
                 outputCounts={outputCounts}
                 updateOutputCount={updateOutputCount}

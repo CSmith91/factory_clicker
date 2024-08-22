@@ -13,6 +13,8 @@ const Furnaces = ({
     getStorage, 
     isStorageFull,
     handleMachineChange,
+    pendingMachineOutput,
+    setPendingMachineOutput, 
     handleBank,
     outputCounts,
     updateOutputCount,
@@ -78,6 +80,8 @@ const Furnaces = ({
                                 storage={storage}
                                 getStorage={getStorage}
                                 handleMachineChange={handleMachineChange}
+                                pendingMachineOutput={pendingMachineOutput}
+                                setPendingMachineOutput={setPendingMachineOutput}
                                 outputCounts={outputCounts}
                                 updateOutputCount={updateOutputCount}
                                 onAlert={onAlert} 
@@ -110,6 +114,8 @@ const Furnaces = ({
                             storage={storage}
                             getStorage={getStorage}
                             handleMachineChange={handleMachineChange}
+                            pendingMachineOutput={pendingMachineOutput}
+                            setPendingMachineOutput={setPendingMachineOutput}
                             outputCounts={outputCounts}
                             updateOutputCount={updateOutputCount}
                             onAlert={onAlert}
