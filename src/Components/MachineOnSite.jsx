@@ -278,13 +278,11 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         (ingredients[output]?.multiplier !== undefined) ? ingredients[output].multiplier :
         (ores[output]?.multiplier !== undefined) ? ores[output].multiplier : 
         1;
-        console.log(`multiplier: ${JSON.stringify(multiplier)}`)
         // Update the pending machine output
         setPendingMachineOutput(prevPending => ({
             ...prevPending,
             [output]: (prevPending[output] || 0) + multiplier
         }));
-        console.log(`pendingOutputCounts: ${JSON.stringify(pendingMachineOutput)}`)
         // this triggers the useEffect to now call the payout script after a delay 
     }
 
@@ -383,6 +381,20 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             const multiplier = oreOrIngredient.multiplier ? oreOrIngredient.multiplier : 1;
             //console.log(`output: ${JSON.stringify(output)}`)
             updateOutputCount(output, multiplier)
+
+            // reduce ore patch if its a drill
+            if(ingredients[machineName]?.isDrill){
+                setOres(prevOres => ({
+                    ...prevOres,
+                    [itemName]: {
+                        ...prevOres[itemName],
+                        patch: {
+                            ...prevOres[itemName].patch,
+                            size: prevOres[itemName].patch.size - multiplier
+                        }
+                    }
+                }));
+            }
         }
 
         // turn off and loop back

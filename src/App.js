@@ -58,14 +58,14 @@ function App() {
   })
 
   const basicBus = {
-    lane1: { no: 1, isRunning: false, active: false, clear: false, unlocked: true, cost: {"Stone": 20}, gain: {"Wood": 30}, speed: 0 },
-    lane2: { no: 2, isRunning: false, active: false, clear: false, unlocked: true, cost: {"Stone": 25}, gain: {"Wood": 30}, speed: 0 },
-    lane3: { no: 3, isRunning: false, active: false, clear: false, unlocked: testMode, cost: {"Stone": 30}, gain: {"Wood": 30}, speed: 0 },
-    lane4: { no: 4, isRunning: false, active: false, clear: false, unlocked: testMode, cost: {"Stone": 35}, gain: {"Wood": 30}, speed: 0 },
-    lane5: { no: 5, isRunning: false, active: false, clear: false, unlocked: testMode, cost: {"Brick": 20}, gain: {"Wood": 30}, speed: 0 },
-    lane6: { no: 6, isRunning: false, active: false, clear: false, unlocked: testMode, cost: {"Brick": 25}, gain: {"Wood": 30}, speed: 0 },
-    lane7: { no: 7, isRunning: false, active: false, clear: false, unlocked: testMode, cost: {"Brick": 30}, gain: {"Wood": 30}, speed: 0 },
-    lane8: { no: 8, isRunning: false, active: false, clear: false, unlocked: testMode, cost: {"Brick": 35}, gain: {"Wood": 30}, speed: 0 },
+    lane1: { no: 1, isRunning: false, active: false, clear: testMode, unlocked: true, cost: {"Stone": 20}, gain: {"Wood": 30}, speed: 0 },
+    lane2: { no: 2, isRunning: false, active: false, clear: testMode, unlocked: true, cost: {"Stone": 25}, gain: {"Wood": 30}, speed: 0 },
+    lane3: { no: 3, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Stone": 30}, gain: {"Wood": 30}, speed: 0 },
+    lane4: { no: 4, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Stone": 35}, gain: {"Wood": 30}, speed: 0 },
+    lane5: { no: 5, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 20}, gain: {"Wood": 30}, speed: 0 },
+    lane6: { no: 6, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 25}, gain: {"Wood": 30}, speed: 0 },
+    lane7: { no: 7, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 30}, gain: {"Wood": 30}, speed: 0 },
+    lane8: { no: 8, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 35}, gain: {"Wood": 30}, speed: 0 },
   }
 
   const [lanes, setLanes] = useState({})

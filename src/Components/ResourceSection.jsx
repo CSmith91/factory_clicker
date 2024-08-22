@@ -27,7 +27,57 @@ const ResourceSection = ({
 
   const [outputCounts, setOutputCounts] = useState({});
   const [pendingMachineOutput, setPendingMachineOutput] = useState({});
-  const [pendingBeltOutput, setPendingBeltOutput] = useState({});
+
+  const incrementTempCount = (itemName, incrementBy) => {
+    const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
+    if(oreOrIngredient === 'ore'){
+      setOres(prevOres => ({
+          ...prevOres,
+          [itemName]: {
+              ...prevOres[itemName],
+              tempCount: prevOres[itemName].tempCount + incrementBy
+          }
+      }));
+    }
+    else if(oreOrIngredient === 'ingredient'){
+      setIngredients(prevOres => ({
+        ...prevOres,
+        [itemName]: {
+            ...prevOres[itemName],
+            tempCount: prevOres[itemName].tempCount + incrementBy
+        }
+    }));
+    }
+    else{
+      console.log(`Something's gone wrong incrementing ${itemName} temp value through belts!`)
+    }
+  };
+
+  const incrementCount = (itemName, incrementBy) => {
+    console.log(`I've been called!`)
+    const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
+    if(oreOrIngredient === 'ore'){
+      setOres(prevOres => ({
+          ...prevOres,
+          [itemName]: {
+              ...prevOres[itemName],
+              count: prevOres[itemName].count + incrementBy
+          }
+      }));
+    }
+    else if(oreOrIngredient === 'ingredient'){
+      setIngredients(prevOres => ({
+        ...prevOres,
+        [itemName]: {
+            ...prevOres[itemName],
+            count: prevOres[itemName].count + incrementBy
+        }
+    }));
+    }
+    else{
+      console.log(`Something's gone wrong incrementing ${itemName} final value through belts!`)
+    }
+  };
 
   const handleBank = (itemName) => {
     const currentCount = outputCounts[itemName] || 0;
@@ -241,7 +291,7 @@ const ResourceSection = ({
   };
 
   // useEffect(() => {
-  //   checkBus(itemName)
+  //   checkBelts(itemName)
   // }, [onIncrement])
 
   const updateLaneRunningState = (itemName, lane, isRunning) => {
@@ -257,34 +307,41 @@ const ResourceSection = ({
     }));
   };
   
-  const checkBus = (itemName) => {
-    console.log(`Our lanes[itemName] is: ${JSON.stringify(lanes[itemName])}`)
-    const targetResource = ores[itemName] ? ores[itemName] : ingredients[itemName]
+  const checkBelts = (itemName) => {
+    console.log(`Belts have been called
+      itemName: ${itemName}
+      outputCounts[itemName]: ${outputCounts[itemName]}
+      `)
+    //console.log(`Our lanes[itemName] is: ${JSON.stringify(lanes[itemName])}`)
+    const targetResource = ores[itemName] || ingredients[itemName];
 
     // first, we check if there are any resources to move
-    // ###################### START HERE
+    console.log(`outputCounts[itemName] for ${itemName} is: ${outputCounts[itemName]}`)
+    if(outputCounts[itemName] > 0){
+      // second, we check if the target storage has space (including tempCount!)
+      if(targetResource.count + targetResource.tempCount < getStorage(targetResource)){
+        // lastly iterate through the bus. Any lanes that are active (and not already running) then trigger the payout
+        let bus = lanes[itemName]
 
-    // second, we check if the target storage has space (including tempCount!)
-    if(targetResource.count + targetResource.tempCount <= getStorage(targetResource)){
-      // lastly iterate through the bus. Any lanes that are active (and not already running) then trigger the payout
-      let bus = lanes[itemName]
-
-      for (let lane in bus) {
-        if (bus[lane].active && !bus[lane].isRunning) {
-            let speed = bus[lane].speed;      
-            turnOnBelt(itemName, lane, speed)
+        for (let lane in bus) {
+          if (bus[lane].active && !bus[lane].isRunning) {
+              console.log(`Is running? ${bus[lane].isRunning} Found an active, non-running belt! Turning on.`)
+              let speed = bus[lane].speed;
+              incrementTempCount(itemName, 1);   
+              turnOnBelt(itemName, lane, speed)
+          }
         }
+      }
+      else{
+        // storage is full
       }
     }
     else{
-      // storage is full
+      // nothing to move
     }
   }
 
   const turnOnBelt = (itemName, lane, speed) => {
-
-    // set the belt lane as running
-    updateLaneRunningState(itemName, lane, true);
 
     // belt payouts are different to machines
     // we have a constant take-take-take of resources at a very high rate
@@ -293,39 +350,59 @@ const ResourceSection = ({
     // hence, this function has two timeouts: one for taking and another for 
     // arrival
 
+    // set the belt lane as running
+    updateLaneRunningState(itemName, lane, true);
+
+    const beltId = `belt-${itemName}-${lane}`;
+    //console.log(`Attempting to find element with ID: ${beltId}`);
 
     // Add a flashing effect to the lane in CSS
-    const laneElement = document.querySelector(`#belt-${itemName}-${lane}`);
+    const laneElement = document.querySelector(`#${beltId}`);
     
     if (laneElement) {
       // Determine which class to add based on the speed
       let flashClass;
-      if (speed >= 5) {
-        flashClass = 'flashing-fast';  // Fast belts
-      } else if (speed >= 3) {
-        flashClass = 'flashing-medium';  // Medium belts
-      } else {
-        flashClass = 'flashing-slow';  // Slow belts
-      }
-  
+      if (speed >= 5) flashClass = 'flashing-fast';
+      else if (speed >= 3) flashClass = 'flashing-medium';
+      else flashClass = 'flashing-slow';
+
       // Add the corresponding class for flashing
       laneElement.classList.add(flashClass);
 
-      // Arrival after delay
+      // Remove flashing effect and payout after delay
       setTimeout(() => {
         laneElement.classList.remove(flashClass);
-        // beltPayout
-      }, 50 / speed * 1000);  // Adjust timeout based on the desired duration
+        beltPayout(itemName);
+      }, 2000 ) // 50 / speed * 1000); // ADDDED 2000 FOR QUICKER TESTING
+    }
+    else{
+      console.error(`No laneElement found with ID: ${beltId}`);
+      //console.log(document.body.innerHTML);
     }
 
     const throughput = 8 * speed
     // loop back to achieve x items / second
-    // add tempCount
     setTimeout(() => {
+      // deduct item from the bank (almost) immediately
+      setOutputCounts(prevCounts => {
+        const newCount = (prevCounts[itemName] || 0) - 1;
+        return { ...prevCounts, [itemName]: Math.max(0, newCount) };
+      });
+
       updateLaneRunningState(itemName, lane, false);
-      checkBus(itemName)
-    }, 1000 / throughput )
+      checkBelts(itemName)
+
+    }, 1000 ) // / throughput ) //BLOCKED THROUGHPUT FOR SLOWER TESTING
   };
+
+  const beltPayout = (itemName) => {
+    console.log(`I've paid out!`)
+    // add item to inventory
+    incrementCount(itemName, 1); 
+
+    // remove item as a temp value
+    incrementTempCount(itemName, -1);  
+  }
 
   const isStorageFull = (itemName) => { 
     const currentStorage = outputCounts[itemName] || 0;
@@ -358,7 +435,7 @@ const ResourceSection = ({
               updateOutputCount={updateOutputCount}
               networks={networks}
               setNetworks={setNetworks}
-              checkBus={checkBus}
+              checkBelts={checkBelts}
               lanes={lanes}
               setLanes={setLanes}
               onAlert={onAlert} />
@@ -384,7 +461,7 @@ const ResourceSection = ({
                 updateOutputCount={updateOutputCount}
                 networks={networks}
                 setNetworks={setNetworks}
-                checkBus={checkBus}
+                checkBelts={checkBelts}
                 lanes={lanes}
                 setLanes={setLanes}
                 onAlert={onAlert} />

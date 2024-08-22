@@ -20,7 +20,7 @@ const Furnaces = ({
     updateOutputCount,
     networks, 
     setNetworks, 
-    checkBus,              
+    checkBelts,              
     lanes,
     setLanes,
     onAlert }) => {
@@ -68,7 +68,7 @@ const Furnaces = ({
                                 )}
                             </div>
                             {unlockables.belts1.unlocked && (
-                                <Bus itemName={getOutput(oreName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBus={checkBus} onAlert={onAlert}/>
+                                <Bus itemName={getOutput(oreName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert}/>
                             )}
                             <Machines
                                 machineType={"furnace"}
@@ -102,7 +102,7 @@ const Furnaces = ({
                             )}
                         </div>
                         {unlockables.belts1.unlocked && (
-                                <Bus itemName={getOutput(ingredientName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBus={checkBus} onAlert={onAlert}/>
+                                <Bus itemName={getOutput(ingredientName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert}/>
                             )}
                         <Machines
                             machineType={"furnace"}

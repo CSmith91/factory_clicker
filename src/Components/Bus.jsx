@@ -1,13 +1,13 @@
 import React from "react";
 import images from "./Images/images";
 
-const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, checkBus, onAlert }) => {
+const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, checkBelts, onAlert }) => {
 
     //console.log(`Lanes are: ${JSON.stringify(lanes[itemName])}`)
 
     const laneSet = lanes[itemName]
 
-    const checkBelts = (itemName, routeNo, beltType, action) => {
+    const changeBelts = (itemName, routeNo, beltType, action) => {
 
       if(action === "upgrade"){
         if(beltType === "Fast Transport Belt"){
@@ -60,7 +60,6 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
     const addBelt = (beltName, itemName, routeNo, action) => {
       // first we need to deduct the belt 'ingredient'
       const updatedNetworks = {...networks}
-      const updatedLanes = {...lanes}
       let speed = 0
 
       if(action === 'add'){
@@ -75,11 +74,21 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
           speed = ingredients["Express Transport Belt"].beltSpeed;
         }
         else{
-          console.log(`Something went wrong looking up Belt Lane!`)
+          console.log('Something went wrong looking up Belt Lane!')
         }
         updatedNetworks[beltName].idleCount -= 1;
-        updatedLanes[itemName][routeNo].speed = speed;
-        updatedLanes[itemName][routeNo].active = true;
+        const updatedLanes = { 
+          ...lanes, 
+          [itemName]: {
+              ...lanes[itemName], // Spread the existing lanes for the current itemName
+              [routeNo]: {
+                  ...lanes[itemName][routeNo], // Spread the existing data for the current routeNo
+                  active: true,
+                  speed: speed, 
+              }
+          }
+        };
+        setLanes(updatedLanes);
       }
       else if(action === 'remove'){
         // removing a chosen belt
@@ -94,12 +103,22 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
           beltLane = "Express Belt Lane";
         }
         else{
-          console.log(`Something went wrong looking up Belt Lane!`)
+          console.log('Something went wrong looking up Belt Lane!')
         }
-        //console.log(`beltName is ${beltName}`)
+        //console.log(beltName is ${beltName})
         updatedNetworks[beltLane].idleCount += 1;
-        updatedLanes[itemName][routeNo].speed = speed;
-        updatedLanes[itemName][routeNo].active = false;
+        const updatedLanes = { 
+          ...lanes, 
+          [itemName]: {
+              ...lanes[itemName], // Spread the existing lanes for the current itemName
+              [routeNo]: {
+                  ...lanes[itemName][routeNo], // Spread the existing data for the current routeNo
+                  active: false,
+                  speed: speed, 
+              }
+          }
+        };
+        setLanes(updatedLanes);
       }
       else if(action === 'upgrade'){
         let old = ''
@@ -118,20 +137,29 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
           speed = ingredients["Express Transport Belt"].beltSpeed;
         }
         else{
-          console.log(`Something went wrong looking up Belt Lane!`)
+          console.log('Something went wrong looking up Belt Lane!')
         }
-        //console.log(`beltName is ${beltName}`)
+        //console.log(beltName is ${beltName})
         updatedNetworks[old].idleCount += 1;
         updatedNetworks[upgrade].idleCount -= 1;
-        updatedLanes[itemName][routeNo].speed = speed;
+        const updatedLanes = { 
+          ...lanes, 
+          [itemName]: {
+              ...lanes[itemName], // Spread the existing lanes for the current itemName
+              [routeNo]: {
+                  ...lanes[itemName][routeNo], // Spread the existing data for the current routeNo
+                  active: true,
+                  speed: speed, 
+              }
+          }
+        };
+        setLanes(updatedLanes);
       }
 
       setNetworks(updatedNetworks);
-      setLanes(updatedLanes);
-      checkBus(itemName)
+      //checkBelts(itemName)
     }
 
-    
     
       return (
         <>
@@ -161,7 +189,7 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
                     {laneSet[routeNo].clear && !laneSet[routeNo].active && (
                         <div className="add-lane">
                           <button
-                            onClick={() => checkBelts(itemName, routeNo, beltName, "add")}
+                            onClick={() => changeBelts(itemName, routeNo, beltName, "add")}
                             style={{height: "35px", width: "35px", padding: "5px"}}
                           >+</button>
                         </div>
@@ -169,7 +197,7 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
                     {laneSet[routeNo].active && (
                       <div className="belt-change">
                           <button
-                            onClick={() => checkBelts(itemName, routeNo, beltName, "upgrade")}
+                            onClick={() => changeBelts(itemName, routeNo, beltName, "upgrade")}
                             style={{ visibility: laneSet[routeNo].speed < 5 ? 'visible' : 'hidden' }}
                           >
                             ^
@@ -179,7 +207,7 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
                           src={images[beltName]} 
                           alt="belt" />
                         <button
-                        onClick={() => checkBelts(itemName, routeNo, beltName, "remove")}
+                        onClick={() => changeBelts(itemName, routeNo, beltName, "remove")}
                         >-</button>
                       </div>
                       )}

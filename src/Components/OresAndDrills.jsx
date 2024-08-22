@@ -21,7 +21,7 @@ const OresAndDrills = ({
     updateOutputCount,
     networks,
     setNetworks,
-    checkBus,
+    checkBelts,
     lanes,
     setLanes,
     onAlert }) => {
@@ -61,7 +61,7 @@ const OresAndDrills = ({
 
                             </div>
                             {unlockables.belts1.unlocked && (
-                                <Bus itemName={oreName} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBus={checkBus} onAlert={onAlert} />
+                                <Bus itemName={oreName} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert} />
                             )}
                             {oreData.patch !== undefined ? (
                                 <p>{oreName} patch remaining: {oreData.patch.size}</p> 
