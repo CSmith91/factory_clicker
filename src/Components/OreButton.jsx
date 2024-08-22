@@ -26,7 +26,7 @@ const OreButton = ({ ores, oreName, outputCounts, updateOutputCount, getStorage 
 
         // Delay the execution of updateOutputCount
         setTimeout(() => {
-            updateOutputCount(oreName, 'manual');
+            updateOutputCount(oreName, 1, 'manual');
 
             // End the animation
             setIsAnimating(false);

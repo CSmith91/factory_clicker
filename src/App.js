@@ -873,7 +873,6 @@ function App() {
               storage={storage} 
               getStorage={getStorage} 
               setTools={setTools} 
-              useTool={useTool} 
               handleMachineChange={handleMachineChange} 
               networks={networks}
               setNetworks={setNetworks}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Machines from "./Machines";
 import Bus from "./Bus";
 import images from './Images/images';
@@ -11,15 +11,17 @@ const Furnaces = ({
     setIngredients,  
     storage, 
     getStorage, 
-    handleMachineChange, 
+    isStorageFull,
+    handleMachineChange,
+    handleBank,
+    outputCounts,
+    updateOutputCount,
     networks, 
     setNetworks, 
     checkBus,              
     lanes,
     setLanes,
     onAlert }) => {
-
-    const [outputCounts, setOutputCounts] = useState({});
 
     // used for lookups within production (later) as well as headers (here)
     const getOutput = (oreName) => {
@@ -37,52 +39,6 @@ const Furnaces = ({
         }
     }
 
-    // Function to update the output count
-    const updateOutputCount = (output, amount) => {
-        setOutputCounts(prevCounts => ({
-            ...prevCounts,
-            [output]: (prevCounts[output] || 0) + amount
-        }));
-    };
-
-    const handleBank = (oreName) => {
-        const outputName = getOutput(oreName);
-        if (!outputName) return;
-    
-        const currentCount = outputCounts[outputName] || 0;
-        const ingredient = ingredients[outputName];
-        const storageLimit = getStorage(outputName);
-    
-        if (ingredient.count >= storageLimit) {
-            onAlert(`${outputName} is full.`);
-        } else {
-            const newCount = ingredient.count + currentCount;
-    
-            if (newCount > storageLimit) {
-                const partialAddCount = storageLimit - ingredient.count;
-                updateIngredientAndResetOutput(outputName, partialAddCount, currentCount - partialAddCount);
-            } else if (currentCount > 0) {
-                updateIngredientAndResetOutput(outputName, currentCount, 0);
-            }
-        }
-    };
-    
-    const updateIngredientAndResetOutput = (itemName, countToAdd, remainingOutputCount) => {
-        setIngredients(prevIngs => ({
-            ...prevIngs,
-            [itemName]: {
-                ...prevIngs[itemName],
-                count: prevIngs[itemName].count + countToAdd
-            }
-        }));
-    
-        setOutputCounts(prevCounts => ({
-            ...prevCounts,
-            [itemName]: remainingOutputCount
-        }));
-    };
-    
-
     const getUnlockStatus = (oreName) => {
         if(ingredients[getOutput(oreName)]){
             return ingredients[getOutput(oreName)].unlocked
@@ -91,17 +47,6 @@ const Furnaces = ({
             return true
         }
     }
-
-    const isStorageFull = (oreName) => { 
-        const limit = outputCounts[oreName] || 0
-        if(limit >= getStorage(oreName)){
-            return true
-        }
-        else{
-            return false
-        }
-    }
-
 
     return(
         <>
@@ -112,10 +57,10 @@ const Furnaces = ({
                     .map(([oreName, _]) => (
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{getOutput(oreName)}</h3>
-                            <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(oreName)) ? 'red-background' : ''}`} onClick={() => handleBank(oreName)} >
+                            <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(oreName)) ? 'red-background' : ''}`} onClick={() => handleBank(getOutput(oreName))} >
                                 {images[getOutput(oreName)] && (
                                     <>
-                                        <img src={images[getOutput(oreName)]} alt={`${getOutput(oreName)} Image`} />
+                                        <img src={images[getOutput(oreName)]} alt={`${getOutput(oreName)}`} />
                                         <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span> {/* Update this number dynamically as needed */}
                                     </>
                                 )}
@@ -144,10 +89,10 @@ const Furnaces = ({
                     .map(([ingredientName, _]) => (
                         <div key={ingredientName + "HarvestDiv"}>
                         <h3>{getOutput(ingredientName)}</h3>
-                        <div key={ingredientName + "ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(ingredientName)) ? 'red-background' : ''}`} onClick={() => handleBank(ingredientName)} >
+                        <div key={ingredientName + "ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(ingredientName)) ? 'red-background' : ''}`} onClick={() => handleBank(getOutput(ingredientName))} >
                             {images[getOutput(ingredientName)] && (
                             <>
-                                <img src={images[getOutput(ingredientName)]} alt={`${getOutput(ingredientName)} Image`} />
+                                <img src={images[getOutput(ingredientName)]} alt={`${getOutput(ingredientName)}`} />
                                 <span className="img-number">{outputCounts[getOutput(ingredientName)] || 0}</span> {/* Update this number dynamically as needed */}
                             </>
                             )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
 import images from './Images/images';
 
-const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, handleMachineChange, triggerProductionCheck, outputCounts, updateOutputCount, onAlert }) => {
+const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, handleMachineChange, outputCounts, updateOutputCount, onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
@@ -60,7 +60,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             if (result) {
                 setCounter(prevCounter => {
                     let newCounter = prevCounter;
-                    const updatedIngredients = {... ingredients}
+                    const updatedIngredients = {...ingredients}
                     const machineObject = updatedIngredients[machineName]
                     if (action === 'increment' && machineObject.idleCount > 0) {
                         newCounter = prevCounter + 1;
@@ -324,7 +324,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         }
 
         // check this isn't a self-start from the burner drills on coal
-        if(!fuelDeducted && ingredients[machineName]?.isBurner && ingredients[machineName]?.isDrill && itemName == 'Coal' ){
+        if(!fuelDeducted && ingredients[machineName]?.isBurner && ingredients[machineName]?.isDrill && itemName === 'Coal' ){
 
             setOres(prevOres => ({
                 ...prevOres,
@@ -408,7 +408,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 </div>
                 <div className="machine-div" style={{marginBottom: "5%"}}>
                     <div className={`machineOnSite ${animation}`}>
-                        {images[machineName] && <img src={images[machineName]} alt={`${machineName} Image`} style={{ width: '32px', height: 'auto' }} />}
+                        {images[machineName] && <img src={images[machineName]} alt={`${machineName}`} style={{ width: '32px', height: 'auto' }} />}
                     </div>
                     <div className="machine-inputs">
                         {machineParent.isFurnace && (
