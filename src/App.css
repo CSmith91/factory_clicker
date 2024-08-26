@@ -256,16 +256,16 @@ button:not(:disabled):hover {
   display: flex;
   justify-content: center;  /* Center lanes within bus-div */
   flex-wrap: wrap;
-  gap: 2px;
+  /* gap: 2px; */
   align-items: center;
 }
 
 .bus-lane {
   border-radius: 10px;
   flex: 0 1 20px;        /* Allow each lane to grow and shrink, with a minimum width */
-  min-width: 34px;
+  min-width: 32px;
   text-align: center;
-  margin: 1px;
+  /* margin: 1px; */
 }
 
 .add-lane button {

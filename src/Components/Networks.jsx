@@ -40,9 +40,6 @@ const Networks = ({ checkCraft, networks, setNetworks, ores, ingredients, onUnlo
                         );
                     })}
                 </div>
-                <div>
-                    {/* Clearance Section */}
-                </div>
             </div>
         </>
     )

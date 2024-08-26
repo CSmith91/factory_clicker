@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import images from "./Images/images";
 
 const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, checkBelts, onAlert }) => {
@@ -155,10 +155,14 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
         };
         setLanes(updatedLanes);
       }
-
       setNetworks(updatedNetworks);
-      //checkBelts(itemName)
     }
+    
+    useEffect(() => {
+      if (lanes) {
+          checkBelts(itemName);
+      }
+  }, [lanes, itemName]);
 
     
       return (
@@ -190,7 +194,7 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
                         <div className="add-lane">
                           <button
                             onClick={() => changeBelts(itemName, routeNo, beltName, "add")}
-                            style={{height: "35px", width: "35px", padding: "5px"}}
+                            style={{height: "30px", width: "30px", padding: "5px"}}
                           >+</button>
                         </div>
                     )} 
@@ -203,7 +207,7 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
                             ^
                           </button>
                         <img 
-                          id={`belt-${itemName}-${routeNo}`}  // Unique ID using itemName and routeNo
+                          id={`belt-${itemName.replace(/\s+/g, '-')}-${routeNo}`}  // Unique ID using itemName and routeNo
                           src={images[beltName]} 
                           alt="belt" />
                         <button
@@ -222,4 +226,4 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, ingredients, ch
     );
 };
     
-    export default Bus;
+export default Bus;

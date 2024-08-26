@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import OresAndDrills from './OresAndDrills';
 import Furnaces from './Furnaces'
 
@@ -38,6 +38,7 @@ const ResourceSection = ({
               tempCount: prevOres[itemName].tempCount + incrementBy
           }
       }));
+      console.log(`tempCount for ${itemName} is now ${ores[itemName].tempCount}`)
     }
     else if(oreOrIngredient === 'ingredient'){
       setIngredients(prevOres => ({
@@ -46,7 +47,8 @@ const ResourceSection = ({
             ...prevOres[itemName],
             tempCount: prevOres[itemName].tempCount + incrementBy
         }
-    }));
+      }));
+      console.log(`tempCount for ${itemName} is now ${ingredients[itemName].tempCount}`)
     }
     else{
       console.log(`Something's gone wrong incrementing ${itemName} temp value through belts!`)
@@ -165,28 +167,31 @@ const ResourceSection = ({
     }));
   };
 
+  useEffect(() => {
+    Object.keys(ores).forEach(oreName => {
+        if (ores[oreName].patch !== undefined && ingredients["Transport Belt"].unlocked) {
+            checkBelts(oreName);
+        }
+    });
+
+    Object.keys(ingredients).forEach(ingredientName => {
+        if (ingredients[ingredientName].count !== undefined && ingredients["Transport Belt"].unlocked) {
+            checkBelts(ingredientName);
+        }
+    });
+  }, [ores, ingredients]);
 
   // Function to increment the ore count
   const onIncrement = (oreName, toolName, manOrMachine) => {
 
-    if(ores["Stone"].patch.size === 119988){
-        setUnlockables(prevUnlockables => ({
-            ...prevUnlockables,
-            pick2: { 
-                ...prevUnlockables.pick2,
-                isVisible: true
-            }
-            }));
-    }
-
     if(ores["Wood"].harvested === 20){
-        setUnlockables(prevUnlockables => ({
-            ...prevUnlockables,
-            axe2: { 
-                ...prevUnlockables.axe2,
-                isVisible: true
-            }
-            }));
+      setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          axe2: { 
+              ...prevUnlockables.axe2,
+              isVisible: true
+          }
+          }));
     }
 
     if(ores["Wood"].harvested === 30){
@@ -199,6 +204,36 @@ const ResourceSection = ({
         }));
     }
 
+    if(ores["Wood"].harvested === 45){
+      setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          copper1: { 
+              ...prevUnlockables.copper1,
+              isVisible: true
+          }
+          }));
+  }
+
+    if(ores["Stone"].patch.size === 119988){
+        setUnlockables(prevUnlockables => ({
+            ...prevUnlockables,
+            pick2: { 
+                ...prevUnlockables.pick2,
+                isVisible: true
+            }
+            }));
+    }
+
+    if(ores["Stone"].patch.size === 119895){
+      setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          inserters1: { 
+              ...prevUnlockables.inserters1,
+              isVisible: true
+          }
+          }));
+    }
+
     if(ores["Iron Ore"].patch.size === 349998){
         setUnlockables(prevUnlockables => ({
             ...prevUnlockables,
@@ -209,7 +244,7 @@ const ResourceSection = ({
             }));
     }
 
-    if(ores["Iron Ore"].patch.size === 349972){
+    if(ores["Iron Ore"].patch.size === 349979){
         setUnlockables(prevUnlockables => ({
             ...prevUnlockables,
             belts1: { 
@@ -239,16 +274,6 @@ const ResourceSection = ({
     }))
     }
 
-    if(ores["Wood"].harvested === 45){
-        setUnlockables(prevUnlockables => ({
-            ...prevUnlockables,
-            copper1: { 
-                ...prevUnlockables.copper1,
-                isVisible: true
-            }
-            }));
-    }
-    
     if(manOrMachine === "manual"){
         // Update the tool's durability
         setTools(prevTools => {
@@ -290,10 +315,6 @@ const ResourceSection = ({
     });
   };
 
-  // useEffect(() => {
-  //   checkBelts(itemName)
-  // }, [onIncrement])
-
   const updateLaneRunningState = (itemName, lane, isRunning) => {
     setLanes(prevLanes => ({
       ...prevLanes,
@@ -308,30 +329,30 @@ const ResourceSection = ({
   };
   
   const checkBelts = (itemName) => {
-    console.log(`Belts have been called
-      itemName: ${itemName}
-      outputCounts[itemName]: ${outputCounts[itemName]}
-      `)
     //console.log(`Our lanes[itemName] is: ${JSON.stringify(lanes[itemName])}`)
     const targetResource = ores[itemName] || ingredients[itemName];
 
     // first, we check if there are any resources to move
-    console.log(`outputCounts[itemName] for ${itemName} is: ${outputCounts[itemName]}`)
+    //console.log(`Belts have been called! outputCounts[itemName] for ${itemName} is: ${outputCounts[itemName]}`)
     if(outputCounts[itemName] > 0){
-      // second, we check if the target storage has space (including tempCount!)
-      if(targetResource.count + targetResource.tempCount < getStorage(targetResource)){
+    // second, we check if the target storage has space (including tempCount!)
+      let totalCount = targetResource.count + targetResource.tempCount;
+      if(totalCount < getStorage(itemName)){
+        console.log(`So far so good. totalCount of ${itemName} is: ${totalCount} and storageLimit is: ${getStorage(itemName)}`)
         // lastly iterate through the bus. Any lanes that are active (and not already running) then trigger the payout
-        let bus = lanes[itemName]
-
-        for (let lane in bus) {
-          if (bus[lane].active && !bus[lane].isRunning) {
-              console.log(`Is running? ${bus[lane].isRunning} Found an active, non-running belt! Turning on.`)
-              let speed = bus[lane].speed;
-              incrementTempCount(itemName, 1);   
-              turnOnBelt(itemName, lane, speed)
+        const bus = lanes[itemName]
+        //console.log(`full bus: ${JSON.stringify(bus)}`)
+        Object.entries(bus).forEach(([lane, details]) => {
+          if (!details.isRunning && details.active) {
+            //console.log(`Lane: ${lane}`);
+            console.log(`Details: ${JSON.stringify(details)}`);
+            console.log('-----------------------');
+            let speed = details.speed;
+            incrementTempCount(itemName, 1);
+            turnOnBelt(itemName, lane, details, speed)
           }
+        });
         }
-      }
       else{
         // storage is full
       }
@@ -341,7 +362,8 @@ const ResourceSection = ({
     }
   }
 
-  const turnOnBelt = (itemName, lane, speed) => {
+
+  const turnOnBelt = (itemName, lane, details, speed) => {
 
     // belt payouts are different to machines
     // we have a constant take-take-take of resources at a very high rate
@@ -353,7 +375,7 @@ const ResourceSection = ({
     // set the belt lane as running
     updateLaneRunningState(itemName, lane, true);
 
-    const beltId = `belt-${itemName}-${lane}`;
+    const beltId = `belt-${itemName.replace(/\s+/g, '-')}-${lane}`;
     //console.log(`Attempting to find element with ID: ${beltId}`);
 
     // Add a flashing effect to the lane in CSS
@@ -373,7 +395,7 @@ const ResourceSection = ({
       setTimeout(() => {
         laneElement.classList.remove(flashClass);
         beltPayout(itemName);
-      }, 2000 ) // 50 / speed * 1000); // ADDDED 2000 FOR QUICKER TESTING
+      }, 50 / speed * 1000); 
     }
     else{
       console.error(`No laneElement found with ID: ${beltId}`);
@@ -390,9 +412,8 @@ const ResourceSection = ({
       });
 
       updateLaneRunningState(itemName, lane, false);
-      checkBelts(itemName)
 
-    }, 1000 ) // / throughput ) //BLOCKED THROUGHPUT FOR SLOWER TESTING
+    }, 1000 / throughput )
   };
 
   const beltPayout = (itemName) => {

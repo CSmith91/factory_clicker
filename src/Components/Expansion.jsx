@@ -1,16 +1,5 @@
 const Expansion = ({ores, ingredients, onUnlock, handleBeltUnlock, expandables, lanes, setLanes}) => {
 
-    // const busItems = [
-    //     ...Object.keys(ores).filter(key => ores[key].canBus),
-    //     ...Object.keys(ingredients).filter(key => ingredients[key].canBus)
-    // ];
-
-    // busItems.forEach(itemName =>{
-    //     if(lanes[itemName][0]){
-
-    //     }
-    // })
-
     const bus = lanes;
 
     const renderBus = () => {
@@ -28,6 +17,14 @@ const Expansion = ({ores, ingredients, onUnlock, handleBeltUnlock, expandables, 
           const firstUnlockedUnclearedLane = lanes[firstUnlockedUnclearedLaneKey];
           const cost = firstUnlockedUnclearedLane.cost;
           const gain = firstUnlockedUnclearedLane.gain;
+
+          // Check if the corresponding ore or ingredient is unlocked
+          const isResourceUnlocked = ores[itemName]?.unlocked || ingredients[itemName]?.unlocked;
+
+          // If the resource is not unlocked, don't render the button
+          if (!isResourceUnlocked) {
+              return null;
+          }
       
           // Check if the user has enough resources to unlock this item
           const canUnlock = Object.entries(cost).every(([item, quantity]) => {

@@ -12,7 +12,7 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = true
+  const testMode = false
 
   let cheat = 0;
   // if(testMode){
@@ -97,7 +97,8 @@ function App() {
   const [storage, setStorage] = useState({
     Ores: 30 + cheat,
     Ingredients: 50 + cheat,
-    Machines: 20 + cheat
+    Machines: 20 + cheat,
+    Error: 69
   })
 
   const getStorage = (oreName) => {
@@ -110,8 +111,11 @@ function App() {
     else if(networks[oreName]){
         return networks[oreName].max;
     }
-    else{
+    else if (ingredients[oreName]){
         return storage["Ingredients"]
+    }
+    else{
+      return storage["Error"]
     }
 }
 
@@ -180,7 +184,6 @@ function App() {
       title: 'Drills!', 
       desc: 'Getting all that ore out the ground manually is tiresome. This is what we need.'
     },
-    // the above have all unlock results set
     coal1: { 
       isVisible: false, 
       unlocked: testMode, 
@@ -202,13 +205,21 @@ function App() {
       title: 'Copper', 
       desc: 'This resource will open a lot of (electronic) doors...' // unlocks copper ore, plate and wire
     },
-    // the above all have isVisible conditions set
+    // the above have all unlock results set
     inserters1: { 
       isVisible: false, 
       unlocked: testMode, 
       cost: { "Copper Ore": 30 }, 
       title: 'Burner Inserters', 
       desc: 'Our most basic inserter - add resources to your drills and furnaces automatically.'
+    },
+    // the above all have isVisible conditions set
+    wire1: { 
+      isVisible: false, // make visible after 5 clicks
+      unlocked: testMode, 
+      cost: { "Copper Plate": 5 }, 
+      title: 'Copper Wire', 
+      desc: 'We can use this to pass electricity through it.'
     },
     chip1: { 
       isVisible: false, // make visible after 25 clicks
@@ -443,6 +454,47 @@ function App() {
                 Wood: { ...prevOres.Wood, craftTime: 0.25 }
               }));
               break;
+            case 'coal1':
+              setOres(prevIngredients => ({
+                ...prevIngredients,
+                "Coal": {
+                  ...prevIngredients["Coal"],
+                  unlocked: true 
+                }
+              }));
+                break
+            case 'belts1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Transport Belt": {
+                  ...prevIngredients["Transport Belt"],
+                  unlocked: true 
+                }
+              }));
+              setNetworks(prevNetworks => ({
+                ...prevNetworks,
+                "Belt Lane": {
+                  ...prevNetworks["Belt Lane"],
+                  unlocked: true
+                }
+              }));
+                break
+            case 'copper1':
+              setOres(prevIngredients => ({
+                ...prevIngredients,
+                "Copper Ore": {
+                  ...prevIngredients["Copper Ore"],
+                  unlocked: true 
+                }
+              }));
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Copper Plate": {
+                  ...prevIngredients["Copper Plate"],
+                  unlocked: true 
+                }
+              }));
+                break
             default:
                 break;
             }

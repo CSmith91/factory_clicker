@@ -63,12 +63,14 @@ const Furnaces = ({
                                 {images[getOutput(oreName)] && (
                                     <>
                                         <img src={images[getOutput(oreName)]} alt={`${getOutput(oreName)}`} />
-                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span> {/* Update this number dynamically as needed */}
+                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span>
                                     </>
                                 )}
                             </div>
                             {unlockables.belts1.unlocked && (
-                                <Bus itemName={getOutput(oreName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert}/>
+                                <div style={{marginBottom: "15px"}}>
+                                    <Bus itemName={getOutput(oreName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert}/>
+                                </div>
                             )}
                             <Machines
                                 machineType={"furnace"}
@@ -102,7 +104,9 @@ const Furnaces = ({
                             )}
                         </div>
                         {unlockables.belts1.unlocked && (
+                            <div style={{marginBottom: "15px"}}>
                                 <Bus itemName={getOutput(ingredientName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert}/>
+                            </div>
                             )}
                         <Machines
                             machineType={"furnace"}
