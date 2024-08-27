@@ -91,13 +91,13 @@ const ResourceSection = ({
         return;
     }
 
-    if (item.count >= storageLimit) {
+    if (item.count + item.tempCount >= storageLimit) {
         onAlert(`${itemName} is full.`);
     } else{
         const newCount = item.count + currentCount;
 
-        if (newCount > storageLimit) {
-            const partialAddCount = storageLimit - item.count;
+        if (newCount + item.tempCount > storageLimit) {
+            const partialAddCount = storageLimit - item.count - item.tempCount;
             updateInventoryAndBank(itemName, partialAddCount, currentCount - partialAddCount);
         } else if (currentCount > 0) {
             updateInventoryAndBank(itemName, currentCount, 0);
@@ -422,7 +422,10 @@ const ResourceSection = ({
     incrementCount(itemName, 1); 
 
     // remove item as a temp value
-    incrementTempCount(itemName, -1);  
+    if(itemName.tempCount > 0){ // this if statement is a temp solution to a problem
+      // where the count can somehow go negative
+      incrementTempCount(itemName, -1); 
+    } 
   }
 
   const isStorageFull = (itemName) => { 
