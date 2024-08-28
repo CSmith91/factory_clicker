@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
 import images from './Images/images';
 
-const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, handleMachineChange, pendingMachineOutput, setPendingMachineOutput, outputCounts, updateOutputCount, onAlert }) => {
+const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, pendingMachineOutput, setPendingMachineOutput, outputCounts, updateOutputCount, onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
@@ -59,50 +59,82 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         }
     }, [machineStates, machineName, itemName, ingredients, output]);
 
-
     // shows the machines resource amounts
     const machineParent = ingredients[machineName]
     const currentMachineState = machineStates[machineName] || {}; // Getting the state of the current machine
     const fuelsArray = Object.entries(fuels);
 
-    // handles changing the number of machines
-    const onMachineChange = (action) => {
-        handleMachineChange(action, machineName).then((result) =>{
-            if (result) {
-                setCounter(prevCounter => {
-                    let newCounter = prevCounter;
-                    const updatedIngredients = {...ingredients}
-                    const machineObject = updatedIngredients[machineName]
-                    if (action === 'increment' && machineObject.idleCount > 0) {
-                        newCounter = prevCounter + 1;
-                        updatedIngredients[machineName].idleCount -= 1;
-                    } else if (action === 'decrement' && machineObject.idleCount <= machineObject.count) {
-                        newCounter = prevCounter > 0 ? prevCounter - 1 : prevCounter;
-                        updatedIngredients[machineName].idleCount += 1;
-                    }
-
-                    // Update machine states dynamically based on the new counter
-                    const updatedMachineStates = {
-                        ...machineStates,
-                        [machineName]: {
-                            ...machineStates[machineName],
-                            [itemName]: {
-                                ...machineStates[machineName]?.[itemName],
-                                count: newCounter,
-                                inputMax: newCounter * 10,
-                            }
-                        }
-                    };
-
-                    setIngredients(updatedIngredients);
-                    setMachineStates(updatedMachineStates);
-                    return newCounter;
-                });
-            } else if (!result && action === 'increment') {
-                onAlert(`No idle ${machineName}s`);
-            }
-        })
-    };
+    // handles changing the number of machines on site
+    const handleMachineChange = (action, machineName) => {
+        // Get current counts
+        const currentOnSiteCount = counter[machineName] || 0;
+        const currentIdleCount = ingredients[machineName].idleCount;
+    
+        if (action === 'increment' && currentIdleCount > 0) {
+            // Proceed only if there's an idle machine available
+            const updatedOnSiteCount = currentOnSiteCount + 1;
+            const updatedIdleCount = currentIdleCount - 1;
+    
+            // Update the state
+            setCounter(prevCounter => ({
+                ...prevCounter,
+                [machineName]: updatedOnSiteCount,
+            }));
+    
+            setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                [machineName]: {
+                    ...prevIngredients[machineName],
+                    idleCount: updatedIdleCount,
+                },
+            }));
+    
+            setMachineStates(prevMachineStates => ({
+                ...prevMachineStates,
+                [machineName]: {
+                    ...prevMachineStates[machineName],
+                    [itemName]: {
+                        ...prevMachineStates[machineName]?.[itemName],
+                        count: updatedOnSiteCount,
+                        inputMax: updatedOnSiteCount * 10,
+                    },
+                },
+            }));
+        } else if (action === 'decrement' && currentOnSiteCount > 0) {
+            // Allow decrement only if there's a machine on-site
+            const updatedOnSiteCount = currentOnSiteCount - 1;
+            const updatedIdleCount = currentIdleCount + 1;
+    
+            // Update the state
+            setCounter(prevCounter => ({
+                ...prevCounter,
+                [machineName]: updatedOnSiteCount,
+            }));
+    
+            setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                [machineName]: {
+                    ...prevIngredients[machineName],
+                    idleCount: updatedIdleCount,
+                },
+            }));
+    
+            setMachineStates(prevMachineStates => ({
+                ...prevMachineStates,
+                [machineName]: {
+                    ...prevMachineStates[machineName],
+                    [itemName]: {
+                        ...prevMachineStates[machineName]?.[itemName],
+                        count: updatedOnSiteCount,
+                        inputMax: updatedOnSiteCount * 10,
+                    },
+                },
+            }));
+        } else if (action === 'increment') {
+            // Notify the user if no idle machines are available
+            onAlert(`No idle ${machineName}s`);
+        }
+    };  
 
     // Adding ore and ingredients to a machine
     const addItem = (item, byHand) => {
@@ -415,16 +447,16 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         <>
         <div className="machineButtons">
             <p style={{padding: '5px'}}>{machineName}s in use:</p>
-            <button onClick={() => onMachineChange('decrement')}>
+            <button onClick={() => handleMachineChange('decrement', machineName)}>
                 {"<"}
             </button>
-            <p style={{padding: '5px'}}>{counter}</p>
-            <button onClick={() => onMachineChange('increment')}>
+            <p style={{padding: '5px'}}>{counter[machineName] || 0}</p>
+            <button onClick={() => handleMachineChange('increment', machineName)}>
                 {">"}
             </button>
         </div>
         {/* Conditionally render the div if counter > 0 */}
-        {counter > 0 && (
+        {counter[machineName] > 0 && (
             <>
                 <div style={{marginBottom: "5%"}}>
                     <div style={{marginBottom: "5%"}} className="machine-input-buttons">
@@ -446,7 +478,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                     </div>
                     <div className="machine-inputs">
                         {machineParent.isFurnace && (
-                            <p>{itemName}: {currentMachineState[itemName].currentInput} / {currentMachineState[itemName].inputMax || 0}</p>
+                            <p>{itemName}: {currentMachineState[itemName]?.currentInput || 0} / {currentMachineState[itemName]?.inputMax || 0}</p>
                         )}    
                         {machineParent.isBurner && fuelsArray.map(([fuelName, fuelData]) => {
                             const fuelState = currentMachineState[itemName].fuels?.[fuelName] || {}; // Default to empty object

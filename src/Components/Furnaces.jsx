@@ -12,7 +12,6 @@ const Furnaces = ({
     storage, 
     getStorage, 
     isStorageFull,
-    handleMachineChange,
     pendingMachineOutput,
     setPendingMachineOutput, 
     handleBank,
@@ -81,7 +80,6 @@ const Furnaces = ({
                                 setIngredients={setIngredients}
                                 storage={storage}
                                 getStorage={getStorage}
-                                handleMachineChange={handleMachineChange}
                                 pendingMachineOutput={pendingMachineOutput}
                                 setPendingMachineOutput={setPendingMachineOutput}
                                 outputCounts={outputCounts}
@@ -117,7 +115,6 @@ const Furnaces = ({
                             setIngredients={setIngredients}
                             storage={storage}
                             getStorage={getStorage}
-                            handleMachineChange={handleMachineChange}
                             pendingMachineOutput={pendingMachineOutput}
                             setPendingMachineOutput={setPendingMachineOutput}
                             outputCounts={outputCounts}

@@ -13,7 +13,6 @@ const OresAndDrills = ({
     storage, 
     getStorage, 
     isStorageFull,
-    handleMachineChange, 
     pendingMachineOutput,
     setPendingMachineOutput, 
     handleBank,
@@ -79,7 +78,6 @@ const OresAndDrills = ({
                                 setIngredients={setIngredients}
                                 storage={storage}
                                 getStorage={getStorage}
-                                handleMachineChange={handleMachineChange} 
                                 pendingMachineOutput={pendingMachineOutput}
                                 setPendingMachineOutput={setPendingMachineOutput}
                                 outputCounts={outputCounts}

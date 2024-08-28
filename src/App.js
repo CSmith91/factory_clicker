@@ -587,25 +587,25 @@ function App() {
   const [craftCount, setCraftCount] = useState(0); // purely for unlocking a research item
 
   // Tools function
-  const useTool = (toolName) => {
-    setTools(prevTools => {
-        const tool = prevTools[toolName];
-        if (!tool || tool.durability <= 0) {
-            onAlert(`You need to repair your ${toolName}.`);
-            return prevTools;
-        }
+  // const useTool = (toolName) => {
+  //   setTools(prevTools => {
+  //       const tool = prevTools[toolName];
+  //       if (!tool || tool.durability <= 0) {
+  //           onAlert(`You need to repair your ${toolName}.`);
+  //           return prevTools;
+  //       }
 
-        const updatedDurability = tool.durability - tool.corrodeRate;
+  //       const updatedDurability = tool.durability - tool.corrodeRate;
 
-        return {
-            ...prevTools,
-            [toolName]: {
-                ...tool,
-                durability: Math.max(0, updatedDurability)
-            }
-        };
-    });
-  };
+  //       return {
+  //           ...prevTools,
+  //           [toolName]: {
+  //               ...tool,
+  //               durability: Math.max(0, updatedDurability)
+  //           }
+  //       };
+  //   });
+  // };
 
   // repair tools
   const onRepair = (toolName) => {
@@ -644,47 +644,47 @@ function App() {
     setTools(updatedTools);
   }
 
-  // handle adding and removing machines on site
-  const handleMachineChange = (action, machineName) => {
-    let stateUpdated = false;
+//   // handle adding and removing machines on site
+//   const handleMachineChange = (action, machineName) => {
+//     let stateUpdated = false;
 
-    setIngredients(prevIngredients => {
-        const machine = prevIngredients[machineName];
-        if (!machine || !machine.isMachine || !machine.unlocked) {
-            return prevIngredients;
-        }
+//     setIngredients(prevIngredients => {
+//         const machine = prevIngredients[machineName];
+//         if (!machine || !machine.isMachine || !machine.unlocked) {
+//             return prevIngredients;
+//         }
 
-        if (action === 'increment' && machine.idleCount > 0) {
-            stateUpdated = true;
-            return {
-                ...prevIngredients,
-                [machineName]: {
-                    ...machine,
-                    idleCount: machine.idleCount - 1
-                }
-            };
-        } else if (action === 'decrement' && machine.idleCount !== machine.count) {
-            stateUpdated = true;
-            return {
-                ...prevIngredients,
-                [machineName]: {
-                    ...machine,
-                    idleCount: machine.idleCount + 1
-                }
-            };
-        }
-        return prevIngredients;
-    });
-    //return stateUpdated;
+//         if (action === 'increment' && machine.idleCount > 0) {
+//             stateUpdated = true;
+//             return {
+//                 ...prevIngredients,
+//                 [machineName]: {
+//                     ...machine,
+//                     idleCount: machine.idleCount - 1
+//                 }
+//             };
+//         } else if (action === 'decrement' && machine.idleCount !== machine.count) {
+//             stateUpdated = true;
+//             return {
+//                 ...prevIngredients,
+//                 [machineName]: {
+//                     ...machine,
+//                     idleCount: machine.idleCount + 1
+//                 }
+//             };
+//         }
+//         return prevIngredients;
+//     });
+//     //return stateUpdated;
 
-    // Instead of returning stateUpdated directly, use a callback
-    // This ensures you are checking after the state update logic
-    return new Promise((resolve) => {
-      setTimeout(() => {
-          resolve(stateUpdated);
-      }, 0); // Use a timeout to delay resolution until after state update
-  });
-};
+//     // Instead of returning stateUpdated directly, use a callback
+//     // This ensures you are checking after the state update logic
+//     return new Promise((resolve) => {
+//       setTimeout(() => {
+//           resolve(stateUpdated);
+//       }, 0); // Use a timeout to delay resolution until after state update
+//   });
+// };
 
   // Function for crafting
   const checkCraft = (ingredientName) => {
@@ -733,12 +733,11 @@ function App() {
       onAlert(`Not enough resources to craft ${ingredientName}`);
     }
     else{
-        const craftTime = items[ingredientName].craftTime;
-        onCraft(ingredientName, item, craftTime)
+        onCraft(ingredientName, item)
     }
   }
 
-  const onCraft = (ingredientName, ingredient, craftTime) => {
+  const onCraft = (ingredientName, ingredient) => {
       // Update the hammer's durability, if applicable
       if(ingredients[ingredientName]){
         setTools(prevTools => {
@@ -786,24 +785,43 @@ function App() {
       addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks)
   };
 
-  const craftPayout = (ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks) => {
+  const craftPayout = (ingredientName, ingredient, updatedOres ) => {
 
     // check if ingredient -- if not, it's a network item
     if(ingredients[ingredientName]){
       // check its not 1 to many
-      const multiplier = ingredients[ingredientName].multiplier ? ingredients[ingredientName].multiplier : 1;
-      
-      // Increment the crafted ingredient count
-      updatedIngredients[ingredientName].count += multiplier;
-      updatedIngredients[ingredientName].tempCount -= multiplier;
-  
-      // Increment the idleCount if the ingredient is a machine
-      if (ingredient.isMachine) {
-      updatedIngredients[ingredientName].idleCount += multiplier;
-      }
+      const multiplier = ingredients[ingredientName].multiplier || 1;
 
+      // Handle the idle count only if this is a machine
+      if (ingredient.isMachine) {
+        setIngredients(prevIngredients => {
+            const currentCount = prevIngredients[ingredientName].count + multiplier;
+            const currentIdleCount = prevIngredients[ingredientName].idleCount;
+            const currentTempCount = prevIngredients[ingredientName].tempCount - multiplier;
+
+            // Ensure that the idle count is not incremented incorrectly
+            return {
+                ...prevIngredients,
+                [ingredientName]: {
+                    ...prevIngredients[ingredientName],
+                    count: currentCount,
+                    tempCount: currentTempCount,
+                    idleCount: Math.min(currentIdleCount + multiplier, currentCount),  // Ensure idleCount is not more than total count
+                },
+            };
+        });
+      } else {
+        // If not a machine, simply update the count
+        setIngredients(prevIngredients => ({
+            ...prevIngredients,
+            [ingredientName]: {
+                ...prevIngredients[ingredientName],
+                count: prevIngredients[ingredientName].count + multiplier,
+                tempCount: prevIngredients[ingredientName].tempCount - multiplier,
+            }
+        }));
+      }
       setOres(updatedOres);
-      setIngredients(updatedIngredients);
 
       //console.log(`${ingredientName} tempCount is: ${ingredients[ingredientName].tempCount}`)
 
@@ -834,11 +852,16 @@ function App() {
     }
     // craft a network item instead
     else{
-      updatedNetworks[ingredientName].count += 1;
-      updatedNetworks[ingredientName].idleCount += 1;
-      updatedNetworks[ingredientName].tempCount -= 1; 
-      setNetworks(updatedNetworks);
-      //console.log(`${ingredientName} tempCount is: ${networks[ingredientName].tempCount}`)
+      // Handle network items
+      setNetworks(prevNetworks => ({
+        ...prevNetworks,
+        [ingredientName]: {
+            ...prevNetworks[ingredientName],
+            count: prevNetworks[ingredientName].count + 1,
+            idleCount: prevNetworks[ingredientName].idleCount + 1,
+            tempCount: prevNetworks[ingredientName].tempCount - 1,
+        }
+      }));
     }
   }
 
@@ -869,10 +892,10 @@ function App() {
         setCurrentCrafting(nextItem); // Set the current item as crafting
         setIsAnimating(true); // Start the animation
   
-        const { ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks } = nextItem;
+        const { ingredientName, ingredient, updatedOres } = nextItem;
   
         setTimeout(() => {
-          craftPayout(ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks); // Process crafting
+          craftPayout(ingredientName, ingredient, updatedOres ); // Process crafting
           setIsAnimating(false); // End the animation
           setCurrentCrafting(null); // Reset current crafting item
   
@@ -925,7 +948,6 @@ function App() {
               storage={storage} 
               getStorage={getStorage} 
               setTools={setTools} 
-              handleMachineChange={handleMachineChange} 
               networks={networks}
               setNetworks={setNetworks}
               lanes={lanes}

@@ -13,7 +13,6 @@ const ResourceSection = ({
     storage,
     getStorage,
     setTools,
-    handleMachineChange,
     networks,
     setNetworks,
     lanes,
@@ -451,7 +450,6 @@ const ResourceSection = ({
               storage={storage} 
               getStorage={getStorage} 
               isStorageFull={isStorageFull}
-              handleMachineChange={handleMachineChange}
               pendingMachineOutput={pendingMachineOutput}
               setPendingMachineOutput={setPendingMachineOutput}
               handleBank={handleBank}
@@ -477,7 +475,6 @@ const ResourceSection = ({
                 storage={storage} 
                 getStorage={getStorage} 
                 isStorageFull={isStorageFull}
-                handleMachineChange={handleMachineChange} 
                 pendingMachineOutput={pendingMachineOutput}
                 setPendingMachineOutput={setPendingMachineOutput}
                 handleBank={handleBank}
