@@ -156,7 +156,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         } else {
             // Check if the current input or fuel is not exceeding the inputMax
             const canAddMore = chosenMachineState && (
-                (item === itemName && chosenMachineState.currentInput < chosenMachineState.inputMax) ||
+                (item === itemName && item !== "Coal" && chosenMachineState.currentInput < chosenMachineState.inputMax) ||
                 (chosenMachineState.fuels[item] && chosenMachineState.fuels[item].current < chosenMachineState.inputMax)
             );
             if (canAddMore) {

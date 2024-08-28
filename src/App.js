@@ -12,7 +12,7 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = false
+  const testMode = true
 
   let cheat = 0;
   // if(testMode){
@@ -278,8 +278,6 @@ function App() {
     Pickaxe: { durability: 100, corrodeRate: 0.5, cost: {"Wood": 5}, unlocked: true},
     Hammer: { durability: 100, corrodeRate: 1.5, cost: {"Wood": 5, "Stone": 5}, unlocked: testMode}
   })
-
-
 
   // Messages, sound & VFX
   const [messages, setMessages] = useState([])
@@ -586,27 +584,6 @@ function App() {
   // Track crafting stats
   const [craftCount, setCraftCount] = useState(0); // purely for unlocking a research item
 
-  // Tools function
-  // const useTool = (toolName) => {
-  //   setTools(prevTools => {
-  //       const tool = prevTools[toolName];
-  //       if (!tool || tool.durability <= 0) {
-  //           onAlert(`You need to repair your ${toolName}.`);
-  //           return prevTools;
-  //       }
-
-  //       const updatedDurability = tool.durability - tool.corrodeRate;
-
-  //       return {
-  //           ...prevTools,
-  //           [toolName]: {
-  //               ...tool,
-  //               durability: Math.max(0, updatedDurability)
-  //           }
-  //       };
-  //   });
-  // };
-
   // repair tools
   const onRepair = (toolName) => {
     const tool = tools[toolName]
@@ -643,48 +620,6 @@ function App() {
     setOres(updatedOres);
     setTools(updatedTools);
   }
-
-//   // handle adding and removing machines on site
-//   const handleMachineChange = (action, machineName) => {
-//     let stateUpdated = false;
-
-//     setIngredients(prevIngredients => {
-//         const machine = prevIngredients[machineName];
-//         if (!machine || !machine.isMachine || !machine.unlocked) {
-//             return prevIngredients;
-//         }
-
-//         if (action === 'increment' && machine.idleCount > 0) {
-//             stateUpdated = true;
-//             return {
-//                 ...prevIngredients,
-//                 [machineName]: {
-//                     ...machine,
-//                     idleCount: machine.idleCount - 1
-//                 }
-//             };
-//         } else if (action === 'decrement' && machine.idleCount !== machine.count) {
-//             stateUpdated = true;
-//             return {
-//                 ...prevIngredients,
-//                 [machineName]: {
-//                     ...machine,
-//                     idleCount: machine.idleCount + 1
-//                 }
-//             };
-//         }
-//         return prevIngredients;
-//     });
-//     //return stateUpdated;
-
-//     // Instead of returning stateUpdated directly, use a callback
-//     // This ensures you are checking after the state update logic
-//     return new Promise((resolve) => {
-//       setTimeout(() => {
-//           resolve(stateUpdated);
-//       }, 0); // Use a timeout to delay resolution until after state update
-//   });
-// };
 
   // Function for crafting
   const checkCraft = (ingredientName) => {

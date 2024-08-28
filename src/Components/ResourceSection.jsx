@@ -37,7 +37,7 @@ const ResourceSection = ({
               tempCount: prevOres[itemName].tempCount + incrementBy
           }
       }));
-      console.log(`tempCount for ${itemName} is now ${ores[itemName].tempCount}`)
+      // console.log(`tempCount for ${itemName} is now ${ores[itemName].tempCount}. Current count is: ${ores[itemName].count} and total 'floating' is ${ores[itemName].count + ores[itemName].tempCount}`)
     }
     else if(oreOrIngredient === 'ingredient'){
       setIngredients(prevOres => ({
@@ -47,7 +47,7 @@ const ResourceSection = ({
             tempCount: prevOres[itemName].tempCount + incrementBy
         }
       }));
-      console.log(`tempCount for ${itemName} is now ${ingredients[itemName].tempCount}`)
+      console.log(`tempCount for ${itemName} is now ${ingredients[itemName].tempCount}. Current count is: ${ingredients[itemName].count} and total 'floating' is ${ingredients[itemName].count + ingredients[itemName].tempCount}`)
     }
     else{
       console.log(`Something's gone wrong incrementing ${itemName} temp value through belts!`)
@@ -55,7 +55,7 @@ const ResourceSection = ({
   };
 
   const incrementCount = (itemName, incrementBy) => {
-    console.log(`I've been called!`)
+    //console.log(`I've been called!`)
     const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
     if(oreOrIngredient === 'ore'){
       setOres(prevOres => ({
@@ -337,18 +337,21 @@ const ResourceSection = ({
     // second, we check if the target storage has space (including tempCount!)
       let totalCount = targetResource.count + targetResource.tempCount;
       if(totalCount < getStorage(itemName)){
-        console.log(`So far so good. totalCount of ${itemName} is: ${totalCount} and storageLimit is: ${getStorage(itemName)}`)
+        //console.log(`So far so good. totalCount of ${itemName} is: ${totalCount} and storageLimit is: ${getStorage(itemName)}`)
         // lastly iterate through the bus. Any lanes that are active (and not already running) then trigger the payout
         const bus = lanes[itemName]
         //console.log(`full bus: ${JSON.stringify(bus)}`)
         Object.entries(bus).forEach(([lane, details]) => {
           if (!details.isRunning && details.active) {
-            //console.log(`Lane: ${lane}`);
-            console.log(`Details: ${JSON.stringify(details)}`);
-            console.log('-----------------------');
+            // console.log(`Lane: ${lane}`);
+            // console.log(`Details: ${JSON.stringify(details)}`);
+            // console.log('-----------------------');
             let speed = details.speed;
-            incrementTempCount(itemName, 1);
-            turnOnBelt(itemName, lane, details, speed)
+            // incrementTempCount(itemName, 1);
+            // turnOnBelt(itemName, lane, details, speed)
+
+            // Move item to the belt and adjust tempCount/outputCounts
+            moveItemToBelt(itemName, lane, speed);
           }
         });
         }
@@ -361,8 +364,19 @@ const ResourceSection = ({
     }
   }
 
+  const moveItemToBelt = (itemName, lane, speed) => {
+    incrementTempCount(itemName, 1); // Increment tempCount before processing
 
-  const turnOnBelt = (itemName, lane, details, speed) => {
+    setOutputCounts(prevCounts => {
+        const newCount = (prevCounts[itemName] || 0) - 1;
+        return { ...prevCounts, [itemName]: Math.max(0, newCount) };
+    });
+
+    turnOnBelt(itemName, lane, speed);
+  };
+
+
+  const turnOnBelt = (itemName, lane, speed) => {
 
     // belt payouts are different to machines
     // we have a constant take-take-take of resources at a very high rate
@@ -404,27 +418,13 @@ const ResourceSection = ({
     const throughput = 8 * speed
     // loop back to achieve x items / second
     setTimeout(() => {
-      // deduct item from the bank (almost) immediately
-      setOutputCounts(prevCounts => {
-        const newCount = (prevCounts[itemName] || 0) - 1;
-        return { ...prevCounts, [itemName]: Math.max(0, newCount) };
-      });
-
       updateLaneRunningState(itemName, lane, false);
-
     }, 1000 / throughput )
   };
 
   const beltPayout = (itemName) => {
-    console.log(`I've paid out!`)
-    // add item to inventory
-    incrementCount(itemName, 1); 
-
-    // remove item as a temp value
-    if(itemName.tempCount > 0){ // this if statement is a temp solution to a problem
-      // where the count can somehow go negative
-      incrementTempCount(itemName, -1); 
-    } 
+    incrementCount(itemName, 1); // add item to inventory
+    incrementTempCount(itemName, -1); // remove item as a temp value
   }
 
   const isStorageFull = (itemName) => { 
