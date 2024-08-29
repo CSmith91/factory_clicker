@@ -49,7 +49,7 @@ const Inventory = ({
                                 )}
                                 <ul style={{ listStyleType: 'none', padding: 0 }}>
                                     <li key={ingredientName} style={{ marginLeft: '10px' }}>
-                                        {ingredientName} {ingredients[ingredientName].multiplier && (`[${ingredients[ingredientName].multiplier}]`)} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} 
+                                        {ingredientName} {ingredients[ingredientName].multiplier && (`[${ingredients[ingredientName].multiplier}]`)} ({costText}): {ingredientData.count} / {getStorage(ingredientName)} {ingredientData.tempCount != 0 && (`(${ingredientData.tempCount})`)}
                                         {ingredientData.idleCount !== undefined && (
                                             <>
                                                 <br /> Idle Count: {ingredientData.idleCount}
@@ -117,9 +117,12 @@ const Inventory = ({
         <ul style={{ listStyleType: 'none', padding: 0 }}>
             {Object.entries(ores)
                 .filter(([_, oreData]) => oreData.unlocked)
-                .map(([oreName, oreData]) => (
-                    <li key={oreName}>{oreName}: {oreData.count} / {getStorage(oreName)} </li>
-                ))}
+                .map(([oreName, oreData]) => {
+                    const tempData = oreData.tempCount;
+                    return(
+                        <li key={oreName}>{oreName}: {oreData.count} / {getStorage(oreName)} {tempData != 0 && `(${tempData})`}</li>
+                    )
+                })}
         </ul>
 
         <IngredientList 

@@ -27,57 +27,21 @@ const ResourceSection = ({
   const [outputCounts, setOutputCounts] = useState({});
   const [pendingMachineOutput, setPendingMachineOutput] = useState({});
 
-  const incrementTempCount = (itemName, incrementBy) => {
+  const updateItemCounts = (itemName, countChange, tempCountChange) => {
     const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
-    if(oreOrIngredient === 'ore'){
-      setOres(prevOres => ({
-          ...prevOres,
-          [itemName]: {
-              ...prevOres[itemName],
-              tempCount: prevOres[itemName].tempCount + incrementBy
-          }
-      }));
-      // console.log(`tempCount for ${itemName} is now ${ores[itemName].tempCount}. Current count is: ${ores[itemName].count} and total 'floating' is ${ores[itemName].count + ores[itemName].tempCount}`)
-    }
-    else if(oreOrIngredient === 'ingredient'){
-      setIngredients(prevOres => ({
-        ...prevOres,
-        [itemName]: {
-            ...prevOres[itemName],
-            tempCount: prevOres[itemName].tempCount + incrementBy
-        }
-      }));
-      console.log(`tempCount for ${itemName} is now ${ingredients[itemName].tempCount}. Current count is: ${ingredients[itemName].count} and total 'floating' is ${ingredients[itemName].count + ingredients[itemName].tempCount}`)
-    }
-    else{
-      console.log(`Something's gone wrong incrementing ${itemName} temp value through belts!`)
-    }
-  };
-
-  const incrementCount = (itemName, incrementBy) => {
-    //console.log(`I've been called!`)
-    const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
-    if(oreOrIngredient === 'ore'){
-      setOres(prevOres => ({
-          ...prevOres,
-          [itemName]: {
-              ...prevOres[itemName],
-              count: prevOres[itemName].count + incrementBy
-          }
-      }));
-    }
-    else if(oreOrIngredient === 'ingredient'){
-      setIngredients(prevOres => ({
-        ...prevOres,
-        [itemName]: {
-            ...prevOres[itemName],
-            count: prevOres[itemName].count + incrementBy
-        }
-    }));
-    }
-    else{
-      console.log(`Something's gone wrong incrementing ${itemName} final value through belts!`)
-    }
+    const updateState = oreOrIngredient === 'ore' ? setOres : setIngredients;
+  
+    updateState(prevState => {
+        const updatedItem = {
+            ...prevState[itemName],
+            count: prevState[itemName].count + countChange,
+            tempCount: prevState[itemName].tempCount + tempCountChange
+        };
+        return {
+            ...prevState,
+            [itemName]: updatedItem
+        };
+    });
   };
 
   const handleBank = (itemName) => {
@@ -347,10 +311,6 @@ const ResourceSection = ({
             // console.log(`Details: ${JSON.stringify(details)}`);
             // console.log('-----------------------');
             let speed = details.speed;
-            // incrementTempCount(itemName, 1);
-            // turnOnBelt(itemName, lane, details, speed)
-
-            // Move item to the belt and adjust tempCount/outputCounts
             moveItemToBelt(itemName, lane, speed);
           }
         });
@@ -365,14 +325,23 @@ const ResourceSection = ({
   }
 
   const moveItemToBelt = (itemName, lane, speed) => {
-    incrementTempCount(itemName, 1); // Increment tempCount before processing
+    const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
+    const targetResource = oreOrIngredient === 'ore' ? ores[itemName] : ingredients[itemName];
 
-    setOutputCounts(prevCounts => {
-        const newCount = (prevCounts[itemName] || 0) - 1;
-        return { ...prevCounts, [itemName]: Math.max(0, newCount) };
-    });
+    // Move item only if there is room
+    if (targetResource.tempCount + targetResource.count < getStorage(itemName)) {
+      updateItemCounts(itemName, 0, 1); // Increment tempCount before processing
 
-    turnOnBelt(itemName, lane, speed);
+      setOutputCounts(prevCounts => {
+          const newCount = Math.max(0, (prevCounts[itemName] || 0) - 1);
+          return { ...prevCounts, [itemName]: newCount };
+      });
+
+      turnOnBelt(itemName, lane, speed);
+    } 
+    else {
+        console.log(`Storage for ${itemName} is full or no room in tempCount.`);
+    }
   };
 
 
@@ -389,43 +358,28 @@ const ResourceSection = ({
     updateLaneRunningState(itemName, lane, true);
 
     const beltId = `belt-${itemName.replace(/\s+/g, '-')}-${lane}`;
-    //console.log(`Attempting to find element with ID: ${beltId}`);
-
-    // Add a flashing effect to the lane in CSS
     const laneElement = document.querySelector(`#${beltId}`);
     
     if (laneElement) {
       // Determine which class to add based on the speed
-      let flashClass;
-      if (speed >= 5) flashClass = 'flashing-fast';
-      else if (speed >= 3) flashClass = 'flashing-medium';
-      else flashClass = 'flashing-slow';
-
-      // Add the corresponding class for flashing
+      let flashClass = speed >= 5 ? 'flashing-fast' : speed >= 3 ? 'flashing-medium' : 'flashing-slow';
       laneElement.classList.add(flashClass);
 
       // Remove flashing effect and payout after delay
       setTimeout(() => {
         laneElement.classList.remove(flashClass);
-        beltPayout(itemName);
+        updateItemCounts(itemName, 1, -1)
       }, 50 / speed * 1000); 
     }
     else{
       console.error(`No laneElement found with ID: ${beltId}`);
-      //console.log(document.body.innerHTML);
     }
 
-    const throughput = 8 * speed
     // loop back to achieve x items / second
     setTimeout(() => {
-      updateLaneRunningState(itemName, lane, false);
-    }, 1000 / throughput )
+        updateLaneRunningState(itemName, lane, false);
+    }, (1000 / (8 * speed))); // this is the throughput for belts
   };
-
-  const beltPayout = (itemName) => {
-    incrementCount(itemName, 1); // add item to inventory
-    incrementTempCount(itemName, -1); // remove item as a temp value
-  }
 
   const isStorageFull = (itemName) => { 
     const currentStorage = outputCounts[itemName] || 0;

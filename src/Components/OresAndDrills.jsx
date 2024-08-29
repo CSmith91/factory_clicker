@@ -53,7 +53,10 @@ const OresAndDrills = ({
                                 {images[oreName] && (
                                     <>
                                         <img src={images[oreName]} alt={`${oreName} Img`} />
-                                        <span className="img-number">{outputCounts[oreName] || 0}</span> {/* Update this number dynamically as needed */}
+                                        {/* {ores[oreName].tempCount != 0 &&(
+                                            <span className="img-temp-number">{ores[oreName].tempCount}</span>
+                                        )} */}
+                                        <span className="img-number">{outputCounts[oreName] || 0}</span>
                                     </>
                                 )}
                                 </div>

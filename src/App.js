@@ -219,7 +219,7 @@ function App() {
       unlocked: testMode, 
       cost: { "Copper Plate": 5 }, 
       title: 'Copper Wire', 
-      desc: 'We can use this to pass electricity through it.'
+      desc: 'We can pass electricity through this.'
     },
     chip1: { 
       isVisible: false, // make visible after 25 clicks
