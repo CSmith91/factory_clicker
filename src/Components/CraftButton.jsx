@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const CraftButton = ({ ingredientName, checkCraft }) => {
+const CraftButton = ({ ingredientName, checkCraft, isBus }) => {
+
+    const buttonText = isBus ? "Build" : "Craft";
 
     return (
         <div>
             <button 
                 onClick={() => checkCraft(ingredientName)}>
-                Craft
+                {buttonText}
             </button>
         </div>
     );

@@ -1,10 +1,28 @@
-import React, { useState } from "react";
+import React from "react";
 import Machines from "./Machines";
+import Bus from "./Bus";
 import images from './Images/images';
 
-const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,  storage, getStorage, handleMachineChange, onAlert }) => {
-
-    const [outputCounts, setOutputCounts] = useState({});
+const Furnaces = ({ 
+    unlockables, 
+    ores, 
+    ingredients,  
+    setOres, 
+    setIngredients,  
+    storage, 
+    getStorage, 
+    isStorageFull,
+    pendingMachineOutput,
+    setPendingMachineOutput, 
+    handleBank,
+    outputCounts,
+    updateOutputCount,
+    networks, 
+    setNetworks, 
+    checkBelts,              
+    lanes,
+    setLanes,
+    onAlert }) => {
 
     // used for lookups within production (later) as well as headers (here)
     const getOutput = (oreName) => {
@@ -22,59 +40,6 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
         }
     }
 
-    // Function to update the output count
-    const updateOutputCount = (output, amount) => {
-        setOutputCounts(prevCounts => ({
-            ...prevCounts,
-            [output]: (prevCounts[output] || 0) + amount
-        }));
-    };
-
-    const handleBank = (oreName) => {
-        const outputName = getOutput(oreName);
-        if (!outputName) return;
-    
-        const currentCount = outputCounts[outputName] || 0;
-        const ingredient = ingredients[outputName];
-        const storageLimit = getStorage(outputName);
-    
-        if (ingredient.count >= storageLimit) {
-            onAlert(`${outputName} is full.`);
-        } else {
-            const newCount = ingredient.count + currentCount;
-    
-            if (newCount > storageLimit) {
-                const partialAddCount = storageLimit - ingredient.count;
-                setUnlockables(prevUnlockables => ({
-                    ...prevUnlockables,
-                    storage2: { 
-                      ...prevUnlockables.storage2,
-                      isVisible: true
-                    }
-                }))
-                updateIngredientAndResetOutput(outputName, partialAddCount, currentCount - partialAddCount);
-            } else if (currentCount > 0) {
-                updateIngredientAndResetOutput(outputName, currentCount, 0);
-            }
-        }
-    };
-    
-    const updateIngredientAndResetOutput = (itemName, countToAdd, remainingOutputCount) => {
-        setIngredients(prevIngs => ({
-            ...prevIngs,
-            [itemName]: {
-                ...prevIngs[itemName],
-                count: prevIngs[itemName].count + countToAdd
-            }
-        }));
-    
-        setOutputCounts(prevCounts => ({
-            ...prevCounts,
-            [itemName]: remainingOutputCount
-        }));
-    };
-    
-
     const getUnlockStatus = (oreName) => {
         if(ingredients[getOutput(oreName)]){
             return ingredients[getOutput(oreName)].unlocked
@@ -83,17 +48,6 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
             return true
         }
     }
-
-    const isStorageFull = (oreName) => { 
-        const limit = outputCounts[oreName] || 0
-        if(limit >= getStorage(oreName)){
-            return true
-        }
-        else{
-            return false
-        }
-    }
-
 
     return(
         <>
@@ -104,14 +58,19 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                     .map(([oreName, _]) => (
                         <div key={oreName+"HarvestDiv"}>
                             <h3>{getOutput(oreName)}</h3>
-                            <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(oreName)) ? 'red-background' : ''}`} onClick={() => handleBank(oreName)} >
+                            <div key={oreName+"ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(oreName)) ? 'red-background' : ''}`} onClick={() => handleBank(getOutput(oreName))} >
                                 {images[getOutput(oreName)] && (
                                     <>
-                                        <img src={images[getOutput(oreName)]} alt={`${getOutput(oreName)} Image`} />
-                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span> {/* Update this number dynamically as needed */}
+                                        <img src={images[getOutput(oreName)]} alt={`${getOutput(oreName)}`} />
+                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span>
                                     </>
                                 )}
                             </div>
+                            {unlockables.belts1.unlocked && (
+                                <div style={{marginBottom: "15px"}}>
+                                    <Bus itemName={getOutput(oreName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert}/>
+                                </div>
+                            )}
                             <Machines
                                 machineType={"furnace"}
                                 ores={ores} 
@@ -121,7 +80,8 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                                 setIngredients={setIngredients}
                                 storage={storage}
                                 getStorage={getStorage}
-                                handleMachineChange={handleMachineChange}
+                                pendingMachineOutput={pendingMachineOutput}
+                                setPendingMachineOutput={setPendingMachineOutput}
                                 outputCounts={outputCounts}
                                 updateOutputCount={updateOutputCount}
                                 onAlert={onAlert} 
@@ -133,14 +93,19 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                     .map(([ingredientName, _]) => (
                         <div key={ingredientName + "HarvestDiv"}>
                         <h3>{getOutput(ingredientName)}</h3>
-                        <div key={ingredientName + "ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(ingredientName)) ? 'red-background' : ''}`} onClick={() => handleBank(ingredientName)} >
+                        <div key={ingredientName + "ImgDiv"} className={`imgdiv ${isStorageFull(getOutput(ingredientName)) ? 'red-background' : ''}`} onClick={() => handleBank(getOutput(ingredientName))} >
                             {images[getOutput(ingredientName)] && (
                             <>
-                                <img src={images[getOutput(ingredientName)]} alt={`${getOutput(ingredientName)} Image`} />
+                                <img src={images[getOutput(ingredientName)]} alt={`${getOutput(ingredientName)}`} />
                                 <span className="img-number">{outputCounts[getOutput(ingredientName)] || 0}</span> {/* Update this number dynamically as needed */}
                             </>
                             )}
                         </div>
+                        {unlockables.belts1.unlocked && (
+                            <div style={{marginBottom: "15px"}}>
+                                <Bus itemName={getOutput(ingredientName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert}/>
+                            </div>
+                            )}
                         <Machines
                             machineType={"furnace"}
                             ores={ores}
@@ -150,7 +115,8 @@ const Furnaces = ({ setUnlockables, ores, ingredients,  setOres, setIngredients,
                             setIngredients={setIngredients}
                             storage={storage}
                             getStorage={getStorage}
-                            handleMachineChange={handleMachineChange}
+                            pendingMachineOutput={pendingMachineOutput}
+                            setPendingMachineOutput={setPendingMachineOutput}
                             outputCounts={outputCounts}
                             updateOutputCount={updateOutputCount}
                             onAlert={onAlert}

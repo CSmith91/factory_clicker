@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const OreButton = ({ ores, oreName, outputCounts, updateOutputCount, getStorage }) => {
+const OreButton = ({ ores, oreName, outputCounts, pendingMachineOutput, setPendingMachineOutput, updateOutputCount, getStorage }) => {
     const [isAnimating, setIsAnimating] = useState(false);
     const craftTime = ores[oreName].craftTime;
 
@@ -8,7 +8,7 @@ const OreButton = ({ ores, oreName, outputCounts, updateOutputCount, getStorage 
 
         // check the bank isn't full
         if(outputCounts[oreName]){
-            if(outputCounts[oreName] >= getStorage(oreName)){
+            if(outputCounts[oreName] + pendingMachineOutput[oreName] >= getStorage(oreName)){
                 return;
             }
             else{
@@ -23,10 +23,20 @@ const OreButton = ({ ores, oreName, outputCounts, updateOutputCount, getStorage 
     const startMine = () => {
         // Start the animation
         setIsAnimating(true);
+        // Update the pending output
+        setPendingMachineOutput(prevPending => ({
+            ...prevPending,
+            [oreName]: (prevPending[oreName] || 0) + 1
+        }));
 
         // Delay the execution of updateOutputCount
         setTimeout(() => {
-            updateOutputCount(oreName, 'manual');
+            updateOutputCount(oreName, 1, 'manual');
+
+            setPendingMachineOutput(prevPending => ({
+                ...prevPending,
+                [oreName]: (prevPending[oreName] || 0)- 1
+            }));
 
             // End the animation
             setIsAnimating(false);

@@ -2,15 +2,11 @@ import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
 import images from './Images/images';
 
-const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, handleMachineChange, triggerProductionCheck, outputCounts, updateOutputCount, onAlert }) => {
+const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, pendingMachineOutput, setPendingMachineOutput, outputCounts, updateOutputCount, onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
     const [animation, setAnimation] = useState('inputReq')
-
-    // useEffect(() => {
-
-    // }), [animation, setAnimation]
 
     // State to hold all machine-related data
     const [machineStates, setMachineStates] = useState({
@@ -43,54 +39,102 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         
         if (currentMachineState?.isRunning) {
             const makeTime = ingredients[machineName].isDrill ? ores[output].craftTime : ingredients[output].craftTime
+            const multiplier = 
+            (ingredients[output]?.multiplier !== undefined) ? ingredients[output].multiplier :
+            (ores[output]?.multiplier !== undefined) ? ores[output].multiplier : 
+            1;
             const waitTime = makeTime / currentMachineState.count;
+
             const timeoutId = setTimeout(() => {
+                // deduct pending first, then add actual through payout, as payout goes on to checkProduction again
+                setPendingMachineOutput(prevPending => ({
+                    ...prevPending,
+                    [output]: prevPending[output] - multiplier
+                }));
                 payout(machineStates[machineName]);
+
             }, waitTime / machineSpeed * 1000);
             
             return () => clearTimeout(timeoutId); // Cleanup timeout on unmount or dependency change
         }
     }, [machineStates, machineName, itemName, ingredients, output]);
 
-
     // shows the machines resource amounts
     const machineParent = ingredients[machineName]
     const currentMachineState = machineStates[machineName] || {}; // Getting the state of the current machine
     const fuelsArray = Object.entries(fuels);
 
-    // handles changing the number of machines
-    const onMachineChange = (action) => {
-        handleMachineChange(action, machineName).then((result) =>{
-            if (result) {
-                setCounter(prevCounter => {
-                    let newCounter = prevCounter;
-                    if (action === 'increment') {
-                        newCounter = prevCounter + 1;
-                    } else if (action === 'decrement') {
-                        newCounter = prevCounter > 0 ? prevCounter - 1 : prevCounter;
-                    }
-
-                    // Update machine states dynamically based on the new counter
-                    const updatedMachineStates = {
-                        ...machineStates,
-                        [machineName]: {
-                            ...machineStates[machineName],
-                            [itemName]: {
-                                ...machineStates[machineName]?.[itemName],
-                                count: newCounter,
-                                inputMax: newCounter * 10,
-                            }
-                        }
-                    };
-
-                    setMachineStates(updatedMachineStates);
-                    return newCounter;
-                });
-            } else if (!result && action === 'increment') {
-                onAlert(`No idle ${machineName}s`);
-            }
-        })
-    };
+    // handles changing the number of machines on site
+    const handleMachineChange = (action, machineName) => {
+        // Get current counts
+        const currentOnSiteCount = counter[machineName] || 0;
+        const currentIdleCount = ingredients[machineName].idleCount;
+    
+        if (action === 'increment' && currentIdleCount > 0) {
+            // Proceed only if there's an idle machine available
+            const updatedOnSiteCount = currentOnSiteCount + 1;
+            const updatedIdleCount = currentIdleCount - 1;
+    
+            // Update the state
+            setCounter(prevCounter => ({
+                ...prevCounter,
+                [machineName]: updatedOnSiteCount,
+            }));
+    
+            setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                [machineName]: {
+                    ...prevIngredients[machineName],
+                    idleCount: updatedIdleCount,
+                },
+            }));
+    
+            setMachineStates(prevMachineStates => ({
+                ...prevMachineStates,
+                [machineName]: {
+                    ...prevMachineStates[machineName],
+                    [itemName]: {
+                        ...prevMachineStates[machineName]?.[itemName],
+                        count: updatedOnSiteCount,
+                        inputMax: updatedOnSiteCount * 10,
+                    },
+                },
+            }));
+        } else if (action === 'decrement' && currentOnSiteCount > 0) {
+            // Allow decrement only if there's a machine on-site
+            const updatedOnSiteCount = currentOnSiteCount - 1;
+            const updatedIdleCount = currentIdleCount + 1;
+    
+            // Update the state
+            setCounter(prevCounter => ({
+                ...prevCounter,
+                [machineName]: updatedOnSiteCount,
+            }));
+    
+            setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                [machineName]: {
+                    ...prevIngredients[machineName],
+                    idleCount: updatedIdleCount,
+                },
+            }));
+    
+            setMachineStates(prevMachineStates => ({
+                ...prevMachineStates,
+                [machineName]: {
+                    ...prevMachineStates[machineName],
+                    [itemName]: {
+                        ...prevMachineStates[machineName]?.[itemName],
+                        count: updatedOnSiteCount,
+                        inputMax: updatedOnSiteCount * 10,
+                    },
+                },
+            }));
+        } else if (action === 'increment') {
+            // Notify the user if no idle machines are available
+            onAlert(`No idle ${machineName}s`);
+        }
+    };  
 
     // Adding ore and ingredients to a machine
     const addItem = (item, byHand) => {
@@ -112,11 +156,11 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         } else {
             // Check if the current input or fuel is not exceeding the inputMax
             const canAddMore = chosenMachineState && (
-                (item === itemName && chosenMachineState.currentInput < chosenMachineState.inputMax) ||
+                (item === itemName && item !== "Coal" && chosenMachineState.currentInput < chosenMachineState.inputMax) ||
                 (chosenMachineState.fuels[item] && chosenMachineState.fuels[item].current < chosenMachineState.inputMax)
             );
             if (canAddMore) {
-                if (item === itemName) {
+                if (item === itemName && item !== "Coal") {
                     // Update the current input if the item is the main input item
                     setMachineStates(prevState => ({
                         ...prevState,
@@ -180,7 +224,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         // first, check we have any machines
         if(machine[itemName].count > 0){
             // second, check we have room in the destination output
-            if(outputCounts[output] < getStorage(output) || !outputCounts[output]){
+            if(outputCounts[output] + pendingMachineOutput[output] < getStorage(output) || !outputCounts[output]){
                 // third, check we aren't aleady running this machine
                 if(!machine[itemName].isRunning){
                     // fourth, check we have ingredients
@@ -262,6 +306,15 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             }
         }));
 
+        const multiplier = 
+        (ingredients[output]?.multiplier !== undefined) ? ingredients[output].multiplier :
+        (ores[output]?.multiplier !== undefined) ? ores[output].multiplier : 
+        1;
+        // Update the pending machine output
+        setPendingMachineOutput(prevPending => ({
+            ...prevPending,
+            [output]: (prevPending[output] || 0) + multiplier
+        }));
         // this triggers the useEffect to now call the payout script after a delay 
     }
 
@@ -323,7 +376,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         }
 
         // check this isn't a self-start from the burner drills on coal
-        if(!fuelDeducted && ingredients[machineName]?.isBurner && ingredients[machineName]?.isDrill && itemName == 'Coal' ){
+        if(!fuelDeducted && ingredients[machineName]?.isBurner && ingredients[machineName]?.isDrill && itemName === 'Coal' ){
 
             setOres(prevOres => ({
                 ...prevOres,
@@ -355,7 +408,25 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         
         // else, payout
         else{
-            updateOutputCount(output, 1)
+            // check its not 1 to many
+            const oreOrIngredient = ingredients[output] ? ingredients[output] : ores[output]
+            const multiplier = oreOrIngredient.multiplier ? oreOrIngredient.multiplier : 1;
+            //console.log(`output: ${JSON.stringify(output)}`)
+            updateOutputCount(output, multiplier)
+
+            // reduce ore patch if its a drill
+            if(ingredients[machineName]?.isDrill){
+                setOres(prevOres => ({
+                    ...prevOres,
+                    [itemName]: {
+                        ...prevOres[itemName],
+                        patch: {
+                            ...prevOres[itemName].patch,
+                            size: prevOres[itemName].patch.size - multiplier
+                        }
+                    }
+                }));
+            }
         }
 
         // turn off and loop back
@@ -376,16 +447,16 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         <>
         <div className="machineButtons">
             <p style={{padding: '5px'}}>{machineName}s in use:</p>
-            <button onClick={() => onMachineChange('decrement')}>
+            <button onClick={() => handleMachineChange('decrement', machineName)}>
                 {"<"}
             </button>
-            <p style={{padding: '5px'}}>{counter}</p>
-            <button onClick={() => onMachineChange('increment')}>
+            <p style={{padding: '5px'}}>{counter[machineName] || 0}</p>
+            <button onClick={() => handleMachineChange('increment', machineName)}>
                 {">"}
             </button>
         </div>
         {/* Conditionally render the div if counter > 0 */}
-        {counter > 0 && (
+        {counter[machineName] > 0 && (
             <>
                 <div style={{marginBottom: "5%"}}>
                     <div style={{marginBottom: "5%"}} className="machine-input-buttons">
@@ -403,11 +474,11 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 </div>
                 <div className="machine-div" style={{marginBottom: "5%"}}>
                     <div className={`machineOnSite ${animation}`}>
-                        {images[machineName] && <img src={images[machineName]} alt={`${machineName} Image`} style={{ width: '32px', height: 'auto' }} />}
+                        {images[machineName] && <img src={images[machineName]} alt={`${machineName}`} style={{ width: '32px', height: 'auto' }} />}
                     </div>
                     <div className="machine-inputs">
                         {machineParent.isFurnace && (
-                            <p>{itemName}: {currentMachineState[itemName].currentInput} / {currentMachineState[itemName].inputMax || 0}</p>
+                            <p>{itemName}: {currentMachineState[itemName]?.currentInput || 0} / {currentMachineState[itemName]?.inputMax || 0}</p>
                         )}    
                         {machineParent.isBurner && fuelsArray.map(([fuelName, fuelData]) => {
                             const fuelState = currentMachineState[itemName].fuels?.[fuelName] || {}; // Default to empty object

@@ -17,6 +17,18 @@ import ironPlate from './iron_plate.png'
 import copperPlate from './copper_plate.png'
 import steel from './steel.png'
 import gear from './gear.png'
+import burnerInserter from './burner_inserter.png'
+import inserter from './inserter.png'
+import longInserter from './long_inserter.png'
+import fastInserter from './fast_inserter.png'
+import stackInserter from './stack_inserter.png'
+import belt from './belt.png'
+import fastBelt from './fast_belt.png'
+import expressBelt from './express_belt.png'
+// networks
+import beltLane1 from './underground_belt.png'
+import beltLane2 from './fast_underground_belt.png'
+import beltLane3 from './express_underground_belt.png'
 
 const images = {
     // Ores
@@ -29,6 +41,14 @@ const images = {
     'Uranium Ore': uraniumOre,
   
     // Ingredients
+    "Transport Belt": belt,
+    "Fast Transport Belt": fastBelt,
+    "Express Transport Belt": expressBelt,
+    "Burner Inserter": burnerInserter,
+    "Inserter": inserter,
+    "Long Inserter": longInserter,
+    "Fast Inserter": fastInserter, 
+    "Stack Inserter": stackInserter,
     'Burner Drill': burnerDrill,
     'Electric Drill': electricDrill,
     'Stone Furnace': stoneFurnace,
@@ -39,6 +59,11 @@ const images = {
     'Copper Plate': copperPlate,
     'Steel': steel,
     'Gear': gear,
+
+    // Networks
+    "Belt Lane": beltLane1,
+    "Fast Belt Lane": beltLane2,
+    "Express Belt Lane": beltLane3,
   };
   
   export default images;
