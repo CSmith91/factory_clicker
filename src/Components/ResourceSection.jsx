@@ -368,12 +368,16 @@ const ResourceSection = ({
       // Remove flashing effect and payout after delay
       setTimeout(() => {
         laneElement.classList.remove(flashClass);
-        updateItemCounts(itemName, 1, -1)
       }, 50 / speed * 1000); 
     }
     else{
       console.error(`No laneElement found with ID: ${beltId}`);
     }
+
+    // running separately to the above to ensure this always runs -- it would appear this fixes the transit bug
+    setTimeout(() => {
+      updateItemCounts(itemName, 1, -1)
+    }, 50 / speed * 1000); 
 
     // loop back to achieve x items / second
     setTimeout(() => {
