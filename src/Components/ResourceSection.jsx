@@ -147,7 +147,7 @@ const ResourceSection = ({
   // Function to increment the ore count
   const onIncrement = (oreName, toolName, manOrMachine) => {
 
-    if(ores["Wood"].harvested === 20){
+    if(ores["Wood"].harvested <= 20 && !unlockables.axe2.isVisible){
       setUnlockables(prevUnlockables => ({
           ...prevUnlockables,
           axe2: { 
@@ -157,7 +157,7 @@ const ResourceSection = ({
           }));
     }
 
-    if(ores["Wood"].harvested === 30){
+    if(ores["Wood"].harvested <= 30 && !unlockables.storage1.isVisible){
         setUnlockables(prevUnlockables => ({
             ...prevUnlockables,
             storage1: { 
@@ -167,7 +167,7 @@ const ResourceSection = ({
         }));
     }
 
-    if(ores["Wood"].harvested === 45){
+    if(ores["Wood"].harvested <= 45 && !unlockables.copper1.isVisible){
       setUnlockables(prevUnlockables => ({
           ...prevUnlockables,
           copper1: { 
@@ -177,7 +177,7 @@ const ResourceSection = ({
           }));
   }
 
-    if(ores["Stone"].patch.size === 119988){
+    if(ores["Stone"].patch.size <= 119988 && !unlockables.pick2.isVisible){
         setUnlockables(prevUnlockables => ({
             ...prevUnlockables,
             pick2: { 
@@ -187,7 +187,7 @@ const ResourceSection = ({
             }));
     }
 
-    if(ores["Stone"].patch.size === 119895){
+    if(ores["Stone"].patch.size <= 119895 && !unlockables.inserters1.isVisible){
       setUnlockables(prevUnlockables => ({
           ...prevUnlockables,
           inserters1: { 
@@ -197,7 +197,7 @@ const ResourceSection = ({
           }));
     }
 
-    if(ores["Iron Ore"].patch.size === 349998){
+    if(ores["Iron Ore"].patch.size <= 349998 && !unlockables.drill1.isVisible){
         setUnlockables(prevUnlockables => ({
             ...prevUnlockables,
             drill1: { 
@@ -207,7 +207,7 @@ const ResourceSection = ({
             }));
     }
 
-    if(ores["Iron Ore"].patch.size === 349979){
+    if(ores["Iron Ore"].patch.size <= 349979 && !unlockables.belts1.isVisible){
         setUnlockables(prevUnlockables => ({
             ...prevUnlockables,
             belts1: { 
@@ -217,7 +217,7 @@ const ResourceSection = ({
             }));
     }
 
-    if(ores["Iron Ore"].patch.size === 349955){
+    if(ores["Iron Ore"].patch.size <= 349955 && !unlockables.coal1.isVisible){
         setUnlockables(prevUnlockables => ({
             ...prevUnlockables,
             coal1: { 
@@ -227,7 +227,7 @@ const ResourceSection = ({
             }));
     }
 
-    if(ores["Iron Ore"].patch.size === 349935){
+    if(ores["Iron Ore"].patch.size <= 349935 && !unlockables.storage2.isVisible){
     setUnlockables(prevUnlockables => ({
         ...prevUnlockables,
         storage2: { 
