@@ -29,6 +29,10 @@ import expressBelt from './express_belt.png'
 import beltLane1 from './underground_belt.png'
 import beltLane2 from './fast_underground_belt.png'
 import beltLane3 from './express_underground_belt.png'
+// menu images
+import group1 from './logistics.png'
+import group2 from './production.png'
+import group3 from './intermediate_products.png'
 
 const images = {
     // Ores
@@ -64,6 +68,11 @@ const images = {
     "Belt Lane": beltLane1,
     "Fast Belt Lane": beltLane2,
     "Express Belt Lane": beltLane3,
+
+    // Menu Items
+    "Logistics": group1,
+    "Production": group2,
+    "Intermediate Products": group3
   };
   
   export default images;
