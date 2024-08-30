@@ -12,7 +12,7 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = true
+  const testMode = false;
 
   let cheat = 0;
   // if(testMode){
@@ -205,7 +205,6 @@ function App() {
       title: 'Copper', 
       desc: 'This resource will open a lot of (electronic) doors...' // unlocks copper ore, plate and wire
     },
-    // the above have all unlock results set
     inserters1: { 
       isVisible: false, 
       unlocked: testMode, 
@@ -213,7 +212,7 @@ function App() {
       title: 'Burner Inserters', 
       desc: 'Our most basic inserter - add resources to your drills and furnaces automatically.'
     },
-    // the above all have isVisible conditions set
+    // the above have all unlock results set
     wire1: { 
       isVisible: false, // make visible after 5 clicks
       unlocked: testMode, 
@@ -224,10 +223,11 @@ function App() {
     chip1: { 
       isVisible: false, // make visible after 25 clicks
       unlocked: testMode, 
-      cost: { "Wire": 50 }, 
+      cost: { "Wire": 20 }, 
       title: 'Green Chips', 
       desc: 'Unlock the power of the computer chip!'
     },
+    // the above all have isVisible conditions set
     bulkPlace1: { 
       isVisible: false, 
       unlocked: testMode, 
@@ -489,6 +489,15 @@ function App() {
                 ...prevIngredients,
                 "Copper Plate": {
                   ...prevIngredients["Copper Plate"],
+                  unlocked: true 
+                }
+              }));
+                break
+            case 'inserters1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Burner Inserter": {
+                  ...prevIngredients["Burner Inserter"],
                   unlocked: true 
                 }
               }));
@@ -914,6 +923,7 @@ function App() {
               {shouldShowRepairTools() && <RepairTools tools={tools} onRepair={onRepair} />}
 
               <CompletedResearch unlockables={unlockables}  />
+              < TestMode ores={ores} ingredients={ingredients} onCheat={onCheat} />
             </div>
           </div>
       </div>

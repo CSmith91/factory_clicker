@@ -284,7 +284,81 @@ button:not(:disabled):hover {
   align-items: center;
 }
 
-.bus-lane {
+.inserters-div {
+  background-color: var(--dark-grey);
+  padding: 5px 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column; /* Align items in a column */
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.burner-inserter-row {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Align burner inserter and its fuel info to the left */
+  gap: 20px; /* Space between burner inserter and fuel info */
+}
+
+.inserters-row {
+  display: flex;
+  justify-content: space-between;  /* Center lanes within inserters-row */
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.inserters-lane {
+  position: relative; /* Enable absolute positioning for child elements */
+  border-radius: 10px;
+  flex: 0 1 20px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.inserters-lane img {
+  display: block;
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.inserters-lane p {
+  position: absolute;
+  bottom: 30px; 
+  left: 20px; /* Positioning slightly away from the right edge */
+  background-color: var(--hover-grey);
+  color: white;
+  padding: 2px 5px; /* Add some padding for better appearance */
+  border-radius: 3px; /* Rounded corners for the count box */
+  font-size: 12px; /* Adjust font size as necessary */
+  margin: 0; /* Remove default margin */
+}
+
+.inserters-lane button {
+  color: white;
+  background-color: #3a3f4a;
+  height: 20px; 
+  width: 20px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: none;  
+}
+
+.burner-fuel-info {
+  display: flex;
+  flex-direction: column; /* Stack fuel info vertically */
+  gap: 5px; /* Space between each fuel info */
+}
+
+.fuel-status {
+  font-size: 14px; /* Adjust as necessary */
+  color: #fff;
+}
+
+.bus-lane, .inserters-lane {
   border-radius: 10px;
   flex: 0 1 20px;        /* Allow each lane to grow and shrink, with a minimum width */
   min-width: 32px;
@@ -298,7 +372,7 @@ button:not(:disabled):hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */
 }
 
-.belt-change button {
+.belt-change button, .inserters-lane button {
   color: white;
   background-color: #3a3f4a;
   height: 20px; 
@@ -364,6 +438,7 @@ button:not(:disabled):hover {
 .section-navigation button.active {
   background-color: var(--dark-grey);
   color: white;
+  cursor: default;
 }
 
 .ingredient-grid {

@@ -97,15 +97,21 @@ const Inventory = ({
             <h2>Inventory</h2>
             <div className="inventory-div">
                 <div className="section-navigation">
-                    <button onClick={() => setActiveSection('Logistics')} className={activeSection === 'Logistics' ? 'active' : ''}>
-                        <img src={`${images['Logistics']}`} alt={'Logistics'} className="menu-image" />
-                    </button>
-                    <button onClick={() => setActiveSection('Production')} className={activeSection === 'Production' ? 'active' : ''}>
-                        <img src={`${images['Production']}`} alt={'Production'} className="menu-image" />
-                    </button>
-                    <button onClick={() => setActiveSection('Intermediate Products')} className={activeSection === 'Intermediate Products' ? 'active' : ''}>
-                        <img src={`${images['Intermediate Products']}`} alt={'Intermediate Products'} className="menu-image" />
-                    </button>
+                    {(unlockables.belts1.unlocked || unlockables.inserters1.unlocked) && (
+                        <button onClick={() => setActiveSection('Logistics')} className={activeSection === 'Logistics' ? 'active' : ''}>
+                            <img src={`${images['Logistics']}`} alt={'Logistics'} className="menu-image" />
+                        </button>
+                    )}
+                    {unlockables.furnace1.unlocked && (
+                    <>                        
+                        <button onClick={() => setActiveSection('Production')} className={activeSection === 'Production' ? 'active' : ''}>
+                            <img src={`${images['Production']}`} alt={'Production'} className="menu-image" />
+                        </button>
+                        <button onClick={() => setActiveSection('Intermediate Products')} className={activeSection === 'Intermediate Products' ? 'active' : ''}>
+                            <img src={`${images['Intermediate Products']}`} alt={'Intermediate Products'} className="menu-image" />
+                        </button>
+                    </>
+                    )}
                 </div>
         
                 <div className='craftList'>

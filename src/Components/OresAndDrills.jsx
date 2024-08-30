@@ -73,6 +73,7 @@ const OresAndDrills = ({
                             {/* DRILLS */}
                             {oreData.canDrill ? (
                                 <Machines
+                                unlockables={unlockables}
                                 machineType={"drill"} 
                                 ores={ores} 
                                 oreName={oreName} 

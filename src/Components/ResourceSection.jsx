@@ -147,7 +147,7 @@ const ResourceSection = ({
   // Function to increment the ore count
   const onIncrement = (oreName, toolName, manOrMachine) => {
 
-    if(ores["Wood"].harvested <= 20 && !unlockables.axe2.isVisible){
+    if(ores["Wood"].harvested >= 20 && !unlockables.axe2.isVisible){
       setUnlockables(prevUnlockables => ({
           ...prevUnlockables,
           axe2: { 
@@ -157,7 +157,7 @@ const ResourceSection = ({
           }));
     }
 
-    if(ores["Wood"].harvested <= 30 && !unlockables.storage1.isVisible){
+    if(ores["Wood"].harvested >= 30 && !unlockables.storage1.isVisible){
         setUnlockables(prevUnlockables => ({
             ...prevUnlockables,
             storage1: { 
@@ -167,7 +167,7 @@ const ResourceSection = ({
         }));
     }
 
-    if(ores["Wood"].harvested <= 45 && !unlockables.copper1.isVisible){
+    if(ores["Wood"].harvested >= 45 && !unlockables.copper1.isVisible){
       setUnlockables(prevUnlockables => ({
           ...prevUnlockables,
           copper1: { 
@@ -228,13 +228,33 @@ const ResourceSection = ({
     }
 
     if(ores["Iron Ore"].patch.size <= 349935 && !unlockables.storage2.isVisible){
-    setUnlockables(prevUnlockables => ({
-        ...prevUnlockables,
-        storage2: { 
-          ...prevUnlockables.storage2,
-          isVisible: true
-        }
-    }))
+      setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          storage2: { 
+            ...prevUnlockables.storage2,
+            isVisible: true
+          }
+      }))
+    }
+
+    if(ores["Copper Ore"].patch.size <= 339980 && !unlockables.wire1.isVisible){
+      setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          wire1: { 
+            ...prevUnlockables.wire1,
+            isVisible: true
+          }
+      }))
+    }
+
+    if(ores["Copper Ore"].patch.size <= 339965 && !unlockables.chip1.isVisible){
+      setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          chip1: { 
+            ...prevUnlockables.chip1,
+            isVisible: true
+          }
+      }))
     }
 
     if(manOrMachine === "manual"){

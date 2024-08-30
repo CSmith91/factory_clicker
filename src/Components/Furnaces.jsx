@@ -72,6 +72,7 @@ const Furnaces = ({
                                 </div>
                             )}
                             <Machines
+                                unlockables={unlockables}
                                 machineType={"furnace"}
                                 ores={ores} 
                                 oreName={oreName} 
@@ -107,6 +108,7 @@ const Furnaces = ({
                             </div>
                             )}
                         <Machines
+                            unlockables={unlockables}
                             machineType={"furnace"}
                             ores={ores}
                             oreName={ingredientName}

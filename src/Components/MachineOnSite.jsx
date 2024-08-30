@@ -1,8 +1,25 @@
 import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
+import Inserters from "./Inserters";
 import images from './Images/images';
 
-const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, pendingMachineOutput, setPendingMachineOutput, outputCounts, updateOutputCount, onAlert }) => {
+const MachineOnSite = ({ 
+    unlockables, 
+    itemName, 
+    output, 
+    machineName, 
+    ores, 
+    ingredients, 
+    setOres, 
+    setIngredients, 
+    storage, 
+    getStorage, 
+    fuels, 
+    pendingMachineOutput, 
+    setPendingMachineOutput, 
+    outputCounts, 
+    updateOutputCount, 
+    onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
@@ -375,7 +392,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             }
         }
 
-        // check this isn't a self-start from the burner drills on coal
+        // check if this is a self-start from the burner drills on coal
         if(!fuelDeducted && ingredients[machineName]?.isBurner && ingredients[machineName]?.isDrill && itemName === 'Coal' ){
 
             setOres(prevOres => ({
@@ -459,6 +476,11 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         {counter[machineName] > 0 && (
             <>
                 <div style={{marginBottom: "5%"}}>
+                    <div className="machine-inserters">
+                            {unlockables.inserters1.unlocked && machineName !== "Electric Drill" && (
+                                <Inserters ingredients={ingredients} setIngredients={setIngredients} fuels={fuels} fuelsArray={fuelsArray} machineName={machineName} itemName={itemName} onAlert={onAlert} />
+                            )}    
+                    </div>
                     <div style={{marginBottom: "5%"}} className="machine-input-buttons">
                         {machineParent.isFurnace && (
                             <MachineAddButton machineName={machineName} itemName={itemName} addItem={addItem} handleMachineChange={handleMachineChange} onAlert={onAlert} />   
