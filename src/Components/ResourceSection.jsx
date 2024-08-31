@@ -255,7 +255,7 @@ const ResourceSection = ({
       }))
     }
 
-  }, [ores])
+  }, [ores, unlockables, setUnlockables])
 
   // Function to increment the ore count
   const onIncrement = (oreName, toolName, manOrMachine) => {
