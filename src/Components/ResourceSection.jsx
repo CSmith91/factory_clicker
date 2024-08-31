@@ -144,9 +144,7 @@ const ResourceSection = ({
     });
   }, [ores, ingredients]);
 
-  // Function to increment the ore count
-  const onIncrement = (oreName, toolName, manOrMachine) => {
-
+  useEffect(() => {
     if(ores["Wood"].harvested >= 20 && !unlockables.axe2.isVisible){
       setUnlockables(prevUnlockables => ({
           ...prevUnlockables,
@@ -175,7 +173,7 @@ const ResourceSection = ({
               isVisible: true
           }
           }));
-  }
+    }
 
     if(ores["Stone"].patch.size <= 119988 && !unlockables.pick2.isVisible){
         setUnlockables(prevUnlockables => ({
@@ -256,6 +254,11 @@ const ResourceSection = ({
           }
       }))
     }
+
+  }, [ores])
+
+  // Function to increment the ore count
+  const onIncrement = (oreName, toolName, manOrMachine) => {
 
     if(manOrMachine === "manual"){
         // Update the tool's durability
