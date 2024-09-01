@@ -12,7 +12,7 @@ import CompletedResearch from './Components/CompletedResearch';
 
 function App() {
 
-  const testMode = false;
+  const testMode = true;
 
   let cheat = 0;
   // if(testMode){
@@ -923,7 +923,10 @@ function App() {
               {shouldShowRepairTools() && <RepairTools tools={tools} onRepair={onRepair} />}
 
               <CompletedResearch unlockables={unlockables}  />
+
+              {!testMode && (
               < TestMode ores={ores} ingredients={ingredients} onCheat={onCheat} />
+              )}
             </div>
           </div>
       </div>
