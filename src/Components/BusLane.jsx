@@ -55,6 +55,12 @@ const BusLane = ({
     const onSiteCount = siteCounts[itemName]
     const totalCount = item.count + item.tempCount
 
+    // issue where mulitple available belts on the same bus both take 1 item and store 1, totalling multiple in storage
+    // add a queue score for all lanes, meaning only first in the queue can go
+    // in going, that lane is 'sent to the back' for the next to go
+    // the queue order would need to be based solely on active lanes, and completely
+    // reset on each shuffle
+
     useEffect(() => {
         if(item.count < getStorage(itemName) && thisLane.active)
           checkLanes(itemName, thisLane)
@@ -95,6 +101,20 @@ const BusLane = ({
             laneElement.classList.add(flashClass);
         }
 
+        // Set running as true
+        setLanes(prevLanes => {
+            return {
+                ...prevLanes,
+                [itemName]: {
+                ...prevLanes[itemName],
+                [routeNo]: {
+                    ...prevLanes[itemName][routeNo],
+                    isRunning: prevLanes[itemName][routeNo].isRunning = true
+                }
+                }
+            };
+        });
+
         // Decrement the onSiteCount
         setSiteCounts(prevCounts => {
             const newCount = Math.max(0, (prevCounts[itemName] || 0) - 1);
@@ -126,9 +146,10 @@ const BusLane = ({
                 <p>{itemName}</p>
                 <p>{beltName}</p>
                 <p>{routeNo}</p>
-                <p>Run: {thisLane.isRunning ? "T" : "F"}</p>
-                <p>Active: {thisLane.active ? "T" : "F"}</p>
+                <p>{thisLane.isRunning ? "RUNNING" : "OFF"}</p>
+                <p>{thisLane.active ? "ACTIVE" : "."}</p>
                 <p>Speed: {thisLane.speed}</p>
+                <p>{thisLane.priority == 1 ? "1st" : thisLane.priority == 2 ? "2nd" : `${thisLane.priority}th`}</p>
                 <p>Sushi: {thisLane.sushiCount}</p>
             </div>
             {!laneSet[routeNo].clear && (

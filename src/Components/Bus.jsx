@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import BusLane from "./BusLane";
 
 const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, setSiteCounts, ores, ingredients, setOres, setIngredients, getStorage, onAlert }) => {
@@ -156,7 +156,55 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
       setLanes(updatedLanes);
     }
     setNetworks(updatedNetworks);
+    sortLanes(itemName)
   }
+
+  // set lane priorties out of the 8 available
+  const sortLanes = (itemName) => {
+    // Update the lanes state
+    setLanes(prevLanes => {
+        // Make sure itemName exists in prevLanes
+        if (!prevLanes[itemName]) {
+          console.error(`Item "${itemName}" not found in lanes.`);
+          return prevLanes; // Return previous state if itemName is not found
+        }
+
+        const updatedLanes = { ...prevLanes };
+
+        // Convert the lanes object to an array of lanes
+        const lanesArray = Object.values(updatedLanes[itemName]);
+
+        // Filter out any lanes that are not active
+        const activeLanes = lanesArray.filter(lane => lane.active);
+
+        // Sort the lanes by speed (descending), then by lane number (ascending)
+        activeLanes.sort((a, b) => {
+            if (b.speed !== a.speed) {
+                return b.speed - a.speed; // Sort by speed, highest first
+            }
+            return a.no - b.no; // Sort by lane number, lowest first
+        });
+
+        // Assign priorities based on the sorted order
+        activeLanes.forEach((lane, index) => {
+            lane.priority = index + 1; // Priority starts from 1
+        });
+
+        // Map the updated priorities back to the original lanes object
+        activeLanes.forEach(updatedLane => {
+            updatedLanes[itemName][`lane${updatedLane.no}`].priority = updatedLane.priority;
+        });
+
+        //console.log(`Updated laneSet with priorities for ${itemName}:`, updatedLanes);
+
+        // Return the updated lanes object to update the state
+        return updatedLanes;
+    });
+  };
+
+  // useEffect(() => {
+  //   console.log(`Render!`)
+  // },[lanes])
     
   return (
     <>
