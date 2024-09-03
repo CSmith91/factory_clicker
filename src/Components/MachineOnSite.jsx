@@ -17,8 +17,8 @@ const MachineOnSite = ({
     fuels, 
     pendingMachineOutput, 
     setPendingMachineOutput, 
-    outputCounts, 
-    updateOutputCount, 
+    siteCounts, 
+    updateSiteCounts, 
     onAlert }) => {
    
     // counter of how many machines on site there are
@@ -47,7 +47,7 @@ const MachineOnSite = ({
         if (machineStates[machineName]) {
             checkProduction(machineStates[machineName]);
         }
-    }, [machineStates[machineName], outputCounts, storage]); // Dependency array
+    }, [machineStates[machineName], siteCounts, storage]); // Dependency array
 
     // UseEffect to handle the production timing
     useEffect(() => {
@@ -241,7 +241,7 @@ const MachineOnSite = ({
         // first, check we have any machines
         if(machine[itemName].count > 0){
             // second, check we have room in the destination output
-            if(outputCounts[output] + pendingMachineOutput[output] < getStorage(output) || !outputCounts[output]){
+            if(siteCounts[output] + pendingMachineOutput[output] < getStorage(output) || !siteCounts[output]){
                 // third, check we aren't aleady running this machine
                 if(!machine[itemName].isRunning){
                     // fourth, check we have ingredients
@@ -429,7 +429,7 @@ const MachineOnSite = ({
             const oreOrIngredient = ingredients[output] ? ingredients[output] : ores[output]
             const multiplier = oreOrIngredient.multiplier ? oreOrIngredient.multiplier : 1;
             //console.log(`output: ${JSON.stringify(output)}`)
-            updateOutputCount(output, multiplier)
+            updateSiteCounts(output, multiplier)
 
             // reduce ore patch if its a drill
             if(ingredients[machineName]?.isDrill){
