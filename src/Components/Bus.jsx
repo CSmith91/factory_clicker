@@ -336,6 +336,83 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
     // Increment the tempCount for the item
     setTempCount(itemName, 1); // Assuming a function that handles tempCount increment
 
+    unloadLane(thisLane, laneKey)
+  }
+
+  const unloadLane = (thisLane, laneKey) => {
+    const speed = thisLane.speed
+    const flashClass = speed >= 5 ? 'flashing-fast' : speed >= 3 ? 'flashing-medium' : 'flashing-slow';
+    const beltId = `belt-${itemName.replace(/\s+/g, '-')}-${laneKey}`;
+    const laneElement = document.querySelector(`#${beltId}`); 
+    const throughput = 1000 / speed;
+
+    setTimeout(() => {
+      payout(thisLane, laneKey)
+    }, throughput)
+
+    const payout = (thisLane, laneKey) => {
+      // set belt running as false
+      setLanes(prevLanes => {
+        return {
+            ...prevLanes,
+            [itemName]: {
+            ...prevLanes[itemName],
+            [laneKey]: {
+                ...prevLanes[itemName][laneKey],
+                isRunning: prevLanes[itemName][laneKey].isRunning = false
+            }
+            }
+        };
+      });
+
+      // remove the belt animations
+      if (laneElement) {
+          // Determine which class to add based on the speed
+          laneElement.classList.remove(flashClass);
+      }
+
+      // decrement the sushi count
+      setLanes(prevLanes => {
+        return {
+          ...prevLanes,
+          [itemName]: {
+            ...prevLanes[itemName],
+            [laneKey]: {
+              ...prevLanes[itemName][laneKey],
+              sushiCount: prevLanes[itemName][laneKey].sushiCount - 1
+            }
+          }
+        };
+      });
+
+      // decrement the tempCount
+      setTempCount(itemName, -1); // Assuming a function that handles tempCount increment
+
+      // increment the itemcount
+      incrementCount(itemName, 1)
+    }
+  }
+
+  const incrementCount = (itemName, countToAdd) =>{
+    const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
+    if(oreOrIngredient === 'ore'){
+        setOres(prevIngs => ({
+            ...prevIngs,
+            [itemName]: {
+                ...prevIngs[itemName],
+                count: prevIngs[itemName].count + countToAdd
+            }
+        }));
+    }
+    else if(oreOrIngredient === 'ingredient'){
+        setIngredients(prevIngs => ({
+            ...prevIngs,
+            [itemName]: {
+                ...prevIngs[itemName],
+                count: prevIngs[itemName].count + countToAdd
+            }
+        }));
+    }
   }
     
   return (
