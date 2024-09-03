@@ -6,6 +6,9 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
   //console.log(`Lanes are: ${JSON.stringify(lanes[itemName])}`)
 
   const laneSet = lanes[itemName]
+  const item = ores[itemName] ? ores[itemName] : ingredients[itemName]
+  const onSiteCount = siteCounts[itemName]
+  const totalCount = item.count + item.tempCount
 
   const changeBelts = (itemName, routeNo, beltType, action) => {
 
@@ -156,17 +159,16 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
       setLanes(updatedLanes);
     }
     setNetworks(updatedNetworks);
-    sortLanes(itemName)
   }
 
-  // set lane priorties out of the 8 available
+  // ############# SORT LANE PRIORITY WITHIN ONE BUS
+
   const sortLanes = (itemName) => {
     // Update the lanes state
     setLanes(prevLanes => {
         // Make sure itemName exists in prevLanes
         if (!prevLanes[itemName]) {
-          console.error(`Item "${itemName}" not found in lanes.`);
-          return prevLanes; // Return previous state if itemName is not found
+          return prevLanes;
         }
 
         const updatedLanes = { ...prevLanes };
@@ -190,9 +192,16 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
             lane.priority = index + 1; // Priority starts from 1
         });
 
+        // Set the priority to 0 for all inactive lanes
+        lanesArray.forEach(lane => {
+          if (!lane.active) {
+              lane.priority = 0;
+          }
+        });
+
         // Map the updated priorities back to the original lanes object
-        activeLanes.forEach(updatedLane => {
-            updatedLanes[itemName][`lane${updatedLane.no}`].priority = updatedLane.priority;
+        lanesArray.forEach(updatedLane => {
+          updatedLanes[itemName][`lane${updatedLane.no}`].priority = updatedLane.priority;
         });
 
         //console.log(`Updated laneSet with priorities for ${itemName}:`, updatedLanes);
@@ -202,9 +211,132 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
     });
   };
 
-  // useEffect(() => {
-  //   console.log(`Render!`)
-  // },[lanes])
+  useEffect(() => {
+    sortLanes(itemName)
+  },[networks])
+
+  // ############# CHECK INDIVIDUAL LANES IN THE BUS BASED ON PRIORITY
+
+  // determines if we're changing an ore or an ingredient
+  const setTempCount = (itemName, tempCountChange) => {
+    const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
+    const updateState = oreOrIngredient === 'ore' ? setOres : setIngredients;
+    
+    updateState(prevState => {
+        const updatedItem = {
+        ...prevState[itemName],
+        tempCount: prevState[itemName].tempCount + tempCountChange
+        };
+        return {
+        ...prevState,
+        [itemName]: updatedItem
+        };
+    });
+  };
+
+  const setActualCount = (itemName, countChange) => {
+    const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
+    const updateState = oreOrIngredient === 'ore' ? setOres : setIngredients;
+    
+    updateState(prevState => {
+        const updatedItem = {
+        ...prevState[itemName],
+        count: prevState[itemName].count + countChange
+        };
+        return {
+        ...prevState,
+        [itemName]: updatedItem
+        };
+    });
+  };
+
+  useEffect(() => {
+    if (laneSet) {
+        // Convert the lanes object to an array of lanes
+        const lanesArray = Object.entries(laneSet).map(([key, lane]) => ({ key, ...lane }));
+
+        // Filter out lanes with priority 0 and sort by priority (ascending)
+        const sortedLanes = lanesArray
+            .filter(lane => lane.priority > 0)
+            .sort((a, b) => a.priority - b.priority);
+
+        // Iterate over the sorted lanes and check conditions
+        for (const lane of sortedLanes) {
+            if (lane.active && !lane.isRunning) {
+                checkLane(lane, lane.key);
+                break; // Exit the loop after processing the first valid lane
+            }
+        }
+    }
+  }, [item, siteCounts[itemName], networks]);
+
+  const checkLane = (thisLane, laneKey) => {
+    // first, check if we have any good onSite
+    if(onSiteCount > 0){        
+        // second, we check if we have inventory space and nothing is pending
+        if(totalCount < getStorage(itemName)){
+            // ready to go!
+            console.log(`itemName: ${itemName} under lane ${JSON.stringify(thisLane)} is ready to go`)
+            loadLane(thisLane, laneKey)
+        }
+        else{
+            // inventory is full!
+        }
+    }
+    else{
+        // nothing onSite to move!
+    }
+  }
+
+  const loadLane = (thisLane, laneKey) => {
+    const speed = thisLane.speed
+    const flashClass = speed >= 5 ? 'flashing-fast' : speed >= 3 ? 'flashing-medium' : 'flashing-slow';
+    const beltId = `belt-${itemName.replace(/\s+/g, '-')}-${laneKey}`;
+    const laneElement = document.querySelector(`#${beltId}`);    
+
+    if (laneElement) {
+        // Determine which class to add based on the speed
+        laneElement.classList.add(flashClass);
+    }
+
+    // Set running as true
+    setLanes(prevLanes => {
+        return {
+            ...prevLanes,
+            [itemName]: {
+            ...prevLanes[itemName],
+            [laneKey]: {
+                ...prevLanes[itemName][laneKey],
+                isRunning: prevLanes[itemName][laneKey].isRunning = true
+            }
+            }
+        };
+    });
+
+    // Decrement the onSiteCount
+    setSiteCounts(prevCounts => {
+        const newCount = Math.max(0, (prevCounts[itemName] || 0) - 1);
+        return { ...prevCounts, [itemName]: newCount };
+    });
+
+    // Increment the sushiCount for the specific lane
+    setLanes(prevLanes => {
+        return {
+          ...prevLanes,
+          [itemName]: {
+            ...prevLanes[itemName],
+            [laneKey]: {
+              ...prevLanes[itemName][laneKey],
+              sushiCount: prevLanes[itemName][laneKey].sushiCount + 1
+            }
+          }
+        };
+    });
+
+    // Increment the tempCount for the item
+    setTempCount(itemName, 1); // Assuming a function that handles tempCount increment
+
+  }
     
   return (
     <>

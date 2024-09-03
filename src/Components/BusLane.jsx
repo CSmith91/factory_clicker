@@ -17,139 +17,18 @@ const BusLane = ({
     getStorage, 
     changeBelts }) => {
 
-    // determines if we're changing an ore or an ingredient
-    const setTempCount = (itemName, tempCountChange) => {
-        const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
-        const updateState = oreOrIngredient === 'ore' ? setOres : setIngredients;
-        
-        updateState(prevState => {
-            const updatedItem = {
-            ...prevState[itemName],
-            tempCount: prevState[itemName].tempCount + tempCountChange
-            };
-            return {
-            ...prevState,
-            [itemName]: updatedItem
-            };
-        });
-    };
-
-    const setActualCount = (itemName, countChange) => {
-        const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
-        const updateState = oreOrIngredient === 'ore' ? setOres : setIngredients;
-        
-        updateState(prevState => {
-            const updatedItem = {
-            ...prevState[itemName],
-            count: prevState[itemName].count + countChange
-            };
-            return {
-            ...prevState,
-            [itemName]: updatedItem
-            };
-        });
-    };
-
     const thisLane = lanes[itemName][routeNo]; // {"no":1,"isRunning":false,"active":false,"clear":true,"unlocked":true,"cost":{"Stone":20},"gain":{"Wood":30},"speed":0,"sushiCount":0}
-    const item = ores[itemName] ? ores[itemName] : ingredients[itemName]
-    const onSiteCount = siteCounts[itemName]
-    const totalCount = item.count + item.tempCount
-
-    // issue where mulitple available belts on the same bus both take 1 item and store 1, totalling multiple in storage
-    // add a queue score for all lanes, meaning only first in the queue can go
-    // in going, that lane is 'sent to the back' for the next to go
-    // the queue order would need to be based solely on active lanes, and completely
-    // reset on each shuffle
-
-    useEffect(() => {
-        if(item.count < getStorage(itemName) && thisLane.active)
-          checkLanes(itemName, thisLane)
-      },[item, siteCounts[itemName], thisLane])
-    
-    const checkLanes = (itemName, thisLane) => {
-        // first, check if we have any good onSite
-        if(onSiteCount > 0){        
-            // second, we check if this lane is already running
-            if(!thisLane.isRunning){
-                // third, check if we have inventory space and nothing is pending
-                if(totalCount < getStorage(itemName)){
-                    // ready to go!
-                    loadLane(itemName, thisLane)
-                }
-                else{
-                    // inventory is full!
-                }
-            }
-            else{
-                // lane is already running
-                // we could also do a check here for sushi -- any surplus sushi needs to be 'unloaded' - that said, if the code it tight, that shouldnt be necessary 
-            }
-        }
-        else{
-            // nothing onSite to move!
-        }
-    }
-
-    const loadLane = (itemName, thisLane) => {
-        const speed = thisLane.speed
-        const flashClass = speed >= 5 ? 'flashing-fast' : speed >= 3 ? 'flashing-medium' : 'flashing-slow';
-        const beltId = `belt-${itemName.replace(/\s+/g, '-')}-${routeNo}`;
-        const laneElement = document.querySelector(`#${beltId}`);    
-
-        if (laneElement) {
-            // Determine which class to add based on the speed
-            laneElement.classList.add(flashClass);
-        }
-
-        // Set running as true
-        setLanes(prevLanes => {
-            return {
-                ...prevLanes,
-                [itemName]: {
-                ...prevLanes[itemName],
-                [routeNo]: {
-                    ...prevLanes[itemName][routeNo],
-                    isRunning: prevLanes[itemName][routeNo].isRunning = true
-                }
-                }
-            };
-        });
-
-        // Decrement the onSiteCount
-        setSiteCounts(prevCounts => {
-            const newCount = Math.max(0, (prevCounts[itemName] || 0) - 1);
-            return { ...prevCounts, [itemName]: newCount };
-        });
-
-        // Increment the sushiCount for the specific lane
-        setLanes(prevLanes => {
-            return {
-              ...prevLanes,
-              [itemName]: {
-                ...prevLanes[itemName],
-                [routeNo]: {
-                  ...prevLanes[itemName][routeNo],
-                  sushiCount: prevLanes[itemName][routeNo].sushiCount + 1
-                }
-              }
-            };
-        });
-
-        // Increment the tempCount for the item
-        setTempCount(itemName, 1); // Assuming a function that handles tempCount increment
-
-    }
 
     return (
         <div>
             <div>
                 <p>{itemName}</p>
-                <p>{beltName}</p>
+                {/* <p>{beltName}</p> */}
                 <p>{routeNo}</p>
                 <p>{thisLane.isRunning ? "RUNNING" : "OFF"}</p>
                 <p>{thisLane.active ? "ACTIVE" : "."}</p>
                 <p>Speed: {thisLane.speed}</p>
-                <p>{thisLane.priority == 1 ? "1st" : thisLane.priority == 2 ? "2nd" : `${thisLane.priority}th`}</p>
+                <p>{thisLane.priority === 1 ? "1st" : thisLane.priority === 2 ? "2nd" : `${thisLane.priority}th`}</p>
                 <p>Sushi: {thisLane.sushiCount}</p>
             </div>
             {!laneSet[routeNo].clear && (
