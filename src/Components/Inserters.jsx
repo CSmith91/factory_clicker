@@ -1,10 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import images from "./Images/images";
 
-const Inserters = ({ ingredients, setIngredients, fuels, fuelsArray, machineName, itemName, onAlert }) => {
+const Inserters = ({ ores, setOres, ingredients, setIngredients, fuels, fuelsArray, machineName, itemName, machineStates, onAlert }) => {
 
     const [inserterCounter, setInserterCounter] = useState({});
     const [fuelLevels, setFuelLevels] = useState({}); // State to track fuel levels
+
+    // State to hold all machine-related data
+    const [inserterStates, setInserterStates] = useState({
+        [inserterName]: {
+            [itemName]: {
+                [machineName]: {
+                    count: 0,
+                    isRunning: false,
+                    fuels: Object.keys(fuels).reduce((acc, fuelName) => {
+                        acc[fuelName] = { current: 0 };
+                        return acc;
+                    }, {})
+                }
+            }
+        }
+    });
 
     // Handle incrementing inserterCounter
     const handleIncrement = (ingredientName) => {
