@@ -478,7 +478,17 @@ const MachineOnSite = ({
                 <div style={{marginBottom: "5%"}}>
                     <div className="machine-inserters">
                             {unlockables.inserters1.unlocked && machineName !== "Electric Drill" && (
-                                <Inserters ores={ores} setOres={setOres} ingredients={ingredients} setIngredients={setIngredients} fuels={fuels} fuelsArray={fuelsArray} machineName={machineName} itemName={itemName} machineStates={machineStates} onAlert={onAlert} />
+                                <Inserters 
+                                    ores={ores} 
+                                    setOres={setOres} 
+                                    ingredients={ingredients} 
+                                    setIngredients={setIngredients} 
+                                    fuels={fuels} 
+                                    fuelsArray={fuelsArray} 
+                                    machineName={machineName} 
+                                    itemName={itemName} 
+                                    machineStates={machineStates} 
+                                    onAlert={onAlert} />
                             )}    
                     </div>
                     <div style={{marginBottom: "5%"}} className="machine-input-buttons">

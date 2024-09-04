@@ -1,112 +1,55 @@
-import { useEffect, useState } from "react";
-import images from "./Images/images";
+import InserterOnSite from "./InserterOnSite";
 
 const Inserters = ({ ores, setOres, ingredients, setIngredients, fuels, fuelsArray, machineName, itemName, machineStates, onAlert }) => {
 
-    const [inserterCounter, setInserterCounter] = useState({});
-    const [fuelLevels, setFuelLevels] = useState({}); // State to track fuel levels
+    // all our inserters
+    const inserters = Object.entries(ingredients)
+    .filter(([_, ingData]) => ingData.isInserter);
 
-    // State to hold all machine-related data
-    const [inserterStates, setInserterStates] = useState({
-        [inserterName]: {
-            [itemName]: {
-                [machineName]: {
-                    count: 0,
-                    isRunning: false,
-                    fuels: Object.keys(fuels).reduce((acc, fuelName) => {
-                        acc[fuelName] = { current: 0 };
-                        return acc;
-                    }, {})
-                }
-            }
-        }
-    });
 
-    // Handle incrementing inserterCounter
-    const handleIncrement = (ingredientName) => {
-        const ingredientData = ingredients[ingredientName];
-        if (ingredientData.idleCount > 0) {
-            setInserterCounter((prevCounters) => ({
-                ...prevCounters,
-                [ingredientName]: (prevCounters[ingredientName] || 0) + 1,
-            }));
-            setIngredients((prevIngredients) => ({
-                ...prevIngredients,
-                [ingredientName]: {
-                    ...ingredientData,
-                    idleCount: ingredientData.idleCount - 1,
-                }
-            }));
-        } else {
-            onAlert(`No available ${ingredientName}s.`);
-        }
-    };
-
-    // Handle decrementing inserterCounter
-    const handleDecrement = (ingredientName) => {
-        const ingredientData = ingredients[ingredientName];
-        const currentCount = inserterCounter[ingredientName] || 0;
-        if (currentCount  > 0 && ingredientData.count > ingredientData.idleCount) {
-            setInserterCounter((prevCounters) => ({
-                ...prevCounters,
-                [ingredientName]: currentCount - 1,
-            }));
-            setIngredients((prevIngredients) => ({
-                ...prevIngredients,
-                [ingredientName]: {
-                    ...ingredientData,
-                    idleCount: ingredientData.idleCount + 1,
-                }
-            }));
-        }
-    };
-
-    const burnerInserter = Object.entries(ingredients)
-        .filter(([_, ingredientData]) => ingredientData.isInserter && ingredientData.unlocked && ingredientData.isBurner)
-        .map(([ingredientName, ingredientData]) => (
-            <div key={ingredientName} className="burner-inserter-row">
-                <div className="inserters-lane">
-                    <button onClick={() => handleIncrement(ingredientName)}>+</button>
-                    <img src={`${images[ingredientName]}`} alt={ingredientName} className="menu-image" />
-                    <p>{inserterCounter[ingredientName] || 0}</p>
-                    <button onClick={() => handleDecrement(ingredientName)}>-</button>
-                </div>
-                <div className="burner-fuel-info">
-                    {fuelsArray.map(([fuelName, fuelData]) => {
-                        if (fuelData.unlocked) {
-                            const fuelLevel = fuelLevels[ingredientName]?.[fuelName] || 0;
-                            return (
-                                <div key={`${fuelName}-${ingredientName}`} className="fuel-status">
-                                    <p>{fuelName}: {fuelLevel}</p>
-                                </div>
-                            );
-                        }
-                        return null;
-                    })}
-                </div>
-            </div>
-        ));
-
-    const otherInserters = Object.entries(ingredients)
-    .filter(([_, ingredientData]) => ingredientData.isInserter && ingredientData.unlocked && !ingredientData.isBurner)
-    .map(([ingredientName, ingredientData]) => (
-        <div key={ingredientName} className="inserters-lane">
-            <button onClick={() => handleIncrement(ingredientName)}>+</button>
-            <img src={`${images[ingredientName]}`} alt={ingredientName} className="menu-image" />
-            <p>{inserterCounter[ingredientName] || 0}</p>
-            <button onClick={() => handleDecrement(ingredientName)}>-</button>
-        </div>
-    ));
-
+    
     return (
-        <>
-            <div className="inserters-div">
-                {burnerInserter}
-                <div className="inserters-row">
-                    {otherInserters.length > 0 && (otherInserters)}
-                </div>
+        <div className="inserters-div">
+            <div className="inserters-row">
+            {inserters.map(([inserterName, inserterData]) => (
+                inserterData.unlocked ? (
+                    inserterData.isBurner ? (
+                        <div key={`${inserterName}-${machineName}-${itemName}`} className="burner-inserter-row">
+                            <InserterOnSite 
+                                ores={ores} 
+                                setOres={setOres} 
+                                ingredients={ingredients} 
+                                setIngredients={setIngredients} 
+                                fuels={fuels} 
+                                fuelsArray={fuelsArray} 
+                                itemName={itemName} 
+                                machineName={machineName} 
+                                machineStates={machineStates} 
+                                inserterName={inserterName}
+                                onAlert={onAlert}
+                            />
+                        </div>
+                    ) : (
+                        <div key={`${inserterName}-${machineName}-${itemName}`}>
+                            <InserterOnSite 
+                                ores={ores} 
+                                setOres={setOres} 
+                                ingredients={ingredients} 
+                                setIngredients={setIngredients} 
+                                fuels={fuels} 
+                                fuelsArray={fuelsArray} 
+                                itemName={itemName} 
+                                machineName={machineName} 
+                                machineStates={machineStates} 
+                                inserterName={inserterName}
+                                onAlert={onAlert}
+                            />
+                        </div>
+                    )
+                ) : null
+            ))}
             </div>
-        </>
+        </div>
     );
 }
 

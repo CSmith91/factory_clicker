@@ -51,29 +51,29 @@ const Machines = ({ unlockables, machineType, ores, oreName, ingredients,  setOr
     return(
         <>
             {machines.map(([machineName, machineData]) => (
-                    // Conditional check: render only if both the furnace and item are unlocked
-                    machineData.unlocked && workableItem.unlocked && (
-                        <div key={`${machineName}-${itemName}`}>
-                            <MachineOnSite 
-                                unlockables={unlockables}
-                                itemName={itemName} 
-                                output={output} 
-                                machineName={machineName} 
-                                ores={ores} 
-                                ingredients={ingredients} 
-                                setOres={setOres} 
-                                setIngredients={setIngredients} 
-                                storage={storage}
-                                getStorage={getStorage}
-                                fuels={fuels} 
-                                pendingMachineOutput={pendingMachineOutput}
-                                setPendingMachineOutput={setPendingMachineOutput}
-                                siteCounts={siteCounts} 
-                                updateSiteCounts={updateSiteCounts}
-                                onAlert={onAlert} />
-                        </div>
-                    )
-                ))}
+                // Conditional check: render only if both the furnace and item are unlocked
+                machineData.unlocked && workableItem.unlocked && (
+                    <div key={`${machineName}-${itemName}`}>
+                        <MachineOnSite 
+                            unlockables={unlockables}
+                            itemName={itemName} 
+                            output={output} 
+                            machineName={machineName} 
+                            ores={ores} 
+                            ingredients={ingredients} 
+                            setOres={setOres} 
+                            setIngredients={setIngredients} 
+                            storage={storage}
+                            getStorage={getStorage}
+                            fuels={fuels} 
+                            pendingMachineOutput={pendingMachineOutput}
+                            setPendingMachineOutput={setPendingMachineOutput}
+                            siteCounts={siteCounts} 
+                            updateSiteCounts={updateSiteCounts}
+                            onAlert={onAlert} />
+                    </div>
+                )
+            ))}
         </>
     )
 
