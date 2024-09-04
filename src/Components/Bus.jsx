@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import BusLane from "./BusLane";
 
-const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, setSiteCounts, ores, ingredients, setOres, setIngredients, getStorage, onAlert }) => {
+const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, setSiteCounts, ores, ingredients, setOres, setIngredients, getStorage, debug, onAlert }) => {
 
   //console.log(`Lanes are: ${JSON.stringify(lanes[itemName])}`)
 
@@ -276,7 +276,7 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
         // second, we check if we have inventory space and nothing is pending
         if(totalCount < getStorage(itemName)){
             // ready to go!
-            console.log(`itemName: ${itemName} under lane ${JSON.stringify(thisLane)} is ready to go`)
+            //console.log(`itemName: ${itemName} under lane ${JSON.stringify(thisLane)} is ready to go`)
             loadLane(thisLane, laneKey)
         }
         else{
@@ -389,29 +389,7 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
       setTempCount(itemName, -1); // Assuming a function that handles tempCount increment
 
       // increment the itemcount
-      incrementCount(itemName, 1)
-    }
-  }
-
-  const incrementCount = (itemName, countToAdd) =>{
-    const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
-    if(oreOrIngredient === 'ore'){
-        setOres(prevIngs => ({
-            ...prevIngs,
-            [itemName]: {
-                ...prevIngs[itemName],
-                count: prevIngs[itemName].count + countToAdd
-            }
-        }));
-    }
-    else if(oreOrIngredient === 'ingredient'){
-        setIngredients(prevIngs => ({
-            ...prevIngs,
-            [itemName]: {
-                ...prevIngs[itemName],
-                count: prevIngs[itemName].count + countToAdd
-            }
-        }));
+      setActualCount(itemName, 1)
     }
   }
     
@@ -436,7 +414,7 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
                       beltName = "No Belt";
                   }
                   return (
-                    <div key={routeNo} className="bus-lane">
+                    <div key={routeNo} className={debug ? "bus-lane-debug" : "bus-lane"}>
                         <BusLane    
                           ores={ores} 
                           setOres={setOres} 
@@ -451,7 +429,8 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
                           lanes={lanes} 
                           setLanes={setLanes}
                           getStorage={getStorage}
-                          changeBelts={changeBelts} />
+                          changeBelts={changeBelts} 
+                          debug={debug} />
                     </div>
                   );
                 })}

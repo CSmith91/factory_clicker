@@ -23,6 +23,7 @@ const Furnaces = ({
     checkBelts,              
     lanes,
     setLanes,
+    debug,
     onAlert }) => {
 
     // used for lookups within production (later) as well as headers (here)
@@ -82,6 +83,7 @@ const Furnaces = ({
                                         setIngredients={setIngredients} 
                                         getStorage={getStorage}
                                         checkBelts={checkBelts} 
+                                        debug={debug} 
                                         onAlert={onAlert}/>
                                 </div>
                             )}
@@ -132,6 +134,7 @@ const Furnaces = ({
                                     setIngredients={setIngredients} 
                                     getStorage={getStorage}
                                     checkBelts={checkBelts} 
+                                    debug={debug} 
                                     onAlert={onAlert}/>
                             </div>
                             )}

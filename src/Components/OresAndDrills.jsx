@@ -24,6 +24,7 @@ const OresAndDrills = ({
     checkBelts,
     lanes,
     setLanes,
+    debug,
     onAlert }) => {
 
     return (
@@ -78,6 +79,7 @@ const OresAndDrills = ({
                                     setIngredients={setIngredients} 
                                     getStorage={getStorage}
                                     checkBelts={checkBelts} 
+                                    debug={debug} 
                                     onAlert={onAlert} />
                             )}
                             {oreData.patch !== undefined ? (

@@ -9,10 +9,12 @@ import AudioPlayer from './Components/AudioPlayer';
 import FactorySection from './Components/FactorySection';
 import RepairTools from './Components/RepairTools';
 import CompletedResearch from './Components/CompletedResearch';
+import Debug from './Components/Debug';
 
 function App() {
 
   const testMode = true;
+  const [debug, setDebug] = useState(false)
 
   let cheat = 0;
   // if(testMode){
@@ -863,6 +865,13 @@ function App() {
               <AudioPlayer play={playAudio} />
             </div>
 
+            {/* Debug buttons */}
+            <div className='debug'>
+              {testMode && (
+                <Debug debug={debug} setDebug={setDebug} />
+              )}
+            </div>
+
             {/* Factory Section */}
             <div className='section'>
               <FactorySection 
@@ -896,6 +905,7 @@ function App() {
               setNetworks={setNetworks}
               lanes={lanes}
               setLanes={setLanes}
+              debug={debug} 
               onAlert={onAlert} />
 
             {/* Inventory Section */}

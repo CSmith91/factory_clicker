@@ -361,7 +361,7 @@ button:not(:disabled):hover {
 
 .bus-lane, .inserters-lane {
   border-radius: 10px;
-  flex: 0 1 55px; /* change to 20px after testing! */
+  flex: 0 1 20px; /* change to 20px after testing! */
   min-width: 32px;
   text-align: center;
   /* margin: 1px; */
@@ -483,4 +483,12 @@ button:not(:disabled):hover {
 .cost-item {
   font-size: 0.9em;
   color: #666;
+}
+
+/* Debug */
+.debug {
+  position: fixed;
+  top: 10px;   /* Adjust this value to position it further down from the top */
+  left: 10px;  /* Adjust this value to position it further right from the left edge */
+  z-index: 1000; /* Ensure it appears above other elements */
 }

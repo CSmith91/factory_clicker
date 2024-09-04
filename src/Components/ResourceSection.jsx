@@ -17,6 +17,7 @@ const ResourceSection = ({
     setNetworks,
     lanes,
     setLanes,
+    debug,
     onAlert
 }) => {
 
@@ -498,6 +499,7 @@ const ResourceSection = ({
               setNetworks={setNetworks}
               lanes={lanes}
               setLanes={setLanes}
+              debug={debug} 
               onAlert={onAlert} />
           </div>
 
@@ -523,6 +525,7 @@ const ResourceSection = ({
                 setNetworks={setNetworks}
                 lanes={lanes}
                 setLanes={setLanes}
+                debug={debug} 
                 onAlert={onAlert} />
             </div>
           )}
