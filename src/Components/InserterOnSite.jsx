@@ -189,55 +189,51 @@ const InserterOnSite = ({
                 if(canRun){
                     // check if we have any machines
                     if(machine.count > 0){
-                        
+                        const item = ores[itemName] ? ores[itemName] : ingredients[itemName];
                         // check if this machine has less than input
-                        if(machine.inputMax - machine.currentInput > 0){
+                        if(machine.inputMax - machine.currentInput > 0 && item.count > 0){
+                            setAnimation('active');
+                            animationSet = true; 
+                            turnOnInserter(inserterName, machineName, itemName, 'main');
+                        }
+                        else{
+                            // machines have full input resource, now check if fuel required
+                            if(machine.fuels){
+                                // loop through all the fuels to see if all fuels are 0
+                                const oneFuelAtMax = Object.values(machine.fuels).some(fuel => fuel.current === machine.inputMax);
 
-                            // check we have the resource
-                            const item = ores[itemName] ? ores[itemName] : ingredients[itemName];
-                            if(item.count > 0){
-                                setAnimation('active');
-                                animationSet = true; 
-                                turnOnInserter(inserterName, machineName, itemName, 'main');
-                            }
-                            else{
-                                // machines have full input resource, now check if fuel required
-                                if(machine.fuels){
-                                    // loop through all the fuels to see if all fuels are 0
-                                    const oneFuelAtMax = Object.values(machine.fuels).some(fuel => fuel.current === machine.inputMax);
-
-                                    if (!oneFuelAtMax) {
-                                        // Loop through all fuels in machine, see if there's room, then check if we have this in the inventory
-                                        for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
-                                            // Check if current fuel is less than inputMax and if there is fuel available in ingredients
-                                            let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
-                                            if (fuelData.current < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
-                                                console.log(`${fuelName} can be added to the machine.`);
-                                                setAnimation('active');
-                                                animationSet = true; 
-                                                turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
-                                                break; // Stop the loop once the first valid fuel is found
-                                            }
-                                        }
-                                        if (!animationSet) {
-                                            // if we get this far, there are no items available to add to the machine
-                                            setAnimation('inputReq');
+                                if (!oneFuelAtMax) {
+                                    // Loop through all fuels in machine, see if there's room, then check if we have this in the inventory
+                                    for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
+                                        // Check if current fuel is less than inputMax and if there is fuel available in ingredients
+                                        let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
+                                        if (fuelData.current < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
+                                            //console.log(`${fuelName} can be added to the machine.`);
+                                            setAnimation('active');
                                             animationSet = true; 
+                                            turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
+                                            break; // Stop the loop once the first valid fuel is found
                                         }
                                     }
-                                    else{
-                                        // burner machine has max fuel and and max input, so do nothing!
-                                        setAnimation('idle');
+                                    if (!animationSet) {
+                                        // if we get this far, there are no items available to add to the machine
+                                        setAnimation('inputReq');
+                                        animationSet = true; 
                                     }
                                 }
                                 else{
-                                    // we have an electric machine with full content
+                                    // burner machine has max fuel and and max input, so do nothing!
+                                    setAnimation('idle');
                                 }
                             }
+                            else{
+                                // we have an electric machine with full content
+                                setAnimation('idle');
+                            }
                         }
-                        else{
-                            // no machines deployed
-                        }
+                    }
+                    else{
+                        // no machines deployed
                     }
                 }
                 else if(!canRun && burner && !inserter.isSelfInserting){
