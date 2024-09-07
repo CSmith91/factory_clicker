@@ -1,6 +1,6 @@
 import InserterOnSite from "./InserterOnSite";
 
-const Inserters = ({ ores, setOres, ingredients, setIngredients, fuels, fuelsArray, machineName, itemName, machineStates, onAlert }) => {
+const Inserters = ({ ores, setOres, ingredients, setIngredients, fuels, fuelsArray, machineName, itemName, machineStates, setMachineStates, onAlert }) => {
 
     // all our inserters
     const inserters = Object.entries(ingredients)
@@ -24,7 +24,8 @@ const Inserters = ({ ores, setOres, ingredients, setIngredients, fuels, fuelsArr
                                 fuelsArray={fuelsArray} 
                                 itemName={itemName} 
                                 machineName={machineName} 
-                                machineStates={machineStates} 
+                                machineStates={machineStates}
+                                setMachineStates={setMachineStates}
                                 inserterName={inserterName}
                                 onAlert={onAlert}
                             />
@@ -40,7 +41,8 @@ const Inserters = ({ ores, setOres, ingredients, setIngredients, fuels, fuelsArr
                                 fuelsArray={fuelsArray} 
                                 itemName={itemName} 
                                 machineName={machineName} 
-                                machineStates={machineStates} 
+                                machineStates={machineStates}
+                                setMachineStates={setMachineStates} 
                                 inserterName={inserterName}
                                 onAlert={onAlert}
                             />

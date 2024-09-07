@@ -11,12 +11,12 @@ const InserterOnSite = ({
     itemName,
     machineName,
     machineStates,
+    setMachineStates,
     inserterName,
     onAlert
     }) => {
 
     const [animation, setAnimation] = useState('')
-    //const [running, setRunning] = useState(false)
 
     // State to hold all machine-related data
     const [inserterStates, setInserterStates] = useState({
@@ -25,7 +25,7 @@ const InserterOnSite = ({
                 [machineName]: {
                     count: 0,
                     isRunning: false,
-                    isInserteringMain: false,
+                    isInsertingMain: false,
                     isInsertingFuel: false,
                     itemToAdd: 'none',
                     ...(inserterName === "Burner Inserter" && {
@@ -113,38 +113,49 @@ const InserterOnSite = ({
 
         // if the inserter is running, we need to call the payout (setting the terms first)
         if(currentInserterState?.isRunning){
+            let inputName = ''
             if(currentInserterState?.isSelfInserting){
                 // we have a burner that is adding it's own fuel!
-                const fuelName = currentInserterState?.itemToAdd;
-                const fuelItem = ores[fuelName] ? ores[fuelName] : ingredients[fuelName];
-                const isOre = ores[fuelName] ? true : false;
-                let carry = Math.min(fuelItem.count, maxCarry);
-
-                // deduct fuel from inventory
-                if (isOre) {
-                    setOres(prevOres => ({
-                        ...prevOres,
-                        [fuelName]: {
-                            ...prevOres[fuelName],
-                            count: prevOres[fuelName].count - carry
-                        }
-                    }));
-                } else {
-                    setIngredients(prevIngs => ({
-                        ...prevIngs,
-                        [fuelName]: {
-                            ...prevIngs[fuelName],
-                            count: prevIngs[fuelName].count - carry
-                        }
-                    }));
-                }
-
-                // call payout to add the fuel to inserter
-                const timeoutId = setTimeout(() => {
-                    payout(inserterName, itemName, machineName, fuelName, carry)
-                }, swingTime);
-                return () => clearTimeout(timeoutId);
+                inputName = currentInserterState?.itemToAdd;
             }
+            else if(currentInserterState?.isInsertingMain){
+                inputName = itemName;
+            }
+            else if(currentInserterState?.isInsertingFuel){
+                inputName = currentInserterState?.itemToAdd;
+            }
+            else{
+                console.error('No valid inserter instruction')
+            }
+
+            const item = ores[inputName] ? ores[inputName] : ingredients[inputName];
+            const isOre = ores[inputName] ? true : false;
+            let carry = Math.min(item.count, maxCarry);
+
+            // deduct resource from inventory
+            if (isOre) {
+                setOres(prevOres => ({
+                    ...prevOres,
+                    [inputName]: {
+                        ...prevOres[inputName],
+                        count: prevOres[inputName].count - carry
+                    }
+                }));
+            } else {
+                setIngredients(prevIngs => ({
+                    ...prevIngs,
+                    [inputName]: {
+                        ...prevIngs[inputName],
+                        count: prevIngs[inputName].count - carry
+                    }
+                }));
+            }
+
+            // call payout to add the fuel to inserter
+            const timeoutId = setTimeout(() => {
+                payout(inserterName, itemName, machineName, inputName, carry)
+            }, swingTime);
+            return () => clearTimeout(timeoutId);
         }
     }, [inserterStates])
 
@@ -187,50 +198,46 @@ const InserterOnSite = ({
                             if(item.count > 0){
                                 setAnimation('active');
                                 animationSet = true; 
-                                turnOnInserter(inserter, inserterName, machineName, itemName, 'main');
+                                turnOnInserter(inserterName, machineName, itemName, 'main');
                             }
                             else{
-                                // we don't have the itemName in our inventory
-                                setAnimation('inputReq');
-                                animationSet = true; 
-                            }
-                        }
-                        else{
-                            // machines have full input resource, now check if fuel required
-                            if(machine.fuels){
-                                // loop through all the fuels to see if all fuels are 0
-                                const oneFuelAtMax = Object.values(machine.fuels).some(fuel => fuel.current === machine.inputMax);
+                                // machines have full input resource, now check if fuel required
+                                if(machine.fuels){
+                                    // loop through all the fuels to see if all fuels are 0
+                                    const oneFuelAtMax = Object.values(machine.fuels).some(fuel => fuel.current === machine.inputMax);
 
-                                if (!oneFuelAtMax) {
-                                    // Loop through all fuels in machine, see if there's room, then check if we have this in the inventory
-                                    for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
-                                        // Check if current fuel is less than inputMax and if there is fuel available in ingredients
-                                        let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
-                                        if (fuelData.current < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
-                                            console.log(`${fuelName} can be added to the machine.`);
-                                            setAnimation('active');
+                                    if (!oneFuelAtMax) {
+                                        // Loop through all fuels in machine, see if there's room, then check if we have this in the inventory
+                                        for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
+                                            // Check if current fuel is less than inputMax and if there is fuel available in ingredients
+                                            let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
+                                            if (fuelData.current < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
+                                                console.log(`${fuelName} can be added to the machine.`);
+                                                setAnimation('active');
+                                                animationSet = true; 
+                                                turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
+                                                break; // Stop the loop once the first valid fuel is found
+                                            }
+                                        }
+                                        if (!animationSet) {
+                                            // if we get this far, there are no items available to add to the machine
+                                            setAnimation('inputReq');
                                             animationSet = true; 
-                                            turnOnInserter(inserter, inserterName, machineName, itemName, 'fuel', fuelName);
-                                            break; // Stop the loop once the first valid fuel is found
                                         }
                                     }
-                                    if (!animationSet) {
-                                        // if we get this far, there are no fuels available to add to the machine
-                                        setAnimation('inputReq');
+                                    else{
+                                        // burner machine has max fuel and and max input, so do nothing!
+                                        setAnimation('idle');
                                     }
                                 }
                                 else{
-                                    // burner machine has max fuel and and max input, so do nothing!
-                                    setAnimation('idle');
+                                    // we have an electric machine with full content
                                 }
                             }
-                            else{
-                                // we have an electric machine with full content
-                            }
                         }
-                    }
-                    else{
-                        // no machines deployed
+                        else{
+                            // no machines deployed
+                        }
                     }
                 }
                 else if(!canRun && burner && !inserter.isSelfInserting){
@@ -295,7 +302,8 @@ const InserterOnSite = ({
                         [machineName]: {
                             ...prevStates[inserterName][itemName][machineName],
                             isRunning: true,
-                            isInserteringMain: true
+                            isInsertingMain: true,
+                            itemToAdd: itemName
                         }
                     }
                 }
@@ -323,40 +331,204 @@ const InserterOnSite = ({
         }
     }
 
-    const payout = (inserterName, itemName, machineName, fuelName, carry) => {
-        setInserterStates(prevStates => {
-            const prevState = prevStates[inserterName][itemName][machineName];
-            
-            // Only update state if necessary to avoid unnecessary re-renders
-            if (!prevState.isRunning || prevState.isSelfInserting || prevState.itemToAdd !== 'none') {
-                const newState = {
-                    ...prevStates,
-                    [inserterName]: {
-                        ...prevStates[inserterName],
-                        [itemName]: {
-                            ...prevStates[inserterName][itemName],
-                            [machineName]: {
-                                ...prevStates[inserterName][itemName][machineName],
-                                isRunning: false,
-                                isSelfInserting: false,
-                                itemToAdd: 'none',
-                                ...(prevState.fuels && {
-                                    fuels: {
-                                        ...prevState.fuels,
-                                        [fuelName]: {
-                                            ...prevState.fuels[fuelName],
-                                            current: prevState.fuels[fuelName].current + carry
+    const payout = (inserterName, itemName, machineName, inputName, carry) => {
+
+        const currentInserterState = inserterStates[inserterName][itemName][machineName]
+
+        if(currentInserterState.isSelfInserting){
+            setInserterStates(prevStates => {
+                const prevState = prevStates[inserterName][itemName][machineName];
+                
+                // Only update state if necessary to avoid unnecessary re-renders
+                if (!prevState.isRunning || prevState.isSelfInserting || prevState.itemToAdd !== 'none') {
+                    const newState = {
+                        ...prevStates,
+                        [inserterName]: {
+                            ...prevStates[inserterName],
+                            [itemName]: {
+                                ...prevStates[inserterName][itemName],
+                                [machineName]: {
+                                    ...prevStates[inserterName][itemName][machineName],
+                                    isRunning: false,
+                                    isSelfInserting: false,
+                                    itemToAdd: 'none',
+                                    ...(prevState.fuels && {
+                                        fuels: {
+                                            ...prevState.fuels,
+                                            [inputName]: {
+                                                ...prevState.fuels[inputName],
+                                                current: prevState.fuels[inputName].current + carry
+                                            }
                                         }
-                                    }
-                                })
+                                    })
+                                }
                             }
+                        }
+                    };
+                    return newState;
+                }
+                return prevStates;
+            });
+        }
+        else if(currentInserterState.isInsertingMain){
+
+            // handle the fuel or power (NEED TO CODE LECCY)
+            if(inserterName === "Burner Inserter"){
+                deductFuel(inserterName, machineName, itemName);
+            }
+            else{
+                // HANDLE LECCY
+            }
+
+            // update the machine
+            setMachineStates(prevStates => {
+                const prevMachineState = prevStates[machineName][itemName];
+        
+                // Increase the currentInput by carry
+                const newMachineState = {
+                    ...prevMachineState,
+                    currentInput: Math.min(prevMachineState.currentInput + carry, prevMachineState.inputMax)
+                };
+        
+                return {
+                    ...prevStates,
+                    [machineName]: {
+                        ...prevStates[machineName],
+                        [itemName]: newMachineState
+                    }
+                };
+            });
+
+            // then update the inserter
+            setInserterStates(prevStates => {
+                const prevState = prevStates[inserterName][itemName][machineName];
+                
+                // Only update state if necessary to avoid unnecessary re-renders
+                if (!prevState.isRunning || prevState.isInsertingMain || prevState.itemToAdd !== 'none') {
+                    const newState = {
+                        ...prevStates,
+                        [inserterName]: {
+                            ...prevStates[inserterName],
+                            [itemName]: {
+                                ...prevStates[inserterName][itemName],
+                                [machineName]: {
+                                    ...prevStates[inserterName][itemName][machineName],
+                                    isRunning: false,
+                                    isInsertingMain: false,
+                                    itemToAdd: 'none',
+                                }
+                            }
+                        }
+                    };
+                    return newState;
+                }
+                return prevStates;
+            });
+        }
+        else if(currentInserterState.isInsertingFuel){
+            // handle the fuel or power (NEED TO CODE LECCY)
+            if(inserterName === "Burner Inserter"){
+                deductFuel(inserterName, machineName, itemName);
+            }
+            else{
+                // HANDLE LECCY
+            }
+
+            // update the machine
+            setMachineStates(prevStates => {
+                const prevMachineState = prevStates[machineName][itemName];
+            
+                // Increase the fuel amount
+                const newFuels = {
+                    ...prevMachineState.fuels,
+                    [inputName]: {
+                        ...prevMachineState.fuels[inputName],
+                        current: Math.min(prevMachineState.fuels[inputName].current + carry, prevMachineState.inputMax)
+                    }
+                };
+            
+                // Return the updated state
+                return {
+                    ...prevStates,
+                    [machineName]: {
+                        ...prevStates[machineName],
+                        [itemName]: {
+                            ...prevMachineState,
+                            fuels: newFuels
                         }
                     }
                 };
-                return newState;
+            });
+
+            // then update the inserter
+            setInserterStates(prevStates => {
+                const prevState = prevStates[inserterName][itemName][machineName];
+                
+                // Only update state if necessary to avoid unnecessary re-renders
+                if (!prevState.isRunning || prevState.isInsertingMain || prevState.itemToAdd !== 'none') {
+                    const newState = {
+                        ...prevStates,
+                        [inserterName]: {
+                            ...prevStates[inserterName],
+                            [itemName]: {
+                                ...prevStates[inserterName][itemName],
+                                [machineName]: {
+                                    ...prevStates[inserterName][itemName][machineName],
+                                    isRunning: false,
+                                    isInsertingFuel: false,
+                                    itemToAdd: 'none',
+                                }
+                            }
+                        }
+                    };
+                    return newState;
+                }
+                return prevStates;
+            });
+        }
+    }
+
+    const deductFuel = (inserterName, machineName, itemName) => {
+
+        const currentInserterState = inserterStates[inserterName][itemName][machineName];
+        let chosenFuel = 'finding fuel';
+        let chosenFuelName = '';
+
+        for (const [fuelName, fuelData] of Object.entries(currentInserterState.fuels)) {
+            if (fuelData.current > 0) {
+                chosenFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
+                chosenFuelName = fuelName;
+                break; // Stop the loop once the first valid fuel is found
             }
-            return prevStates;
-        });
+            chosenFuel = 'error'
+        }
+
+        if(chosenFuel === 'error' || chosenFuel === 'finding fuel'){
+            console.error(`Couldn't find fuel for ${inserterName} to deduct. Code: ${chosenFuel}`)
+            return;
+        }
+
+        const deductAmount = 7 / (chosenFuel.fuelValue * 100)
+
+        setInserterStates(prevStates => ({
+            ...prevStates,
+            [inserterName]: {
+                ...prevStates[inserterName],
+                [itemName]: {
+                    ...prevStates[inserterName][itemName],
+                    [machineName]: {
+                        ...prevStates[inserterName][itemName][machineName],
+                        fuels: {
+                            ...prevStates[inserterName][itemName][machineName].fuels,
+                            [chosenFuelName]: {
+                                ...prevStates[inserterName][itemName][machineName].fuels[chosenFuelName],
+                                current: Math.max(parseFloat((prevStates[inserterName][itemName][machineName].fuels[chosenFuelName].current - deductAmount).toFixed(2)), 0) // Ensure fuel doesn't go below 0
+                            }
+                        }
+                    }
+                }
+            }
+        }));
     }
 
     return (

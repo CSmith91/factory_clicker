@@ -489,7 +489,8 @@ const MachineOnSite = ({
                                     fuelsArray={fuelsArray} 
                                     machineName={machineName} 
                                     itemName={itemName} 
-                                    machineStates={machineStates} 
+                                    machineStates={machineStates}
+                                    setMachineStates={setMachineStates}
                                     onAlert={onAlert} />
                             )}    
                     </div>
