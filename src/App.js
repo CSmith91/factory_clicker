@@ -13,7 +13,7 @@ import Debug from './Components/Debug';
 
 function App() {
 
-  const testMode = false;
+  const testMode = true;
   const speedMode = false;
   const [debug, setDebug] = useState(false)
 
@@ -51,7 +51,9 @@ function App() {
     "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 },
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 },
+    "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
   })
 
   const [networks, setNetworks] = useState({
@@ -215,7 +217,6 @@ function App() {
       title: 'Burner Inserters', 
       desc: 'Our most basic inserter - add resources to your drills and furnaces automatically.'
     },
-    // the above have all unlock results set
     wire1: { 
       isVisible: false, // make visible after 5 clicks
       unlocked: testMode, 
@@ -230,28 +231,29 @@ function App() {
       title: 'Green Chips', 
       desc: 'Unlock the power of the computer chip!'
     },
+    // the above have all unlock results set
     // the above all have isVisible conditions set
-    bulkPlace1: { 
-      isVisible: false, 
+    boiler: { 
+      isVisible: false, // make visible after 25 clicks
       unlocked: testMode, 
-      cost: { "Iron Plate": 50 }, 
-      title: 'Bulk Add', 
-      desc: 'For all you arthritus haters! Add resources to machines in bulk.'
+      cost: { "Electronic Circuit": 5 }, 
+      title: 'Boilers, Pipes and Steam Engines', 
+      desc: 'This a big tech jump - are you ready?'
+    },
+    water: { 
+      isVisible: false, // make visible after 25 clicks
+      unlocked: testMode, 
+      cost: { "Electronic Circuit": 2, "Iron Plate": 10 }, 
+      title: 'Pump water', 
+      desc: 'We need water for our boilers...'
     },
     redPack: { 
       isVisible: true, 
       unlocked: testMode, 
       cost: { "Red Science": 1 }, 
       title: 'Advanced Research', 
-      desc: 'Opens the door to ALL automation.'
+      desc: 'End of Stage 1. Opens the door to ALL automation.'
     },
-    factory1: { 
-      isVisible: false, 
-      unlocked: testMode, 
-      cost: { "redPack": 10 }, 
-      title: 'Factories', 
-      desc: 'Sounds cool, but how do we even make an automation pack? [You need to code labs & electric being unlocked before]'
-    }
   });
 
   // Base expansion
@@ -495,7 +497,7 @@ function App() {
                   unlocked: true 
                 }
               }));
-                break
+                break;
             case 'inserters1':
               setIngredients(prevIngredients => ({
                 ...prevIngredients,
@@ -504,7 +506,25 @@ function App() {
                   unlocked: true 
                 }
               }));
-                break
+                break;
+            case 'wire1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Wire": {
+                  ...prevIngredients["Wire"],
+                  unlocked: true 
+                }
+              }));
+                break;
+            case 'chip1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Electronic Circuit": {
+                  ...prevIngredients["Electronic Circuit"],
+                  unlocked: true 
+                }
+              }));
+                break;
             default:
                 break;
             }
