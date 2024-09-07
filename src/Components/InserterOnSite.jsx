@@ -207,7 +207,7 @@ const InserterOnSite = ({
                                     for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
                                         // Check if current fuel is less than inputMax and if there is fuel available in ingredients
                                         let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
-                                        if (fuelData.current < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
+                                        if (fuelData.current + 0.95 < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
                                             //console.log(`${fuelName} can be added to the machine.`);
                                             setAnimation('active');
                                             animationSet = true; 

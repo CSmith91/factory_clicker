@@ -13,7 +13,8 @@ import Debug from './Components/Debug';
 
 function App() {
 
-  const testMode = true;
+  const testMode = false;
+  const speedMode = false;
   const [debug, setDebug] = useState(false)
 
   let cheat = 0;
@@ -934,7 +935,7 @@ function App() {
 
               <CompletedResearch unlockables={unlockables}  />
 
-              {!testMode && (
+              {speedMode && (
               < TestMode ores={ores} ingredients={ingredients} onCheat={onCheat} />
               )}
             </div>
