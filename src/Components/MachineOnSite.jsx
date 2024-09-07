@@ -33,10 +33,12 @@ const MachineOnSite = ({
                 currentInput: 0,
                 inputMax: 0,
                 isRunning: false,
-                fuels: Object.keys(fuels).reduce((acc, fuelName) => {
-                    acc[fuelName] = { current: 0 };
-                    return acc;
-                }, {})
+                ...((machineName !== "Electric Furnace" && machineName !== "Electric Drill" ) && {
+                    fuels: Object.keys(fuels).reduce((acc, fuelName) => {
+                        acc[fuelName] = { current: 0 };
+                        return acc;
+                    }, {})
+                })
             }
         }
     });
@@ -174,7 +176,7 @@ const MachineOnSite = ({
             // Check if the current input or fuel is not exceeding the inputMax
             const canAddMore = chosenMachineState && (
                 (item === itemName && item !== "Coal" && chosenMachineState.currentInput < chosenMachineState.inputMax) ||
-                (chosenMachineState.fuels[item] && chosenMachineState.fuels[item].current < chosenMachineState.inputMax)
+                (chosenMachineState.fuels && chosenMachineState.fuels[item] && chosenMachineState.fuels[item].current < chosenMachineState.inputMax)
             );
             if (canAddMore) {
                 if (item === itemName && item !== "Coal") {

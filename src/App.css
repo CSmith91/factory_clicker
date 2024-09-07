@@ -5,8 +5,9 @@
   --dark-grey: #1d2025;
   --button-grey: #3a3f4a;
   --hover-grey: #808aa0;
-  --full: #b22222;
+  --full: #ffcc00;
   --hover-full: #ff6347;
+  --itemReq: #b22222;
 }
 
 .App {
@@ -248,20 +249,35 @@ button:not(:disabled):hover {
   border-radius: 30px;
 }
 
+.inserterOnSite, .inserterOnSite.idle {
+  transform: rotateY(0deg);
+  transition: all 0.5s ease-in-out;
+  border-radius: 30px;
+}
+
+.inserterOnSite.inputReq {
+  transform: rotateY(180deg);
+  transition: transform 0.5s ease;
+}
+
 /* Active State Animation: Radial Green Gradient */
-.machineOnSite.active {
+.machineOnSite.active, .inserterOnSite.active {
   background: radial-gradient(circle, #32cd32, #3a3f4a); /* Light green to dark green */
 }
 
+.inserterOnSite.self {
+  background: radial-gradient(circle, var(--main-button), #3a3f4a);
+}
+
 /* No Input / No Fuel State Animation: Flashing Radial Red Gradient */
-.machineOnSite.inputReq, .machineOnSite.fuelReq {
-  background: radial-gradient(circle, tomato, #3a3f4a);
+.machineOnSite.inputReq, .machineOnSite.fuelReq, .inserterOnSite.fuelReq {
+  background: radial-gradient(circle, var(--itemReq), #3a3f4a);
   animation: noInputNoFuelAnimation 1s infinite;
 }
 
 @keyframes noInputNoFuelAnimation {
   from {
-    background: radial-gradient(circle, tomato, #3a3f4a);
+    background: radial-gradient(circle, var(--itemReq), #3a3f4a);
   }
   to {
     background: none
@@ -270,7 +286,7 @@ button:not(:disabled):hover {
 
 /* Output Full State Animation: Radial Amber Gradient */
 .machineOnSite.outputFull {
-  background: radial-gradient(circle, #ffcc00, #3a3f4a); /* Light amber to dark amber */
+  background: radial-gradient(circle, var(--full), #3a3f4a); /* Light amber to dark amber */
 }
 
 .bus-div {
