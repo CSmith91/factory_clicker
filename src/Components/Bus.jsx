@@ -92,6 +92,7 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
         }
       };
       setLanes(updatedLanes);
+      checkLane(lanes[itemName][routeNo], routeNo) // {"no":1,"isRunning":false,"active":false,"clear":true,"unlocked":true,"cost":{"Stone":20},"gain":{"Wood":30},"speed":0,"sushiCount":0,"priority":0} && lane1 
     }
     else if(action === 'remove'){
       // removing a chosen belt
@@ -268,9 +269,10 @@ const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, set
             }
         }
     }
-  }, [item, siteCounts[itemName], networks]);
+  }, [item, laneSet, setLanes, siteCounts[itemName], networks]);
 
   const checkLane = (thisLane, laneKey) => {
+    console.log(`thisLane: ${JSON.stringify(thisLane)} and laneKey ${laneKey}`)
     // first, check if we have any good onSite
     if(onSiteCount > 0){        
         // second, we check if we have inventory space and nothing is pending
