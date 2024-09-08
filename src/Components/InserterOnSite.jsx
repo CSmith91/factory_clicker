@@ -527,6 +527,62 @@ const InserterOnSite = ({
         }));
     }
 
+    // useEffect to undeploy all inserters when the parent machine count goes to 0
+    useEffect(() => {
+        if (machineStates[machineName][itemName].count === 0) {
+            undeployInserters();
+        }
+    }, [machineStates]);
+
+    const undeployInserters = () => {
+
+        const prevInserterCount = inserterStates[inserterName][itemName][machineName].count
+
+        setInserterStates(prevStates => {
+            // Create a copy of the current inserter states
+            const newStates = { ...prevStates };
+    
+            // Loop through the inserter states and reset or remove inserters for this machine
+            Object.keys(newStates).forEach(inserterName => {
+                if (newStates[inserterName] && newStates[inserterName][itemName] && newStates[inserterName][itemName][machineName]) {
+                    const inserterState = newStates[inserterName][itemName][machineName];
+    
+                    // Reset basic inserter properties
+                    inserterState.count = 0;
+                    inserterState.isRunning = false;
+                    inserterState.isInsertingMain = false;
+                    inserterState.isInsertingFuel = false;
+                    inserterState.itemToAdd = 'none';
+    
+                    // If this is a "Burner Inserter", reset the fuel values
+                    if (inserterName === "Burner Inserter" && inserterState.fuels) {
+                        Object.keys(inserterState.fuels).forEach(fuelName => {
+                            inserterState.fuels[fuelName].current = 0;  // Reset fuel amount to 0
+                        });
+                    }
+                }
+            });
+    
+            // Return updated inserter states
+            return newStates;
+        });
+    
+        // You would also need to update the inventory to return the inserters to storage
+        updateInventoryForUndeployedInserters(prevInserterCount);
+    };
+    
+    const updateInventoryForUndeployedInserters = (prevInserterCount) => {
+        // Logic to increase the inventory count of inserters when they're undeployed
+        setIngredients(prevIngs => ({
+            ...prevIngs,
+            [inserterName]: {
+                ...prevIngs[inserterName],
+                idleCount: prevIngs[inserterName].idleCount + prevInserterCount
+            }
+        }));
+    };
+
+
     return (
         <>
             {inserterName === 'Burner Inserter' ? (
