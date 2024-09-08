@@ -13,8 +13,8 @@ import Debug from './Components/Debug';
 
 function App() {
 
-  const testMode = true;
-  const speedMode = false;
+  const testMode = false;
+  const speedMode = true;
   const [debug, setDebug] = useState(false)
 
   let cheat = 0;
@@ -237,7 +237,7 @@ function App() {
       unlocked: testMode, 
       cost: { "Iron Plate": 30 }, 
       title: 'Boilers, Pipes and Steam Engines', 
-      desc: 'This a big jump - are you ready?'
+      desc: 'Big machines are coming - are you ready?'
     },
     drill2: { 
       isVisible: false, 

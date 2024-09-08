@@ -203,22 +203,38 @@ const InserterOnSite = ({
                                 const oneFuelAtMax = Object.values(machine.fuels).some(fuel => fuel.current === machine.inputMax);
 
                                 if (!oneFuelAtMax) {
-                                    // Loop through all fuels in machine, see if there's room, then check if we have this in the inventory
-                                    for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
-                                        // Check if current fuel is less than inputMax and if there is fuel available in ingredients
-                                        let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
-                                        if (fuelData.current + 0.95 < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
-                                            //console.log(`${fuelName} can be added to the machine.`);
+
+                                    // see if we have one fuel to focus on (this is to prevent stuffing every fuels into machines)
+                                    let activeFuel = null;
+                                    activeFuel = Object.entries(fuels).find(([fuelName, fuelData]) => fuelData.current > 0);
+                                    
+                                    if (activeFuel) {
+                                        const [fuelName, fuelData] = activeFuel;
+                                        let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName];
+                                        
+                                        if (machine.fuels[fuelName].current + 0.95 < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
                                             setAnimation('active');
-                                            animationSet = true; 
+                                            animationSet = true;
                                             turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
-                                            break; // Stop the loop once the first valid fuel is found
                                         }
-                                    }
-                                    if (!animationSet) {
-                                        // if we get this far, there are no items available to add to the machine
-                                        setAnimation('inputReq');
-                                        animationSet = true; 
+                                    } else {
+                                        // No active fuel, iterate through all fuels in machine, see if there's room, then check if we have this in the inventory
+                                        for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
+                                            // Check if current fuel is less than inputMax and if there is fuel available in ingredients
+                                            let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
+                                            if (fuelData.current + 0.95 < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
+                                                //console.log(`${fuelName} can be added to the machine.`);
+                                                setAnimation('active');
+                                                animationSet = true; 
+                                                turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
+                                                break; // Stop the loop once the first valid fuel is found
+                                            }
+                                        }
+                                        if (!animationSet) {
+                                            // if we get this far, there are no items available to add to the machine
+                                            setAnimation('inputReq');
+                                            animationSet = true; 
+                                        }
                                     }
                                 }
                                 else{
