@@ -474,9 +474,9 @@ const MachineOnSite = ({
                 {">"}
             </button>
         </div>
-        {/* Conditionally render the div if counter > 0 */}
-        {counter[machineName] > 0 && (
-            <>
+        {/* Show the div if counter > 0 */}
+        {/* {counter[machineName] > 0 && ( */}
+            <div style={{ display: counter[machineName] > 0 ? 'block' : 'none' }}>
                 <div style={{marginBottom: "5%"}}>
                     <div className="machine-inserters">
                             {unlockables.inserters1.unlocked && machineName !== "Electric Drill" && (
@@ -525,8 +525,8 @@ const MachineOnSite = ({
                         })}
                     </div>
                 </div>
-            </>
-        )}
+            </div>
+            {/* )} */}
         </>
     )
 }

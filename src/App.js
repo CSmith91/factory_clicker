@@ -232,18 +232,18 @@ function App() {
       desc: 'Unlock the power of the computer chip!'
     },
     // the above have all unlock results set
-    // the above all have isVisible conditions set
     boiler: { 
-      isVisible: false, // make visible after 25 clicks
+      isVisible: false, 
       unlocked: testMode, 
       cost: { "Electronic Circuit": 5 }, 
       title: 'Boilers, Pipes and Steam Engines', 
-      desc: 'This a big tech jump - are you ready?'
+      desc: 'This a big jump - are you ready?'
     },
+    // the above all have isVisible conditions set
     water: { 
-      isVisible: false, // make visible after 25 clicks
+      isVisible: false, // make visible when boiler is unlocked
       unlocked: testMode, 
-      cost: { "Electronic Circuit": 2, "Iron Plate": 10 }, 
+      cost: { "Stone": 40 }, 
       title: 'Pump water', 
       desc: 'We need water for our boilers...'
     },

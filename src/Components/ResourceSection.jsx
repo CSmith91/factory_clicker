@@ -205,6 +205,16 @@ const ResourceSection = ({
       }))
     }
 
+    if(ores["Coal"].patch.size <= 344970 && !unlockables.boiler.isVisible){
+        setUnlockables(prevUnlockables => ({
+            ...prevUnlockables,
+            boiler: { 
+              ...prevUnlockables.boiler,
+              isVisible: true
+            }
+        }))
+      }
+
     if(ores["Copper Ore"].patch.size <= 339980 && !unlockables.wire1.isVisible){
       setUnlockables(prevUnlockables => ({
           ...prevUnlockables,
