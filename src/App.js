@@ -13,7 +13,7 @@ import Debug from './Components/Debug';
 
 function App() {
 
-  const testMode = true;
+  const testMode = false;
   const speedMode = false;
   const [debug, setDebug] = useState(false)
 
@@ -235,9 +235,16 @@ function App() {
     boiler: { 
       isVisible: false, 
       unlocked: testMode, 
-      cost: { "Electronic Circuit": 5 }, 
+      cost: { "Iron Plate": 30 }, 
       title: 'Boilers, Pipes and Steam Engines', 
       desc: 'This a big jump - are you ready?'
+    },
+    drill2: { 
+      isVisible: false, 
+      unlocked: testMode, 
+      cost: { "Electronic Circuit": 5 }, 
+      title: 'Electric Drills', 
+      desc: 'Faster than burner drills and don\'t require fuel.'
     },
     // the above all have isVisible conditions set
     water: { 
@@ -246,6 +253,13 @@ function App() {
       cost: { "Stone": 40 }, 
       title: 'Pump water', 
       desc: 'We need water for our boilers...'
+    },
+    inserters2: { 
+      isVisible: false, 
+      unlocked: testMode, 
+      cost: { "Copper Ore": 30 }, 
+      title: 'Electric Inserters', 
+      desc: 'The standard inserter. You will grow to love them.'
     },
     redPack: { 
       isVisible: true, 
