@@ -206,7 +206,15 @@ const InserterOnSite = ({
 
                                     // see if we have one fuel to focus on (this is to prevent stuffing every fuels into machines)
                                     let activeFuel = null;
-                                    activeFuel = Object.entries(fuels).find(([fuelName, fuelData]) => fuelData.current > 0);
+                                    let maxFuelCurrent = -1; // Initialize with a low value
+
+                                    // Iterate over fuels and find the one with the highest current value
+                                    for (const [fuelName, fuelData] of Object.entries(fuels)) {
+                                        if (fuelData.current > maxFuelCurrent) {
+                                            activeFuel = [fuelName, fuelData]; // Store the fuel with the highest current
+                                            maxFuelCurrent = fuelData.current; // Update maxFuelCurrent
+                                        }
+                                    }
                                     
                                     if (activeFuel) {
                                         const [fuelName, fuelData] = activeFuel;

@@ -205,7 +205,7 @@ const ResourceSection = ({
       }))
     }
 
-    if(ores["Coal"].patch.size <= 344970 && !unlockables.boiler.isVisible){
+    if(ores["Coal"].patch.size <= 344940 && !unlockables.boiler.isVisible){
         setUnlockables(prevUnlockables => ({
             ...prevUnlockables,
             boiler: { 
@@ -215,7 +215,7 @@ const ResourceSection = ({
         }))
       }
 
-    if(ores["Coal"].patch.size <= 344880 && !unlockables.drill2.isVisible){
+    if(ores["Coal"].patch.size <= 344850 && !unlockables.drill2.isVisible){
     setUnlockables(prevUnlockables => ({
         ...prevUnlockables,
         drill2: { 
@@ -300,201 +300,6 @@ const ResourceSection = ({
     }
     return false;
   };
-  
-//   // ###########################  BELT LOGIC
-//   // ###########################  BELT LOGIC
-//   // ###########################  BELT LOGIC
-
-//   useEffect(() => {
-//     Object.keys(ores).forEach(oreName => {
-//         if (ores[oreName].patch !== undefined && ingredients["Transport Belt"].unlocked) {
-//             checkBelts(oreName);
-//         }
-//     });
-
-//     Object.keys(ingredients).forEach(ingredientName => {
-//         if (ingredients[ingredientName].count !== undefined && ingredients["Transport Belt"].unlocked) {
-//             checkBelts(ingredientName);
-//         }
-//     });
-//   }, [ores, ingredients, lanes]);
-
-//   // function for switching isRunning boolean for each lane
-//   const updateLaneRunningState = (itemName, lane, isRunning) => {
-//     setLanes(prevLanes => ({
-//       ...prevLanes,
-//       [itemName]: {
-//         ...prevLanes[itemName],
-//         [lane]: {
-//           ...prevLanes[itemName][lane],
-//           isRunning: isRunning,
-//         },
-//       },
-//     }));
-//   };
-
-//   const checkBelts = (itemName) => {
-//     const targetResource = ores[itemName] || ingredients[itemName];
-//     const bankAmount = siteCounts[itemName]
-
-//     // first, we check if there are any resources to move
-//     if(bankAmount > 0){
-//     // second, we check if the target storage has space (including tempCount!)
-//       const totalCount = targetResource.count + targetResource.tempCount;
-
-//       if(totalCount < getStorage(itemName)){
-//         // lastly iterate through the bus. Any lanes that are active (and not already running) then trigger the payout
-
-//         const bus = lanes[itemName]
-
-//         Object.entries(bus).forEach(([lane, details]) => {
-//           if (!details.isRunning && details.active) {
-//             // we've found an available lane that is not already running!
-//             updateLaneRunningState(itemName, lane, true);
-
-//             // determine speed stat and animation image
-//             const speed = details.speed;
-//             const beltId = `belt-${itemName.replace(/\s+/g, '-')}-${lane}`;
-//             const laneElement = document.querySelector(`#${beltId}`);
-//             const flashClass = speed >= 5 ? 'flashing-fast' : speed >= 3 ? 'flashing-medium' : 'flashing-slow';
-            
-//             if (laneElement) {
-//               // Determine which class to add based on the speed
-//                laneElement.classList.add(flashClass);
-//             }
-
-//             // lastly, we start the actual moving-of-goods function
-//             moveItemToBelt(itemName, lane, speed, laneElement, flashClass);
-//           }
-//           else if(details.isRunning && targetResource.tempCount > 0){
-//             const speed = details.speed;
-//             const beltId = `belt-${itemName.replace(/\s+/g, '-')}-${lane}`;
-//             const laneElement = document.querySelector(`#${beltId}`);
-//             const flashClass = speed >= 5 ? 'flashing-fast' : speed >= 3 ? 'flashing-medium' : 'flashing-slow';
-//             turnOnBelt(itemName, lane, speed, laneElement, flashClass)
-//           }
-//         });
-//         }
-//       // else if(){
-//       //   // this is to check if the tempCount has 'stuck' and we need to clear it
-//       // }
-//       else{
-//         // storage is full
-//       }
-//     }
-//     else{
-//       // nothing to move
-//     }
-//   }
-
-//   const moveItemToBelt = (itemName, lane, speed, laneElement, flashClass) => {
-//     loadBelt(itemName) // tempCount +1 && outputCount -1
-//     turnOnBelt(itemName, lane, speed, laneElement, flashClass);
-//   };
-
-//   const loadBelt = (itemName) => {
-//     updateItemCounts(itemName, 0, 1); // Increment tempCount before processing
-
-//     setSiteCounts(prevCounts => {
-//         const newCount = Math.max(0, (prevCounts[itemName] || 0) - 1);
-//         return { ...prevCounts, [itemName]: newCount };
-//     });
-//   }
-
-//   const updateItemCounts = (itemName, countChange, tempCountChange) => {
-//     const oreOrIngredient = ores[itemName] ? 'ore' : 'ingredient';
-//     const updateState = oreOrIngredient === 'ore' ? setOres : setIngredients;
-  
-//     updateState(prevState => {
-//         const updatedItem = {
-//             ...prevState[itemName],
-//             count: prevState[itemName].count + countChange,
-//             tempCount: prevState[itemName].tempCount + tempCountChange
-//         };
-//         return {
-//             ...prevState,
-//             [itemName]: updatedItem
-//         };
-//     });
-//   };
-
-//   // turnOnBelt looks at the queue and fully processes it and loops back on itself if there's still items in its queue 
-//   const turnOnBelt = (itemName, lane, speed, laneElement, flashClass) => {
-
-//     // set the belt lane as running
-//     updateLaneRunningState(itemName, lane, true);
-
-//     // check if we have any items in the queue
-//     const throughput = 1000 / speed
-
-//     setTimeout(() => {
-//       const updatedItem = ores[itemName] ? ores[itemName] : ingredients[itemName];
-//       if(updatedItem.tempCount > 0){
-//         console.log(`updatedItem.tempCount is ${updatedItem.tempCount}`)
-//         updateItemCounts(itemName, 1, -1); // Payout - add item.count and remove item.tempCount
-//       }
-//       // now lets check there are no more tempCounts
-//       if(updatedItem.tempCount === 0){
-//         // the queue is empty. Set belt's isRunning to false, and stop animation
-//         updateLaneRunningState(itemName, lane, false);
-
-//         if (laneElement) {
-//           // Remove flashing effect
-//           laneElement.classList.remove(flashClass);
-//         }
-//         else{
-//           console.error(`No laneElement found with beltId`);
-//         }
-//       } 
-//     }, (throughput))  
-
-//   };
-
-//   // this useEffect keeps us looping within the same belt lane if there is more tempCounts to drop-off
-//   // this does NOT check all belts, like the other useEffect does
-//   // useEffect(() => {
-//   //   Object.keys(ores).forEach(itemName => {
-//   //     if (ores[itemName].patch !== undefined && ingredients["Transport Belt"].unlocked) {
-//   //       const bus = lanes[itemName]
-
-//   //       if(bus){
-//   //         Object.entries(bus).forEach(([lane, details]) => {
-//   //           if (details.isRunning) {
-//   //             // determine speed stat and animation image
-//   //             const speed = details.speed;
-//   //             const beltId = `belt-${itemName.replace(/\s+/g, '-')}-${lane}`;
-//   //             const laneElement = document.querySelector(`#${beltId}`);
-//   //             const flashClass = speed >= 5 ? 'flashing-fast' : speed >= 3 ? 'flashing-medium' : 'flashing-slow';
-//   //             setTimeout(() => {
-//   //               turnOnBelt(itemName, lane, speed, laneElement, flashClass)
-//   //             }, 1000 / speed)
-//   //           }
-//   //         });
-//   //       }
-//   //     }
-//   //   });
-
-//   //   Object.keys(ingredients).forEach(itemName => {
-//   //       if (ingredients[itemName].count !== undefined && ingredients["Transport Belt"].unlocked) {
-//   //         const bus = lanes[itemName]
-
-//   //         if(bus){
-//   //           Object.entries(bus).forEach(([lane, details]) => {
-//   //             if (details.isRunning) {
-//   //               // determine speed stat and animation image
-//   //               const speed = details.speed;
-//   //               const beltId = `belt-${itemName.replace(/\s+/g, '-')}-${lane}`;
-//   //               const laneElement = document.querySelector(`#${beltId}`);
-//   //               const flashClass = speed >= 5 ? 'flashing-fast' : speed >= 3 ? 'flashing-medium' : 'flashing-slow';
-//   //               setTimeout(() => {
-//   //                 turnOnBelt(itemName, lane, speed, laneElement, flashClass)
-//   //               }, 1000 / speed)
-//   //             }
-//   //           });
-//   //         }
-//   //       }
-//   //   })
-//   // }, [ores, ingredients, siteCounts])
 
   return (
       <>
