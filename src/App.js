@@ -791,7 +791,7 @@ function App() {
       });
   
       // Early-stage unlock check - #myFirstFurnace       
-      if (ingredients["Stone Furnace"].count > 0 && !unlockables.smelt1.isVisible) {
+      if (ingredients["Stone Furnace"].count == 0 && !unlockables.smelt1.isVisible) {
         setUnlockables(prevUnlockables => ({
           ...prevUnlockables,
           smelt1: {
