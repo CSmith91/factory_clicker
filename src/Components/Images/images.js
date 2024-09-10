@@ -25,10 +25,16 @@ import stackInserter from './stack_inserter.png'
 import belt from './belt.png'
 import fastBelt from './fast_belt.png'
 import expressBelt from './express_belt.png'
+import wire from './wire.png'
+import chip1 from './green_chip.png'
 // networks
 import beltLane1 from './underground_belt.png'
 import beltLane2 from './fast_underground_belt.png'
 import beltLane3 from './express_underground_belt.png'
+// menu images
+import group1 from './logistics.png'
+import group2 from './production.png'
+import group3 from './intermediate_products.png'
 
 const images = {
     // Ores
@@ -59,11 +65,18 @@ const images = {
     'Copper Plate': copperPlate,
     'Steel': steel,
     'Gear': gear,
+    'Wire': wire,
+    "Electronic Circuit": chip1,
 
     // Networks
     "Belt Lane": beltLane1,
     "Fast Belt Lane": beltLane2,
     "Express Belt Lane": beltLane3,
+
+    // Menu Items
+    "Logistics": group1,
+    "Production": group2,
+    "Intermediate Products": group3
   };
   
   export default images;

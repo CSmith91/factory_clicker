@@ -1,3 +1,15 @@
+:root {
+  --factorio: #282c34;
+  --main-button: aquamarine;
+  --main-active: orangered;
+  --dark-grey: #1d2025;
+  --button-grey: #3a3f4a;
+  --hover-grey: #808aa0;
+  --full: #ffcc00;
+  --hover-full: #ff6347;
+  --itemReq: #b22222;
+}
+
 .App {
   background-color: #282c34;
   min-height: 95.8vh;
@@ -105,7 +117,7 @@ button:not(:disabled):hover {
   cursor: pointer; 
   padding: 4%;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */
-  background-color: #3a3f4a;
+  background-color: var(--button-grey);
   margin-bottom: 20px;
 }
 
@@ -116,16 +128,16 @@ button:not(:disabled):hover {
 
 .imgdiv:hover {
   filter: brightness(1.2); /* Lighten the image */
-  background-color: #808aa0; /* Lightbox overlay color */
+  background-color: var(--hover-grey); /* Lightbox overlay color */
 }
 
 /* Additional styles for red background */
 .imgdiv.red-background {
-  background-color: #b22222; /* Dark red */
+  background-color: var(--full); /* Dark red */
 }
 
 .imgdiv.red-background:hover {
-  background-color: #ff6347; /* Lighter red (Tomato) */
+  background-color: var(--hover-full); /* Lighter red (Tomato) */
 }
 
 .imgdiv:active {
@@ -237,20 +249,35 @@ button:not(:disabled):hover {
   border-radius: 30px;
 }
 
+.inserterOnSite, .inserterOnSite.idle {
+  transform: rotateY(0deg);
+  transition: all 0.5s ease-in-out;
+  border-radius: 30px;
+}
+
+.inserterOnSite.inputReq {
+  transform: rotateY(180deg);
+  transition: transform 0.5s ease;
+}
+
 /* Active State Animation: Radial Green Gradient */
-.machineOnSite.active {
+.machineOnSite.active, .inserterOnSite.active {
   background: radial-gradient(circle, #32cd32, #3a3f4a); /* Light green to dark green */
 }
 
+.inserterOnSite.self {
+  background: radial-gradient(circle, var(--main-button), #3a3f4a);
+}
+
 /* No Input / No Fuel State Animation: Flashing Radial Red Gradient */
-.machineOnSite.inputReq, .machineOnSite.fuelReq {
-  background: radial-gradient(circle, tomato, #3a3f4a);
+.machineOnSite.inputReq, .machineOnSite.fuelReq, .inserterOnSite.fuelReq {
+  background: radial-gradient(circle, var(--itemReq), #3a3f4a);
   animation: noInputNoFuelAnimation 1s infinite;
 }
 
 @keyframes noInputNoFuelAnimation {
   from {
-    background: radial-gradient(circle, tomato, #3a3f4a);
+    background: radial-gradient(circle, var(--itemReq), #3a3f4a);
   }
   to {
     background: none
@@ -259,11 +286,11 @@ button:not(:disabled):hover {
 
 /* Output Full State Animation: Radial Amber Gradient */
 .machineOnSite.outputFull {
-  background: radial-gradient(circle, #ffcc00, #3a3f4a); /* Light amber to dark amber */
+  background: radial-gradient(circle, var(--full), #3a3f4a); /* Light amber to dark amber */
 }
 
 .bus-div {
-  border: 1px dashed #ccc;
+  background-color: var(--dark-grey);
   padding: 5px;
   border-radius: 10px;
   display: flex;
@@ -273,9 +300,92 @@ button:not(:disabled):hover {
   align-items: center;
 }
 
-.bus-lane {
+.inserters-div {
+  background-color: var(--dark-grey);
+  padding: 5px 20px;
   border-radius: 10px;
-  flex: 0 1 20px;        /* Allow each lane to grow and shrink, with a minimum width */
+  display: flex;
+  flex-direction: column; /* Align items in a column */
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.burner-inserter-row {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Align burner inserter and its fuel info to the left */
+  gap: 20px; /* Space between burner inserter and fuel info */
+}
+
+.inserters-row {
+  display: flex;
+  justify-content: space-between;  /* Center lanes within inserters-row */
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.inserters-lane {
+  position: relative; /* Enable absolute positioning for child elements */
+  border-radius: 10px;
+  flex: 0 1 20px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.inserters-lane img {
+  display: block;
+  max-width: 100%;
+  border-radius: 10px;
+  padding: 5px 0px
+}
+
+.inserters-lane p {
+  position: absolute;
+  bottom: 30px; 
+  left: 20px; /* Positioning slightly away from the right edge */
+  background-color: var(--hover-grey);
+  color: white;
+  padding: 2px 5px; /* Add some padding for better appearance */
+  border-radius: 3px; /* Rounded corners for the count box */
+  font-size: 12px; /* Adjust font size as necessary */
+  margin: 0; /* Remove default margin */
+}
+
+.inserters-lane button {
+  color: white;
+  background-color: #3a3f4a;
+  height: 20px; 
+  width: 20px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: none;  
+}
+
+.burner-fuel-info {
+  display: flex;
+  flex-direction: column; /* Stack fuel info vertically */
+  gap: 5px; /* Space between each fuel info */
+}
+
+.fuel-status {
+  font-size: 14px; /* Adjust as necessary */
+  color: #fff;
+}
+
+.bus-lane, .inserters-lane {
+  border-radius: 10px;
+  flex: 0 1 20px;
+  min-width: 32px;
+  text-align: center;
+  /* margin: 1px; */
+}
+
+.bus-lane-debug {
+  border-radius: 10px;
+  flex: 0 1 55px;
   min-width: 32px;
   text-align: center;
   /* margin: 1px; */
@@ -287,7 +397,7 @@ button:not(:disabled):hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */
 }
 
-.belt-change button {
+.belt-change button, .inserters-lane button {
   color: white;
   background-color: #3a3f4a;
   height: 20px; 
@@ -326,4 +436,83 @@ button:not(:disabled):hover {
 /* Flashing for fast belts */
 .flashing-fast {
   animation: flash 0.5s infinite; /* Shorter duration for faster flashing */
+}
+
+/* Inventory section */
+
+.inventory-div {
+  background-color: var(--dark-grey);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.section-navigation {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.section-navigation button {
+  padding: 10px;
+  cursor: pointer;
+  border: none;
+  background-color: var(--factorio);
+  border-radius: 10px 10px 0 0;
+}
+
+.section-navigation button.active {
+  background-color: var(--dark-grey);
+  color: white;
+  cursor: default;
+}
+
+.ingredient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ingredient-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: var(--button-grey);
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */
+}
+
+.ingredient-item:hover {
+  background-color: var(--hover-grey);
+}
+
+.ingredient-item.uncraftable {
+  cursor: default;
+  background-color: var(--factorio);
+}
+
+.ingredient-image {
+  width: 30px;
+  height: 30px;
+}
+
+.ingredient-count, .ingredient-cost {
+  margin-top: 5px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.cost-item {
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* Debug */
+.debug {
+  position: fixed;
+  top: 10px;   /* Adjust this value to position it further down from the top */
+  left: 10px;  /* Adjust this value to position it further right from the left edge */
+  z-index: 1000; /* Ensure it appears above other elements */
 }

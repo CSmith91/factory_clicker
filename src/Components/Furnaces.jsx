@@ -15,13 +15,15 @@ const Furnaces = ({
     pendingMachineOutput,
     setPendingMachineOutput, 
     handleBank,
-    outputCounts,
-    updateOutputCount,
+    siteCounts,
+    setSiteCounts,
+    updateSiteCounts,
     networks, 
     setNetworks, 
     checkBelts,              
     lanes,
     setLanes,
+    debug,
     onAlert }) => {
 
     // used for lookups within production (later) as well as headers (here)
@@ -62,16 +64,31 @@ const Furnaces = ({
                                 {images[getOutput(oreName)] && (
                                     <>
                                         <img src={images[getOutput(oreName)]} alt={`${getOutput(oreName)}`} />
-                                        <span className="img-number">{outputCounts[getOutput(oreName)] || 0}</span>
+                                        <span className="img-number">{siteCounts[getOutput(oreName)] || 0}</span>
                                     </>
                                 )}
                             </div>
                             {unlockables.belts1.unlocked && (
                                 <div style={{marginBottom: "15px"}}>
-                                    <Bus itemName={getOutput(oreName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert}/>
+                                    <Bus itemName={getOutput(oreName)} 
+                                        lanes={lanes} 
+                                        setLanes={setLanes} 
+                                        networks={networks} 
+                                        setNetworks={setNetworks}                                 
+                                        siteCounts={siteCounts}
+                                        setSiteCounts={setSiteCounts}
+                                        ores={ores} 
+                                        ingredients={ingredients} 
+                                        setOres={setOres} 
+                                        setIngredients={setIngredients} 
+                                        getStorage={getStorage}
+                                        checkBelts={checkBelts} 
+                                        debug={debug} 
+                                        onAlert={onAlert}/>
                                 </div>
                             )}
                             <Machines
+                                unlockables={unlockables}
                                 machineType={"furnace"}
                                 ores={ores} 
                                 oreName={oreName} 
@@ -82,8 +99,8 @@ const Furnaces = ({
                                 getStorage={getStorage}
                                 pendingMachineOutput={pendingMachineOutput}
                                 setPendingMachineOutput={setPendingMachineOutput}
-                                outputCounts={outputCounts}
-                                updateOutputCount={updateOutputCount}
+                                siteCounts={siteCounts}
+                                updateSiteCounts={updateSiteCounts}
                                 onAlert={onAlert} 
                                 />
                         </div>
@@ -97,16 +114,32 @@ const Furnaces = ({
                             {images[getOutput(ingredientName)] && (
                             <>
                                 <img src={images[getOutput(ingredientName)]} alt={`${getOutput(ingredientName)}`} />
-                                <span className="img-number">{outputCounts[getOutput(ingredientName)] || 0}</span> {/* Update this number dynamically as needed */}
+                                <span className="img-number">{siteCounts[getOutput(ingredientName)] || 0}</span> {/* Update this number dynamically as needed */}
                             </>
                             )}
                         </div>
                         {unlockables.belts1.unlocked && (
                             <div style={{marginBottom: "15px"}}>
-                                <Bus itemName={getOutput(ingredientName)} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert}/>
+                                <Bus 
+                                    itemName={getOutput(ingredientName)} 
+                                    lanes={lanes} 
+                                    setLanes={setLanes} 
+                                    networks={networks} 
+                                    setNetworks={setNetworks} 
+                                    siteCounts={siteCounts}
+                                    setSiteCounts={setSiteCounts}
+                                    ores={ores} 
+                                    ingredients={ingredients}
+                                    setOres={setOres} 
+                                    setIngredients={setIngredients} 
+                                    getStorage={getStorage}
+                                    checkBelts={checkBelts} 
+                                    debug={debug} 
+                                    onAlert={onAlert}/>
                             </div>
                             )}
                         <Machines
+                            unlockables={unlockables}
                             machineType={"furnace"}
                             ores={ores}
                             oreName={ingredientName}
@@ -117,8 +150,8 @@ const Furnaces = ({
                             getStorage={getStorage}
                             pendingMachineOutput={pendingMachineOutput}
                             setPendingMachineOutput={setPendingMachineOutput}
-                            outputCounts={outputCounts}
-                            updateOutputCount={updateOutputCount}
+                            siteCounts={siteCounts}
+                            updateSiteCounts={updateSiteCounts}
                             onAlert={onAlert}
                         />
                         </div>

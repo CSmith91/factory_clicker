@@ -9,10 +9,13 @@ import AudioPlayer from './Components/AudioPlayer';
 import FactorySection from './Components/FactorySection';
 import RepairTools from './Components/RepairTools';
 import CompletedResearch from './Components/CompletedResearch';
+import Debug from './Components/Debug';
 
 function App() {
 
-  const testMode = true
+  const testMode = false;
+  const speedMode = false;
+  const [debug, setDebug] = useState(false)
 
   let cheat = 0;
   // if(testMode){
@@ -48,7 +51,9 @@ function App() {
     "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 },
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 },
+    "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
   })
 
   const [networks, setNetworks] = useState({
@@ -58,14 +63,14 @@ function App() {
   })
 
   const basicBus = {
-    lane1: { no: 1, isRunning: false, active: false, clear: testMode, unlocked: true, cost: {"Stone": 20}, gain: {"Wood": 30}, speed: 0 },
-    lane2: { no: 2, isRunning: false, active: false, clear: testMode, unlocked: true, cost: {"Stone": 25}, gain: {"Wood": 30}, speed: 0 },
-    lane3: { no: 3, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Stone": 30}, gain: {"Wood": 30}, speed: 0 },
-    lane4: { no: 4, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Stone": 35}, gain: {"Wood": 30}, speed: 0 },
-    lane5: { no: 5, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 20}, gain: {"Wood": 30}, speed: 0 },
-    lane6: { no: 6, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 25}, gain: {"Wood": 30}, speed: 0 },
-    lane7: { no: 7, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 30}, gain: {"Wood": 30}, speed: 0 },
-    lane8: { no: 8, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 35}, gain: {"Wood": 30}, speed: 0 },
+    lane1: { no: 1, isRunning: false, active: false, clear: testMode, unlocked: true, cost: {"Stone": 20}, gain: {"Wood": 30}, speed: 0, sushiCount:0, priority: 0 },
+    lane2: { no: 2, isRunning: false, active: false, clear: testMode, unlocked: true, cost: {"Stone": 25}, gain: {"Wood": 30}, speed: 0, sushiCount:0, priority: 0 },
+    lane3: { no: 3, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Stone": 30}, gain: {"Wood": 30}, speed: 0, sushiCount:0, priority: 0 },
+    lane4: { no: 4, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Stone": 35}, gain: {"Wood": 30}, speed: 0, sushiCount:0, priority: 0 },
+    lane5: { no: 5, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 20}, gain: {"Wood": 30}, speed: 0, sushiCount:0, priority: 0 },
+    lane6: { no: 6, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 25}, gain: {"Wood": 30}, speed: 0, sushiCount:0, priority: 0 },
+    lane7: { no: 7, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 30}, gain: {"Wood": 30}, speed: 0, sushiCount:0, priority: 0 },
+    lane8: { no: 8, isRunning: false, active: false, clear: testMode, unlocked: testMode, cost: {"Brick": 35}, gain: {"Wood": 30}, speed: 0, sushiCount:0, priority: 0 },
   }
 
   const [lanes, setLanes] = useState({})
@@ -205,7 +210,6 @@ function App() {
       title: 'Copper', 
       desc: 'This resource will open a lot of (electronic) doors...' // unlocks copper ore, plate and wire
     },
-    // the above have all unlock results set
     inserters1: { 
       isVisible: false, 
       unlocked: testMode, 
@@ -213,7 +217,6 @@ function App() {
       title: 'Burner Inserters', 
       desc: 'Our most basic inserter - add resources to your drills and furnaces automatically.'
     },
-    // the above all have isVisible conditions set
     wire1: { 
       isVisible: false, // make visible after 5 clicks
       unlocked: testMode, 
@@ -224,31 +227,47 @@ function App() {
     chip1: { 
       isVisible: false, // make visible after 25 clicks
       unlocked: testMode, 
-      cost: { "Wire": 50 }, 
+      cost: { "Wire": 20 }, 
       title: 'Green Chips', 
       desc: 'Unlock the power of the computer chip!'
     },
-    bulkPlace1: { 
+    // the above have all unlock results set
+    boiler: { 
       isVisible: false, 
       unlocked: testMode, 
-      cost: { "Iron Plate": 50 }, 
-      title: 'Bulk Add', 
-      desc: 'For all you arthritus haters! Add resources to machines in bulk.'
+      cost: { "Iron Plate": 30 }, 
+      title: 'Boilers, Pipes and Steam Engines', 
+      desc: 'Big machines are coming - are you ready?'
+    },
+    drill2: { 
+      isVisible: false, 
+      unlocked: testMode, 
+      cost: { "Electronic Circuit": 5 }, 
+      title: 'Electric Drills', 
+      desc: 'Faster than burner drills and don\'t require fuel.'
+    },
+    // the above all have isVisible conditions set
+    water: { 
+      isVisible: false, // make visible when boiler is unlocked
+      unlocked: testMode, 
+      cost: { "Stone": 40 }, 
+      title: 'Pump water', 
+      desc: 'We need water for our boilers...'
+    },
+    inserters2: { 
+      isVisible: false, 
+      unlocked: testMode, 
+      cost: { "Copper Ore": 30 }, 
+      title: 'Electric Inserters', 
+      desc: 'The standard inserter. You will grow to love them.'
     },
     redPack: { 
       isVisible: true, 
       unlocked: testMode, 
       cost: { "Red Science": 1 }, 
       title: 'Advanced Research', 
-      desc: 'Opens the door to ALL automation.'
+      desc: 'End of Stage 1. Opens the door to ALL automation.'
     },
-    factory1: { 
-      isVisible: false, 
-      unlocked: testMode, 
-      cost: { "redPack": 10 }, 
-      title: 'Factories', 
-      desc: 'Sounds cool, but how do we even make an automation pack? [You need to code labs & electric being unlocked before]'
-    }
   });
 
   // Base expansion
@@ -492,7 +511,34 @@ function App() {
                   unlocked: true 
                 }
               }));
-                break
+                break;
+            case 'inserters1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Burner Inserter": {
+                  ...prevIngredients["Burner Inserter"],
+                  unlocked: true 
+                }
+              }));
+                break;
+            case 'wire1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Wire": {
+                  ...prevIngredients["Wire"],
+                  unlocked: true 
+                }
+              }));
+                break;
+            case 'chip1':
+              setIngredients(prevIngredients => ({
+                ...prevIngredients,
+                "Electronic Circuit": {
+                  ...prevIngredients["Electronic Circuit"],
+                  unlocked: true 
+                }
+              }));
+                break;
             default:
                 break;
             }
@@ -580,9 +626,6 @@ function App() {
     }
     
   }
-
-  // Track crafting stats
-  const [craftCount, setCraftCount] = useState(0); // purely for unlocking a research item
 
   // repair tools
   const onRepair = (toolName) => {
@@ -672,9 +715,9 @@ function App() {
     }
   }
 
-  const onCraft = (ingredientName, ingredient) => {
+  const onCraft = (itemName, item) => {
       // Update the hammer's durability, if applicable
-      if(ingredients[ingredientName]){
+      if(ingredients[itemName]){
         setTools(prevTools => {
             const toolName = "Hammer"
             const tool = prevTools[toolName];
@@ -694,7 +737,7 @@ function App() {
       const updatedIngredients = { ...ingredients };
       const updatedNetworks = { ...networks};
 
-      Object.entries(ingredient.cost).forEach(([resourceName, amountRequired]) => {
+      Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
         if (updatedOres[resourceName]) {
             updatedOres[resourceName].count -= amountRequired;
         } else if (updatedIngredients[resourceName]) {
@@ -705,100 +748,81 @@ function App() {
         }
       });
 
-      if(updatedIngredients[ingredientName]){
-        updatedIngredients[ingredientName].tempCount += (updatedIngredients[ingredientName].multiplier || 1);
-        //console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
-      } else if(updatedNetworks[ingredientName]){
-        updatedNetworks[ingredientName].tempCount += 1;
-        //console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
+      if(updatedIngredients[itemName]){
+        updatedIngredients[itemName].tempCount += (updatedIngredients[itemName].multiplier || 1);
+        //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
+      } else if(updatedNetworks[itemName]){
+        updatedNetworks[itemName].tempCount += 1;
+        //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
       }
       else{
         console.log("Something went wrong onCraft!")
       }
 
 
-      addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks)
+      addToCraftQueue(itemName, item, updatedIngredients, updatedOres, updatedNetworks)
   };
 
-  const craftPayout = (ingredientName, ingredient, updatedOres ) => {
-
+  const craftPayout = (ingredientName, ingredient) => {
     // check if ingredient -- if not, it's a network item
-    if(ingredients[ingredientName]){
-      // check its not 1 to many
-      const multiplier = ingredients[ingredientName].multiplier || 1;
-
-      // Handle the idle count only if this is a machine
-      if (ingredient.isMachine) {
-        setIngredients(prevIngredients => {
-            const currentCount = prevIngredients[ingredientName].count + multiplier;
-            const currentIdleCount = prevIngredients[ingredientName].idleCount;
-            const currentTempCount = prevIngredients[ingredientName].tempCount - multiplier;
-
-            // Ensure that the idle count is not incremented incorrectly
-            return {
-                ...prevIngredients,
-                [ingredientName]: {
-                    ...prevIngredients[ingredientName],
-                    count: currentCount,
-                    tempCount: currentTempCount,
-                    idleCount: Math.min(currentIdleCount + multiplier, currentCount),  // Ensure idleCount is not more than total count
-                },
-            };
-        });
-      } else {
-        // If not a machine, simply update the count
+    if (ingredients[ingredientName]) {
+  
+      setIngredients(prevIngredients => {
+        const currentIngredient = prevIngredients[ingredientName];
+        let updatedIngredient = { ...currentIngredient };
+        
+        // Update count and tempCount
+        updatedIngredient.count += (updatedIngredient.multiplier || 1);
+        updatedIngredient.tempCount -= (updatedIngredient.multiplier || 1);
+    
+        // Handle machines
+        if (ingredient.isMachine) {
+          updatedIngredient.idleCount = Math.min(
+            currentIngredient.idleCount + (updatedIngredient.multiplier || 1),
+            updatedIngredient.count
+          );
+        }
+    
+        // Update ores and ingredients together
+        return {
+          ...prevIngredients,
+          [ingredientName]: updatedIngredient,
+        };
+      });
+  
+      // Early-stage unlock check - #myFirstFurnace       
+      if (ingredients["Stone Furnace"].count == 0 && !unlockables.smelt1.isVisible) {
+        setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          smelt1: {
+            ...prevUnlockables.smelt1,
+            isVisible: true
+          }
+        }));
+        
         setIngredients(prevIngredients => ({
-            ...prevIngredients,
-            [ingredientName]: {
-                ...prevIngredients[ingredientName],
-                count: prevIngredients[ingredientName].count + multiplier,
-                tempCount: prevIngredients[ingredientName].tempCount - multiplier,
-            }
+          ...prevIngredients,
+          Brick: {
+            ...prevIngredients.Brick,
+            unlocked: true
+          }
         }));
       }
-      setOres(updatedOres);
-
-      //console.log(`${ingredientName} tempCount is: ${ingredients[ingredientName].tempCount}`)
-
-      // Update craftCount and unlock smelt1 if it’s the first successful craft
-      setCraftCount(prevCount => {
-      const newCount = prevCount + 1;
-
-      if (newCount === 1) { // Check if this is the first successful craft
-          setUnlockables(prevUnlockables => ({
-          ...prevUnlockables,
-          smelt1: { 
-              ...prevUnlockables.smelt1,
-              isVisible: true
-          }
-          }));
-
-          setIngredients(prevIngredients => ({
-          ...prevIngredients,
-          "Brick": {
-              ...prevIngredients["Brick"],
-              unlocked: true 
-          }
-          }));
-      }
-
-      return newCount;
-      });
-    }
-    // craft a network item instead
-    else{
-      // Handle network items
+    } 
+    // Handle network items
+    else {
       setNetworks(prevNetworks => ({
         ...prevNetworks,
         [ingredientName]: {
-            ...prevNetworks[ingredientName],
-            count: prevNetworks[ingredientName].count + 1,
-            idleCount: prevNetworks[ingredientName].idleCount + 1,
-            tempCount: prevNetworks[ingredientName].tempCount - 1,
+          ...prevNetworks[ingredientName],
+          count: prevNetworks[ingredientName].count + 1,
+          idleCount: prevNetworks[ingredientName].idleCount + 1,
+          tempCount: prevNetworks[ingredientName].tempCount - 1,
         }
       }));
     }
-  }
+  };
+  
 
 
   // queue logic
@@ -810,10 +834,7 @@ function App() {
       // Create a new item object with the parameters
       const newItem = {
       ingredientName,
-      ingredient,
-      updatedIngredients,
-      updatedOres,
-      updatedNetworks,
+      ingredient
       };
 
       // Update the craftQueue state with the new item
@@ -827,10 +848,10 @@ function App() {
         setCurrentCrafting(nextItem); // Set the current item as crafting
         setIsAnimating(true); // Start the animation
   
-        const { ingredientName, ingredient, updatedOres } = nextItem;
+        const { ingredientName, ingredient } = nextItem;
   
         setTimeout(() => {
-          craftPayout(ingredientName, ingredient, updatedOres ); // Process crafting
+          craftPayout(ingredientName, ingredient ); // Process crafting
           setIsAnimating(false); // End the animation
           setCurrentCrafting(null); // Reset current crafting item
   
@@ -852,6 +873,13 @@ function App() {
                 <Messages messages={messages} />
               )}
               <AudioPlayer play={playAudio} />
+            </div>
+
+            {/* Debug buttons */}
+            <div className='debug'>
+              {testMode && (
+                <Debug debug={debug} setDebug={setDebug} />
+              )}
             </div>
 
             {/* Factory Section */}
@@ -887,6 +915,7 @@ function App() {
               setNetworks={setNetworks}
               lanes={lanes}
               setLanes={setLanes}
+              debug={debug} 
               onAlert={onAlert} />
 
             {/* Inventory Section */}
@@ -914,6 +943,10 @@ function App() {
               {shouldShowRepairTools() && <RepairTools tools={tools} onRepair={onRepair} />}
 
               <CompletedResearch unlockables={unlockables}  />
+
+              {speedMode && (
+              < TestMode ores={ores} ingredients={ingredients} onCheat={onCheat} />
+              )}
             </div>
           </div>
       </div>

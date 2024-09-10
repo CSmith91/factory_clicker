@@ -1,7 +1,7 @@
 import React from "react";
 import MachineOnSite from "./MachineOnSite";
 
-const Machines = ({ machineType, ores, oreName, ingredients,  setOres, setIngredients, storage, getStorage, pendingMachineOutput, setPendingMachineOutput, outputCounts, updateOutputCount, onAlert }) => {
+const Machines = ({ unlockables, machineType, ores, oreName, ingredients,  setOres, setIngredients, storage, getStorage, pendingMachineOutput, setPendingMachineOutput, siteCounts, updateSiteCounts, onAlert }) => {
 
     const itemName = oreName
     const workableItem = ores[oreName] ? ores[oreName] : ingredients[oreName]
@@ -51,28 +51,29 @@ const Machines = ({ machineType, ores, oreName, ingredients,  setOres, setIngred
     return(
         <>
             {machines.map(([machineName, machineData]) => (
-                    // Conditional check: render only if both the furnace and item are unlocked
-                    machineData.unlocked && workableItem.unlocked && (
-                        <div key={`${machineName}-${itemName}`}>
-                            <MachineOnSite 
-                                itemName={itemName} 
-                                output={output} 
-                                machineName={machineName} 
-                                ores={ores} 
-                                ingredients={ingredients} 
-                                setOres={setOres} 
-                                setIngredients={setIngredients} 
-                                storage={storage}
-                                getStorage={getStorage}
-                                fuels={fuels} 
-                                pendingMachineOutput={pendingMachineOutput}
-                                setPendingMachineOutput={setPendingMachineOutput}
-                                outputCounts={outputCounts} 
-                                updateOutputCount={updateOutputCount}
-                                onAlert={onAlert} />
-                        </div>
-                    )
-                ))}
+                // Conditional check: render only if both the furnace and item are unlocked
+                machineData.unlocked && workableItem.unlocked && (
+                    <div key={`${machineName}-${itemName}`}>
+                        <MachineOnSite 
+                            unlockables={unlockables}
+                            itemName={itemName} 
+                            output={output} 
+                            machineName={machineName} 
+                            ores={ores} 
+                            ingredients={ingredients} 
+                            setOres={setOres} 
+                            setIngredients={setIngredients} 
+                            storage={storage}
+                            getStorage={getStorage}
+                            fuels={fuels} 
+                            pendingMachineOutput={pendingMachineOutput}
+                            setPendingMachineOutput={setPendingMachineOutput}
+                            siteCounts={siteCounts} 
+                            updateSiteCounts={updateSiteCounts}
+                            onAlert={onAlert} />
+                    </div>
+                )
+            ))}
         </>
     )
 

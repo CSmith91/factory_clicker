@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 
-const OreButton = ({ ores, oreName, outputCounts, pendingMachineOutput, setPendingMachineOutput, updateOutputCount, getStorage }) => {
+const OreButton = ({ ores, oreName, siteCounts, pendingMachineOutput, setPendingMachineOutput, updateSiteCounts, getStorage }) => {
     const [isAnimating, setIsAnimating] = useState(false);
     const craftTime = ores[oreName].craftTime;
 
     const handleClick = () => {
 
         // check the bank isn't full
-        if(outputCounts[oreName]){
-            if(outputCounts[oreName] + pendingMachineOutput[oreName] >= getStorage(oreName)){
+        if(siteCounts[oreName]){
+            if(siteCounts[oreName] + pendingMachineOutput[oreName] >= getStorage(oreName)){
                 return;
             }
             else{
@@ -29,9 +29,9 @@ const OreButton = ({ ores, oreName, outputCounts, pendingMachineOutput, setPendi
             [oreName]: (prevPending[oreName] || 0) + 1
         }));
 
-        // Delay the execution of updateOutputCount
+        // Delay the execution of updateSiteCounts
         setTimeout(() => {
-            updateOutputCount(oreName, 1, 'manual');
+            updateSiteCounts(oreName, 1, 'manual');
 
             setPendingMachineOutput(prevPending => ({
                 ...prevPending,

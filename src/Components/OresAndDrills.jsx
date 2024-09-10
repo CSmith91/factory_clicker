@@ -16,13 +16,15 @@ const OresAndDrills = ({
     pendingMachineOutput,
     setPendingMachineOutput, 
     handleBank,
-    outputCounts,
-    updateOutputCount,
+    siteCounts,
+    setSiteCounts,
+    updateSiteCounts,
     networks,
     setNetworks,
     checkBelts,
     lanes,
     setLanes,
+    debug,
     onAlert }) => {
 
     return (
@@ -42,10 +44,10 @@ const OresAndDrills = ({
                                             key={oreName} 
                                             ores={ores} 
                                             oreName={oreName} 
-                                            outputCounts={outputCounts}                                 
+                                            siteCounts={siteCounts}                                 
                                             pendingMachineOutput={pendingMachineOutput}
                                             setPendingMachineOutput={setPendingMachineOutput} 
-                                            updateOutputCount={updateOutputCount} 
+                                            updateSiteCounts={updateSiteCounts} 
                                             getStorage={getStorage} /> 
                                     </div>
                                 ) : (<></>)}
@@ -56,14 +58,29 @@ const OresAndDrills = ({
                                         {/* {ores[oreName].tempCount != 0 &&(
                                             <span className="img-temp-number">{ores[oreName].tempCount}</span>
                                         )} */}
-                                        <span className="img-number">{outputCounts[oreName] || 0}</span>
+                                        <span className="img-number">{siteCounts[oreName] || 0}</span>
                                     </>
                                 )}
                                 </div>
 
                             </div>
                             {unlockables.belts1.unlocked && (
-                                <Bus itemName={oreName} lanes={lanes} setLanes={setLanes} networks={networks} setNetworks={setNetworks} ingredients={ingredients} checkBelts={checkBelts} onAlert={onAlert} />
+                                <Bus 
+                                    itemName={oreName} 
+                                    lanes={lanes} 
+                                    setLanes={setLanes} 
+                                    networks={networks} 
+                                    setNetworks={setNetworks} 
+                                    siteCounts={siteCounts}
+                                    setSiteCounts={setSiteCounts}
+                                    ores={ores}
+                                    ingredients={ingredients}
+                                    setOres={setOres} 
+                                    setIngredients={setIngredients} 
+                                    getStorage={getStorage}
+                                    checkBelts={checkBelts} 
+                                    debug={debug} 
+                                    onAlert={onAlert} />
                             )}
                             {oreData.patch !== undefined ? (
                                 <p>{oreName} patch remaining: {oreData.patch.size}</p> 
@@ -73,6 +90,7 @@ const OresAndDrills = ({
                             {/* DRILLS */}
                             {oreData.canDrill ? (
                                 <Machines
+                                unlockables={unlockables}
                                 machineType={"drill"} 
                                 ores={ores} 
                                 oreName={oreName} 
@@ -83,8 +101,8 @@ const OresAndDrills = ({
                                 getStorage={getStorage}
                                 pendingMachineOutput={pendingMachineOutput}
                                 setPendingMachineOutput={setPendingMachineOutput}
-                                outputCounts={outputCounts}
-                                updateOutputCount={updateOutputCount}
+                                siteCounts={siteCounts}
+                                updateSiteCounts={updateSiteCounts}
                                 onAlert={onAlert} 
                                 />
                                 ) : (<></>)}

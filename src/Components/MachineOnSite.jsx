@@ -1,8 +1,25 @@
 import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
+import Inserters from "./Inserters";
 import images from './Images/images';
 
-const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOres, setIngredients, storage, getStorage, fuels, pendingMachineOutput, setPendingMachineOutput, outputCounts, updateOutputCount, onAlert }) => {
+const MachineOnSite = ({ 
+    unlockables, 
+    itemName, 
+    output, 
+    machineName, 
+    ores, 
+    ingredients, 
+    setOres, 
+    setIngredients, 
+    storage, 
+    getStorage, 
+    fuels, 
+    pendingMachineOutput, 
+    setPendingMachineOutput, 
+    siteCounts, 
+    updateSiteCounts, 
+    onAlert }) => {
    
     // counter of how many machines on site there are
     const [counter, setCounter] = useState(0) // initialises state
@@ -16,10 +33,12 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 currentInput: 0,
                 inputMax: 0,
                 isRunning: false,
-                fuels: Object.keys(fuels).reduce((acc, fuelName) => {
-                    acc[fuelName] = { current: 0 };
-                    return acc;
-                }, {})
+                ...((machineName !== "Electric Furnace" && machineName !== "Electric Drill" ) && {
+                    fuels: Object.keys(fuels).reduce((acc, fuelName) => {
+                        acc[fuelName] = { current: 0 };
+                        return acc;
+                    }, {})
+                })
             }
         }
     });
@@ -30,7 +49,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         if (machineStates[machineName]) {
             checkProduction(machineStates[machineName]);
         }
-    }, [machineStates[machineName], outputCounts, storage]); // Dependency array
+    }, [machineStates[machineName], siteCounts, storage]); // Dependency array
 
     // UseEffect to handle the production timing
     useEffect(() => {
@@ -157,7 +176,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             // Check if the current input or fuel is not exceeding the inputMax
             const canAddMore = chosenMachineState && (
                 (item === itemName && item !== "Coal" && chosenMachineState.currentInput < chosenMachineState.inputMax) ||
-                (chosenMachineState.fuels[item] && chosenMachineState.fuels[item].current < chosenMachineState.inputMax)
+                (chosenMachineState.fuels && chosenMachineState.fuels[item] && chosenMachineState.fuels[item].current < chosenMachineState.inputMax)
             );
             if (canAddMore) {
                 if (item === itemName && item !== "Coal") {
@@ -224,7 +243,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
         // first, check we have any machines
         if(machine[itemName].count > 0){
             // second, check we have room in the destination output
-            if(outputCounts[output] + pendingMachineOutput[output] < getStorage(output) || !outputCounts[output]){
+            if(siteCounts[output] + pendingMachineOutput[output] < getStorage(output) || !siteCounts[output]){
                 // third, check we aren't aleady running this machine
                 if(!machine[itemName].isRunning){
                     // fourth, check we have ingredients
@@ -375,7 +394,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             }
         }
 
-        // check this isn't a self-start from the burner drills on coal
+        // check if this is a self-start from the burner drills on coal
         if(!fuelDeducted && ingredients[machineName]?.isBurner && ingredients[machineName]?.isDrill && itemName === 'Coal' ){
 
             setOres(prevOres => ({
@@ -412,7 +431,7 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
             const oreOrIngredient = ingredients[output] ? ingredients[output] : ores[output]
             const multiplier = oreOrIngredient.multiplier ? oreOrIngredient.multiplier : 1;
             //console.log(`output: ${JSON.stringify(output)}`)
-            updateOutputCount(output, multiplier)
+            updateSiteCounts(output, multiplier)
 
             // reduce ore patch if its a drill
             if(ingredients[machineName]?.isDrill){
@@ -455,10 +474,26 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                 {">"}
             </button>
         </div>
-        {/* Conditionally render the div if counter > 0 */}
-        {counter[machineName] > 0 && (
-            <>
+        {/* Show the div if counter > 0 */}
+        {/* {counter[machineName] > 0 && ( */}
+            <div style={{ display: counter[machineName] > 0 ? 'block' : 'none' }}>
                 <div style={{marginBottom: "5%"}}>
+                    <div className="machine-inserters">
+                            {unlockables.inserters1.unlocked && machineName !== "Electric Drill" && (
+                                <Inserters 
+                                    ores={ores} 
+                                    setOres={setOres} 
+                                    ingredients={ingredients} 
+                                    setIngredients={setIngredients} 
+                                    fuels={fuels} 
+                                    fuelsArray={fuelsArray} 
+                                    machineName={machineName} 
+                                    itemName={itemName} 
+                                    machineStates={machineStates}
+                                    setMachineStates={setMachineStates}
+                                    onAlert={onAlert} />
+                            )}    
+                    </div>
                     <div style={{marginBottom: "5%"}} className="machine-input-buttons">
                         {machineParent.isFurnace && (
                             <MachineAddButton machineName={machineName} itemName={itemName} addItem={addItem} handleMachineChange={handleMachineChange} onAlert={onAlert} />   
@@ -490,8 +525,8 @@ const MachineOnSite = ({ itemName, output, machineName, ores, ingredients, setOr
                         })}
                     </div>
                 </div>
-            </>
-        )}
+            </div>
+            {/* )} */}
         </>
     )
 }
