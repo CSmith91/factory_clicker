@@ -117,7 +117,7 @@ button:not(:disabled):hover {
   cursor: pointer; 
   padding: 4%;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Adding shadow */
-  background-color: #3a3f4a;
+  background-color: var(--button-grey);
   margin-bottom: 20px;
 }
 
@@ -128,16 +128,16 @@ button:not(:disabled):hover {
 
 .imgdiv:hover {
   filter: brightness(1.2); /* Lighten the image */
-  background-color: #808aa0; /* Lightbox overlay color */
+  background-color: var(--hover-grey); /* Lightbox overlay color */
 }
 
 /* Additional styles for red background */
 .imgdiv.red-background {
-  background-color: #b22222; /* Dark red */
+  background-color: var(--full); /* Dark red */
 }
 
 .imgdiv.red-background:hover {
-  background-color: #ff6347; /* Lighter red (Tomato) */
+  background-color: var(--hover-full); /* Lighter red (Tomato) */
 }
 
 .imgdiv:active {
