@@ -13,7 +13,7 @@ import Debug from './Components/Debug';
 
 function App() {
 
-  const testMode = true;
+  const testMode = false;
   const speedMode = false;
   const [debug, setDebug] = useState(false)
 
