@@ -627,9 +627,6 @@ function App() {
     
   }
 
-  // Track crafting stats
-  const [craftCount, setCraftCount] = useState(0); // purely for unlocking a research item
-
   // repair tools
   const onRepair = (toolName) => {
     const tool = tools[toolName]
@@ -718,9 +715,9 @@ function App() {
     }
   }
 
-  const onCraft = (ingredientName, ingredient) => {
+  const onCraft = (itemName, item) => {
       // Update the hammer's durability, if applicable
-      if(ingredients[ingredientName]){
+      if(ingredients[itemName]){
         setTools(prevTools => {
             const toolName = "Hammer"
             const tool = prevTools[toolName];
@@ -740,7 +737,7 @@ function App() {
       const updatedIngredients = { ...ingredients };
       const updatedNetworks = { ...networks};
 
-      Object.entries(ingredient.cost).forEach(([resourceName, amountRequired]) => {
+      Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
         if (updatedOres[resourceName]) {
             updatedOres[resourceName].count -= amountRequired;
         } else if (updatedIngredients[resourceName]) {
@@ -751,100 +748,81 @@ function App() {
         }
       });
 
-      if(updatedIngredients[ingredientName]){
-        updatedIngredients[ingredientName].tempCount += (updatedIngredients[ingredientName].multiplier || 1);
-        //console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
-      } else if(updatedNetworks[ingredientName]){
-        updatedNetworks[ingredientName].tempCount += 1;
-        //console.log(`${ingredientName}s tempCount is: ${updatedIngredients[ingredientName].tempCount}`)
+      if(updatedIngredients[itemName]){
+        updatedIngredients[itemName].tempCount += (updatedIngredients[itemName].multiplier || 1);
+        //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
+      } else if(updatedNetworks[itemName]){
+        updatedNetworks[itemName].tempCount += 1;
+        //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
       }
       else{
         console.log("Something went wrong onCraft!")
       }
 
 
-      addToCraftQueue(ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks)
+      addToCraftQueue(itemName, item, updatedIngredients, updatedOres, updatedNetworks)
   };
 
-  const craftPayout = (ingredientName, ingredient, updatedOres ) => {
-
+  const craftPayout = (ingredientName, ingredient) => {
     // check if ingredient -- if not, it's a network item
-    if(ingredients[ingredientName]){
-      // check its not 1 to many
-      const multiplier = ingredients[ingredientName].multiplier || 1;
-
-      // Handle the idle count only if this is a machine
-      if (ingredient.isMachine) {
-        setIngredients(prevIngredients => {
-            const currentCount = prevIngredients[ingredientName].count + multiplier;
-            const currentIdleCount = prevIngredients[ingredientName].idleCount;
-            const currentTempCount = prevIngredients[ingredientName].tempCount - multiplier;
-
-            // Ensure that the idle count is not incremented incorrectly
-            return {
-                ...prevIngredients,
-                [ingredientName]: {
-                    ...prevIngredients[ingredientName],
-                    count: currentCount,
-                    tempCount: currentTempCount,
-                    idleCount: Math.min(currentIdleCount + multiplier, currentCount),  // Ensure idleCount is not more than total count
-                },
-            };
-        });
-      } else {
-        // If not a machine, simply update the count
+    if (ingredients[ingredientName]) {
+  
+      setIngredients(prevIngredients => {
+        const currentIngredient = prevIngredients[ingredientName];
+        let updatedIngredient = { ...currentIngredient };
+        
+        // Update count and tempCount
+        updatedIngredient.count += (updatedIngredient.multiplier || 1);
+        updatedIngredient.tempCount -= (updatedIngredient.multiplier || 1);
+    
+        // Handle machines
+        if (ingredient.isMachine) {
+          updatedIngredient.idleCount = Math.min(
+            currentIngredient.idleCount + (updatedIngredient.multiplier || 1),
+            updatedIngredient.count
+          );
+        }
+    
+        // Update ores and ingredients together
+        return {
+          ...prevIngredients,
+          [ingredientName]: updatedIngredient,
+        };
+      });
+  
+      // Early-stage unlock check - #myFirstFurnace       
+      if (ingredients["Stone Furnace"].count > 0 && !unlockables.smelt1.isVisible) {
+        setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          smelt1: {
+            ...prevUnlockables.smelt1,
+            isVisible: true
+          }
+        }));
+        
         setIngredients(prevIngredients => ({
-            ...prevIngredients,
-            [ingredientName]: {
-                ...prevIngredients[ingredientName],
-                count: prevIngredients[ingredientName].count + multiplier,
-                tempCount: prevIngredients[ingredientName].tempCount - multiplier,
-            }
+          ...prevIngredients,
+          Brick: {
+            ...prevIngredients.Brick,
+            unlocked: true
+          }
         }));
       }
-      setOres(updatedOres);
-
-      //console.log(`${ingredientName} tempCount is: ${ingredients[ingredientName].tempCount}`)
-
-      // Update craftCount and unlock smelt1 if it’s the first successful craft
-      setCraftCount(prevCount => {
-      const newCount = prevCount + 1;
-
-      if (newCount === 1) { // Check if this is the first successful craft
-          setUnlockables(prevUnlockables => ({
-          ...prevUnlockables,
-          smelt1: { 
-              ...prevUnlockables.smelt1,
-              isVisible: true
-          }
-          }));
-
-          setIngredients(prevIngredients => ({
-          ...prevIngredients,
-          "Brick": {
-              ...prevIngredients["Brick"],
-              unlocked: true 
-          }
-          }));
-      }
-
-      return newCount;
-      });
-    }
-    // craft a network item instead
-    else{
-      // Handle network items
+    } 
+    // Handle network items
+    else {
       setNetworks(prevNetworks => ({
         ...prevNetworks,
         [ingredientName]: {
-            ...prevNetworks[ingredientName],
-            count: prevNetworks[ingredientName].count + 1,
-            idleCount: prevNetworks[ingredientName].idleCount + 1,
-            tempCount: prevNetworks[ingredientName].tempCount - 1,
+          ...prevNetworks[ingredientName],
+          count: prevNetworks[ingredientName].count + 1,
+          idleCount: prevNetworks[ingredientName].idleCount + 1,
+          tempCount: prevNetworks[ingredientName].tempCount - 1,
         }
       }));
     }
-  }
+  };
+  
 
 
   // queue logic
@@ -856,10 +834,7 @@ function App() {
       // Create a new item object with the parameters
       const newItem = {
       ingredientName,
-      ingredient,
-      updatedIngredients,
-      updatedOres,
-      updatedNetworks,
+      ingredient
       };
 
       // Update the craftQueue state with the new item
@@ -873,10 +848,10 @@ function App() {
         setCurrentCrafting(nextItem); // Set the current item as crafting
         setIsAnimating(true); // Start the animation
   
-        const { ingredientName, ingredient, updatedOres } = nextItem;
+        const { ingredientName, ingredient } = nextItem;
   
         setTimeout(() => {
-          craftPayout(ingredientName, ingredient, updatedOres ); // Process crafting
+          craftPayout(ingredientName, ingredient ); // Process crafting
           setIsAnimating(false); // End the animation
           setCurrentCrafting(null); // Reset current crafting item
   
