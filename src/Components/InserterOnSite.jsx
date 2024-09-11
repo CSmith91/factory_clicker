@@ -191,12 +191,16 @@ const InserterOnSite = ({
                     if(machine.count > 0){
                         const item = ores[itemName] ? ores[itemName] : ingredients[itemName];
                         // check if this machine has less than input
-                        if(machine.inputMax - machine.currentInput > 0 && item.count > 0){
+                        let notDrill = true;
+                        if(machineName === "Burner Drill" || machineName === "Electric Drill"){
+                            notDrill = false;
+                        }
+                        if(notDrill && machine.inputMax - machine.currentInput > 0 && item.count > 0){
                             setAnimation('active');
                             animationSet = true; 
                             turnOnInserter(inserterName, machineName, itemName, 'main');
                         }
-                        else if(machine.inputMax - machine.currentInput > 0 && item.count == 0){
+                        else if(notDrill && machine.inputMax - machine.currentInput > 0 && item.count == 0){
                             setAnimation('inputReq');
                             animationSet = true; 
                         }
