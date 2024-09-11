@@ -41,6 +41,12 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
     return acc;
   }, []);
 
+  //  need to add this, but do it when it's more relevant
+  const handleCancel = (item, index) => {
+    // console.log(`${item.ingredientName} has been clicked! I am number ${index+1} in the queue.`)
+    // cancelCraft(item)
+  }
+
   return (
     <div className='craftSection'>
       <div className='craftQueue'>
@@ -48,7 +54,8 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
           <div 
             key={index} 
             className={`craftItem craftItem-${index} ${item.ingredientName === currentCrafting?.ingredientName && index === 0 && isAnimating ? 'animating' : ''}`}
-            style={{ '--craft-time': `${item.ingredient.craftTime}s` }} 
+            style={{ '--craft-time': `${item.ingredient.craftTime}s`, cursor:"pointer"}} 
+            onClick={() => handleCancel(item, index)}
           >
             <img
               src={images[item.ingredientName]} // Get the image corresponding to the ingredientName

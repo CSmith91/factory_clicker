@@ -753,6 +753,7 @@ function App() {
     } else {
       // If enough resources (directly or by crafting raw materials), craft the item
       onCraft(ingredientName, item);
+      return true; // Success -- used for the right click function
     }
   }
 

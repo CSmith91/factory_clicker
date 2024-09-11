@@ -43,10 +43,26 @@ const Inventory = ({
                             key={`div-${ingredientName}`} 
                             className={`ingredient-item ${isCraftable ? 'craftable' : 'uncraftable'}`}
                             onClick={() => isCraftable && checkCraft(ingredientName)}
+                            // right click for crafting x5
+                            onContextMenu={(e) => {
+                                e.preventDefault(); // Prevent the default right-click menu
+                          
+                                // Attempt to craft 5 times
+                                if (isCraftable) {
+                                  for (let i = 0; i < 5; i++) {
+                                    const success = checkCraft(ingredientName);
+                                    
+                                    // If checkCraft fails (i.e. not enough resources), break out of the loop
+                                    if (!success) {
+                                      break;
+                                    }
+                                  }
+                                }
+                            }}
                         >
                             <img src={`${images[ingredientName]}`} alt={ingredientName} className="ingredient-image" />
                             <div className="ingredient-count">
-                                {ingredientData.count} / {getStorage(ingredientName)} {tempData != 0 && `(${tempData})`} 
+                                {ingredientData.count} / {getStorage(ingredientName)} {tempData !== 0 && `(${tempData})`} 
                                 <br />
                                 {ingredientData.idleCount > 0 && (`Available: ${ingredientData.idleCount}`)}
                                 {ingredientData.idleCount === 0 && ingredientData.count > 0 && (`All in use`)}
@@ -82,7 +98,7 @@ const Inventory = ({
                         >
                             <img src={`${images[oreName]}`} alt={oreName} className="ingredient-image" />
                             <div className="ingredient-count">
-                                {oreData.count} / {getStorage(oreName)} {tempData != 0 && `(${tempData})`}
+                                {oreData.count} / {getStorage(oreName)} {tempData !== 0 && `(${tempData})`}
                             </div>
                         </div>
                     )
