@@ -43,7 +43,10 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
             />
             {/* Show the count if it's greater than 1 */}
             {item.queue > 1 && (
-              <span className="item-count">{item.queue}</span>
+              <span className="item-count">{item.queue*item.multiplier}</span>
+            )}
+            {item.queue === 1 && item.multiplier > 1 && (
+              <span className="item-count">{item.multiplier}</span>
             )}
           </div>
         ))}

@@ -747,8 +747,14 @@ function App() {
         }
       });
 
+      let multiplier = 1;
+
       if(updatedIngredients[itemName]){
-        updatedIngredients[itemName].tempCount += (updatedIngredients[itemName].multiplier || 1);
+        multiplier = updatedIngredients[itemName].multiplier || 1;
+      }
+
+      if(updatedIngredients[itemName]){
+        updatedIngredients[itemName].tempCount += multiplier;
         //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
       } else if(updatedNetworks[itemName]){
         updatedNetworks[itemName].tempCount += 1;
@@ -759,7 +765,7 @@ function App() {
       }
 
 
-      addToCraftQueue(itemName, item, updatedIngredients, updatedOres, updatedNetworks)
+      addToCraftQueue(itemName, item, multiplier)
   };
 
   const craftPayout = (ingredientName, ingredient) => {
@@ -829,35 +835,8 @@ function App() {
   const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
   const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
   
-  const addToCraftQueue = (ingredientName, ingredient) => {
-    // Create a new item object with the parameters
-    // let newItem = {
-    //   ingredientName,
-    //   ingredient,
-    //   queue: 0,
-    // };
-      
+  const addToCraftQueue = (ingredientName, ingredient, multiplier) => {      
     setCraftQueue(prevQueue => {
-      // // check if the last item in the queue is the same as the new item
-      // if (prevQueue.length > 0 && prevQueue[prevQueue.length - 1].ingredientName === ingredientName) {
-      //   console.log(`mildred! Queue for this item is: ${prevQueue[prevQueue.length - 1].queue}`)
-      //   newItem = {
-      //     ingredientName,
-      //     ingredient,
-      //     queue: prevQueue[prevQueue.length - 1].queue +1,
-      //   };
-      // }
-      // else{
-      //   console.log(`It's new!`)
-      //   newItem = {
-      //     ingredientName,
-      //     ingredient,
-      //     queue: 1,
-      //   };
-      // }
-
-      // return [...prevQueue, newItem]
-
       // Check if the last item in the queue is the same as the new one
       const lastItem = prevQueue[prevQueue.length - 1];
 
@@ -874,6 +853,7 @@ function App() {
         const newItem = {
           ingredientName,
           ingredient,
+          multiplier,
           queue: 1 // Start with queue count of 1
         };
         return [...prevQueue, newItem];
@@ -897,26 +877,20 @@ function App() {
         setIsAnimating(false); // End the animation
         setCurrentCrafting(null); // Reset current crafting item
 
-        //   // Remove the first item from the queue
-        //   setCraftQueue(prevQueue => prevQueue.slice(1));
-        // }, ingredient.craftTime * 1000);
-
         // Decrease the count of the first item or remove it if count becomes 1
         setCraftQueue(prevQueue => {
-          const updatedQueue = prevQueue.map((item, index) => {
-            if (index === 0 && item.queue > 1) {
-              // Decrease the queue count
-              return { ...item, queue: item.queue - 1 };
-            }
-            return item;
-          });
-
-          // Remove the first item if its count is now 1
-          if (updatedQueue[0].queue === 1) {
-            return updatedQueue.slice(1);
+          if (prevQueue[0].queue > 1) {
+            // If there are more than 1 in the queue, reduce the count
+            return prevQueue.map((item, index) => {
+              if (index === 0) {
+                return { ...item, queue: item.queue - 1 };
+              }
+              return item;
+            });
+          } else {
+            // If there's only 1 left, remove the item after crafting completes
+            return prevQueue.slice(1);
           }
-
-          return updatedQueue;
         });
       }, ingredient.craftTime * 1000);
     }
