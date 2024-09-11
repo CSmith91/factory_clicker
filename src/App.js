@@ -691,8 +691,17 @@ function App() {
       }
     }
 
+    // Helper function to calculate the amount of raw material required, considering the multiplier
+    const calculateRequiredRawMaterial = (resourceName, requiredAmount) => {
+      const resource = ingredients[resourceName];
+      if (resource?.multiplier) {
+        return Math.ceil(requiredAmount / resource.multiplier); // Divide by multiplier to get the correct number of raw materials
+      }
+      return requiredAmount;
+    };
+
     // Helper function to check if crafting is possible, including crafting raw materials
-    const canCraftWithRawMaterials = (item, missingResourceName) => {
+    const canCraftWithRawMaterials = (item, missingResourceName, requiredAmount) => {
       const missingResource = ingredients[missingResourceName];
 
       // If missing resource is not craftable, return false
@@ -700,26 +709,36 @@ function App() {
         return false;
       }
 
+      const adjustedAmount = calculateRequiredRawMaterial(missingResourceName, requiredAmount);
+
       // Check if we have enough raw materials to craft the missing resource
       return Object.entries(missingResource.cost).every(
         ([rawResourceName, amountRequired]) => {
           const rawResource = ores[rawResourceName] || ingredients[rawResourceName];
-          return rawResource?.count >= amountRequired;
+          const totalRequired = amountRequired * adjustedAmount; // Adjust by the required amount
+
+          return rawResource?.count >= totalRequired;
         }
       );
     };
 
-    // Check if there are enough resources to craft directly
+    // Check if there are enough resources to craft directly or if we need to craft raw materials
     const hasEnoughResources = Object.entries(item.cost).every(
       ([resourceName, amountRequired]) => {
         const resource = ores[resourceName] || ingredients[resourceName];
 
         if (!resource || (resource.count + resource.tempCount) < amountRequired) {
           // If not enough resources, check if we can craft the missing resource
-          if (canCraftWithRawMaterials(item, resourceName)) {
-            // Queue crafting for the missing resource (e.g., crafting wire from copper plate)
-            onCraft(resourceName, ingredients[resourceName]);
-            return true; // Assume crafting the resource will be successful
+          if (canCraftWithRawMaterials(item, resourceName, amountRequired)) {
+            const adjustedAmount = calculateRequiredRawMaterial(resourceName, amountRequired);
+
+            // Queue crafting for the exact amount of missing resource
+            for (let i = 0; i < adjustedAmount; i++) {
+              onCraft(resourceName, ingredients[resourceName]);
+            }
+
+            // Continue checking other resources
+            return true;
           } else {
             return false; // Can't craft the resource or its raw materials
           }
