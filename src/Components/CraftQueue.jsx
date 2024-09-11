@@ -41,6 +41,10 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
               alt={item.ingredientName}
               style={{ width: '30px', height: '30px', marginBottom: '-5px' }} // Adjust size as needed
             />
+            {/* Show the count if it's greater than 1 */}
+            {item.queue > 1 && (
+              <span className="item-count">{item.queue}</span>
+            )}
           </div>
         ))}
       </div>

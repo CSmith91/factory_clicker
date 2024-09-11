@@ -241,6 +241,16 @@ button:not(:disabled):hover {
   animation: none; /* Reset animation */
 }
 
+.item-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 0 5px;
+  font-size: 12px;
+}
 
 /* Animation for MachinesOnSite */
 .machineOnSite {

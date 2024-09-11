@@ -13,7 +13,7 @@ import Debug from './Components/Debug';
 
 function App() {
 
-  const testMode = false;
+  const testMode = true;
   const speedMode = false;
   const [debug, setDebug] = useState(false)
 
@@ -52,7 +52,7 @@ function App() {
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
     "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 },
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 },
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 2.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
   })
 
@@ -293,15 +293,14 @@ function App() {
 
   // Tools
   const [tools, setTools] = useState ({
-    Axe: { durability: 100, corrodeRate: 0.25, cost: {"Stone": 2}, unlocked: true},
-    Pickaxe: { durability: 100, corrodeRate: 0.5, cost: {"Wood": 5}, unlocked: true},
+    Axe: { durability: 100, corrodeRate: 0.5, cost: {"Stone": 2}, unlocked: true},
+    Pickaxe: { durability: 100, corrodeRate: 1, cost: {"Wood": 5}, unlocked: true},
     Hammer: { durability: 100, corrodeRate: 1.5, cost: {"Wood": 5, "Stone": 5}, unlocked: testMode}
   })
 
   // Messages, sound & VFX
   const [messages, setMessages] = useState([])
   const [playAudio, setPlayAudio] = useState(false); // State to trigger audio playback
-  //const [isAnimating, setIsAnimating] = useState(false);
 
   // Function to add alerts for the player
   const onAlert = (message) => {
@@ -711,7 +710,7 @@ function App() {
       onAlert(`Not enough resources to craft ${ingredientName}`);
     }
     else{
-        onCraft(ingredientName, item)
+      onCraft(ingredientName, item)
     }
   }
 
@@ -791,7 +790,7 @@ function App() {
       });
   
       // Early-stage unlock check - #myFirstFurnace       
-      if (ingredients["Stone Furnace"].count == 0 && !unlockables.smelt1.isVisible) {
+      if (ingredients["Stone Furnace"].count === 0 && !unlockables.smelt1.isVisible) {
         setUnlockables(prevUnlockables => ({
           ...prevUnlockables,
           smelt1: {
@@ -830,36 +829,98 @@ function App() {
   const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
   const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
   
-  const addToCraftQueue = (ingredientName, ingredient, updatedIngredients, updatedOres, updatedNetworks) => {
-      // Create a new item object with the parameters
-      const newItem = {
-      ingredientName,
-      ingredient
-      };
+  const addToCraftQueue = (ingredientName, ingredient) => {
+    // Create a new item object with the parameters
+    // let newItem = {
+    //   ingredientName,
+    //   ingredient,
+    //   queue: 0,
+    // };
+      
+    setCraftQueue(prevQueue => {
+      // // check if the last item in the queue is the same as the new item
+      // if (prevQueue.length > 0 && prevQueue[prevQueue.length - 1].ingredientName === ingredientName) {
+      //   console.log(`mildred! Queue for this item is: ${prevQueue[prevQueue.length - 1].queue}`)
+      //   newItem = {
+      //     ingredientName,
+      //     ingredient,
+      //     queue: prevQueue[prevQueue.length - 1].queue +1,
+      //   };
+      // }
+      // else{
+      //   console.log(`It's new!`)
+      //   newItem = {
+      //     ingredientName,
+      //     ingredient,
+      //     queue: 1,
+      //   };
+      // }
 
-      // Update the craftQueue state with the new item
-      setCraftQueue(prevQueue => [...prevQueue, newItem]);
+      // return [...prevQueue, newItem]
+
+      // Check if the last item in the queue is the same as the new one
+      const lastItem = prevQueue[prevQueue.length - 1];
+
+      // If the last item is the same, increment the count
+      if (lastItem && lastItem.ingredientName === ingredientName) {
+        return prevQueue.map((item, index) => {
+          if (index === prevQueue.length - 1) {
+            return { ...item, queue: item.queue + 1 };
+          }
+          return item;
+        });
+      } else {
+        // Otherwise, add the new item with a count of 1
+        const newItem = {
+          ingredientName,
+          ingredient,
+          queue: 1 // Start with queue count of 1
+        };
+        return [...prevQueue, newItem];
+      }
+
+    
+    });
   };
 
   useEffect(() => {
-      // If there's something in the queue and nothing is currently crafting
-      if (craftQueue.length > 0 && !currentCrafting) {
-        const [nextItem] = craftQueue; // Get the first item in the queue
-        setCurrentCrafting(nextItem); // Set the current item as crafting
-        setIsAnimating(true); // Start the animation
-  
-        const { ingredientName, ingredient } = nextItem;
-  
-        setTimeout(() => {
-          craftPayout(ingredientName, ingredient ); // Process crafting
-          setIsAnimating(false); // End the animation
-          setCurrentCrafting(null); // Reset current crafting item
-  
-          // Remove the first item from the queue
-          setCraftQueue(prevQueue => prevQueue.slice(1));
-        }, ingredient.craftTime * 1000);
-      }
-    }, [craftQueue, currentCrafting]);
+    // If there's something in the queue and nothing is currently crafting
+    if (craftQueue.length > 0 && !currentCrafting) {
+      const [nextItem] = craftQueue; // Get the first item in the queue
+      setCurrentCrafting(nextItem); // Set the current item as crafting
+      setIsAnimating(true); // Start the animation
+
+      const { ingredientName, ingredient } = nextItem;
+
+      setTimeout(() => {
+        craftPayout(ingredientName, ingredient ); // Process crafting
+        setIsAnimating(false); // End the animation
+        setCurrentCrafting(null); // Reset current crafting item
+
+        //   // Remove the first item from the queue
+        //   setCraftQueue(prevQueue => prevQueue.slice(1));
+        // }, ingredient.craftTime * 1000);
+
+        // Decrease the count of the first item or remove it if count becomes 1
+        setCraftQueue(prevQueue => {
+          const updatedQueue = prevQueue.map((item, index) => {
+            if (index === 0 && item.queue > 1) {
+              // Decrease the queue count
+              return { ...item, queue: item.queue - 1 };
+            }
+            return item;
+          });
+
+          // Remove the first item if its count is now 1
+          if (updatedQueue[0].queue === 1) {
+            return updatedQueue.slice(1);
+          }
+
+          return updatedQueue;
+        });
+      }, ingredient.craftTime * 1000);
+    }
+  }, [craftQueue, currentCrafting]);
     
 
   return (
