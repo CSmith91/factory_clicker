@@ -18,7 +18,7 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
   useEffect(() => {
     // Check if currentCrafting has changed
     if (currentCrafting !== previousCraftingRef.current) {
-      const index = craftQueue.findIndex(item => item === currentCrafting);
+      const index = craftQueue.findIndex(item => item.ingredientName === currentCrafting?.ingredientName);
       if (index !== -1) {
         toggleAnimation(index);
       }
@@ -27,13 +27,24 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
     }
   }, [currentCrafting, isAnimating, craftQueue]);
 
+  // Group items by ingredientName to display a count for the same item
+  const groupedQueue = craftQueue.reduce((acc, item) => {
+    const existingItem = acc.find(i => i.ingredientName === item.ingredientName);
+    if (existingItem) {
+      existingItem.queue += item.queue; // Increase the count
+    } else {
+      acc.push({ ...item });
+    }
+    return acc;
+  }, []);
+
   return (
     <div className='craftSection'>
       <div className='craftQueue'>
-        {craftQueue.map((item, index) => (
+        {groupedQueue.map((item, index) => (
           <div 
             key={index} 
-            className={`craftItem craftItem-${index} ${item === currentCrafting && isAnimating ? 'animating' : ''}`}
+            className={`craftItem craftItem-${index} ${item.ingredientName === currentCrafting?.ingredientName && isAnimating ? 'animating' : ''}`}
             style={{ '--craft-time': `${item.ingredient.craftTime}s` }} 
           >
             <img
@@ -43,7 +54,7 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
             />
             {/* Show the count if it's greater than 1 */}
             {item.queue > 1 && (
-              <span className="item-count">{item.queue*item.multiplier}</span>
+              <span className="item-count">{item.queue * item.multiplier}</span>
             )}
             {item.queue === 1 && item.multiplier > 1 && (
               <span className="item-count">{item.multiplier}</span>
