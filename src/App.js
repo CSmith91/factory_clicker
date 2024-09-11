@@ -691,26 +691,49 @@ function App() {
       }
     }
 
-    // Check if there are enough resources to craft
+    // Helper function to check if crafting is possible, including crafting raw materials
+    const canCraftWithRawMaterials = (item, missingResourceName) => {
+      const missingResource = ingredients[missingResourceName];
+
+      // If missing resource is not craftable, return false
+      if (!missingResource?.isCraftable) {
+        return false;
+      }
+
+      // Check if we have enough raw materials to craft the missing resource
+      return Object.entries(missingResource.cost).every(
+        ([rawResourceName, amountRequired]) => {
+          const rawResource = ores[rawResourceName] || ingredients[rawResourceName];
+          return rawResource?.count >= amountRequired;
+        }
+      );
+    };
+
+    // Check if there are enough resources to craft directly
     const hasEnoughResources = Object.entries(item.cost).every(
       ([resourceName, amountRequired]) => {
         const resource = ores[resourceName] || ingredients[resourceName];
 
-        // If the resource has an idleCount, check that it's also sufficient
-        if (resource?.idleCount !== undefined) {
-          return resource.idleCount >= amountRequired;
+        if (!resource || (resource.count + resource.tempCount) < amountRequired) {
+          // If not enough resources, check if we can craft the missing resource
+          if (canCraftWithRawMaterials(item, resourceName)) {
+            // Queue crafting for the missing resource (e.g., crafting wire from copper plate)
+            onCraft(resourceName, ingredients[resourceName]);
+            return true; // Assume crafting the resource will be successful
+          } else {
+            return false; // Can't craft the resource or its raw materials
+          }
         }
 
-        // Otherwise, just check the regular count
-        return resource?.count >= amountRequired;
+        return true;
       }
     );
 
     if (!hasEnoughResources) {
       onAlert(`Not enough resources to craft ${ingredientName}`);
-    }
-    else{
-      onCraft(ingredientName, item)
+    } else {
+      // If enough resources (directly or by crafting raw materials), craft the item
+      onCraft(ingredientName, item);
     }
   }
 
