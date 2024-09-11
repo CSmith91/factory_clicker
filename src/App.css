@@ -215,20 +215,20 @@ button:not(:disabled):hover {
   position: relative;
   overflow: hidden;
   z-index: 1;
-  background-color: #3a3f4a;
-  background: linear-gradient(to bottom, orangered 50%, #3a3f4a 50%);
+  background-color: orangered;
+  background: linear-gradient(to bottom, #3a3f4a 50%, orangered 50%);
   background-size: 100% 200%; /* Make background twice as tall */
-  background-position: top; /* Start with orangered fully covering */
+  background-position: bottom; /* Start with orangered fully covering */
   transition: background-position var(--craft-time) linear;
   animation: none; /* Ensure no animation is applied initially */
 }
 
 @keyframes dropBackground {
   from {
-    background-position: top;
+    background-position: bottom;
   }
   to {
-    background-position: bottom;
+    background-position: top;
   }
 }
 

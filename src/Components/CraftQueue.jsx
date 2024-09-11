@@ -47,7 +47,7 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
         {groupedQueue.map((item, index) => (
           <div 
             key={index} 
-            className={`craftItem craftItem-${index} ${item.ingredientName === currentCrafting?.ingredientName && isAnimating ? 'animating' : ''}`}
+            className={`craftItem craftItem-${index} ${item.ingredientName === currentCrafting?.ingredientName && index === 0 && isAnimating ? 'animating' : ''}`}
             style={{ '--craft-time': `${item.ingredient.craftTime}s` }} 
           >
             <img
