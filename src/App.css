@@ -243,13 +243,19 @@ button:not(:disabled):hover {
 
 .item-count {
   position: absolute;
-  top: -5px;
-  right: -5px;
-  background-color: red;
+  bottom: -2px;
+  right: -3px;
   color: white;
   border-radius: 50%;
   padding: 0 5px;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  /* Add black outline */
+  text-shadow: 
+  -1px -1px 0 #000,  
+  1px -1px 0 #000,
+  -1px 1px 0 #000,
+  1px 1px 0 #000;
 }
 
 /* Animation for MachinesOnSite */

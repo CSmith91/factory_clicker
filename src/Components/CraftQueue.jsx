@@ -27,14 +27,17 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
     }
   }, [currentCrafting, isAnimating, craftQueue]);
 
-  // Group items by ingredientName to display a count for the same item
+  // Group consecutive identical items only
   const groupedQueue = craftQueue.reduce((acc, item) => {
-    const existingItem = acc.find(i => i.ingredientName === item.ingredientName);
-    if (existingItem) {
-      existingItem.queue += item.queue; // Increase the count
+    const lastGroup = acc[acc.length - 1];
+
+    // Check if the last group exists and has the same ingredientName
+    if (lastGroup && lastGroup.ingredientName === item.ingredientName) {
+      lastGroup.queue += item.queue; // Increase the count of the last group
     } else {
-      acc.push({ ...item });
+      acc.push({ ...item }); // Create a new group
     }
+
     return acc;
   }, []);
 
