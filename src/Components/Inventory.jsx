@@ -10,7 +10,8 @@ const Inventory = ({
     checkCraft,
     craftQueue,
     currentCrafting,
-    isAnimating
+    isAnimating,
+    cancelCraft
     }) => {
 
     // Determine which menu is visible to the player
@@ -131,11 +132,12 @@ const Inventory = ({
                 </div>
         
                 <div className='craftList'>
-                    {craftQueue.length > 0 && (
+                    {craftQueue && craftQueue.length > 0 && (
                         <CraftQueue 
                             craftQueue={craftQueue}
                             currentCrafting={currentCrafting}
-                            isAnimating={isAnimating} />
+                            isAnimating={isAnimating}
+                            cancelCraft={cancelCraft} />
                     )}
                 </div>
         

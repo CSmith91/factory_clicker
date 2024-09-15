@@ -2,7 +2,7 @@ import React, { useEffect, useRef} from 'react';
 import images from './Images/images';
 
 
-const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
+const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft }) => {
 
   const previousCraftingRef = useRef(null);
 
@@ -41,10 +41,8 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
     return acc;
   }, []);
 
-  //  need to add this, but do it when it's more relevant
   const handleCancel = (item, index) => {
-    // console.log(`${item.ingredientName} has been clicked! I am number ${index+1} in the queue.`)
-    // cancelCraft(item)
+    cancelCraft(item, item.queue, index)
   }
 
   return (
@@ -53,7 +51,7 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating }) => {
         {groupedQueue.map((item, index) => (
           <div 
             key={index} 
-            className={`craftItem craftItem-${index} ${item.ingredientName === currentCrafting?.ingredientName && index === 0 && isAnimating ? 'animating' : ''}`}
+            className={`craftItem craftItem-${index} craftItem-${item.child} ${item.ingredientName === currentCrafting?.ingredientName && index === 0 && isAnimating ? 'animating' : ''}`}
             style={{ '--craft-time': `${item.ingredient.craftTime}s`, cursor:"pointer"}} 
             onClick={() => handleCancel(item, index)}
           >

@@ -51,15 +51,15 @@ function App() {
     "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 },
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 1.5 }, // CHANGE BACK TO 0.5 craftTime
     "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 2.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
   })
 
   const [networks, setNetworks] = useState({
-    "Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, craftTime: 1, isNetwork: true, isBelt: true, idleCount: 0},
-    "Fast Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, craftTime: 2, isNetwork: true, isBelt: true, idleCount: 0},
-    "Express Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, craftTime: 3, isNetwork: true, isBelt: true, idleCount: 0},
+    "Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Transport Belt": 50}, craftTime: 10, isNetwork: true, isBelt: true, idleCount: 0},
+    "Fast Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Fast Transport Belt": 50}, craftTime: 20, isNetwork: true, isBelt: true, idleCount: 0},
+    "Express Belt Lane": { count: 0, tempCount: 0, max: 4, unlocked: testMode, cost: {"Express Transport Belt": 50}, craftTime: 30, isNetwork: true, isBelt: true, idleCount: 0},
   })
 
   const basicBus = {
@@ -734,7 +734,7 @@ function App() {
 
             // Queue crafting for the exact amount of missing resource
             for (let i = 0; i < adjustedAmount; i++) {
-              onCraft(resourceName, ingredients[resourceName]);
+              onCraft(resourceName, ingredients[resourceName], 'child');
             }
 
             // Continue checking other resources
@@ -757,58 +757,58 @@ function App() {
     }
   }
 
-  const onCraft = (itemName, item) => {
-      // Update the hammer's durability, if applicable
-      if(ingredients[itemName]){
-        setTools(prevTools => {
-            const toolName = "Hammer"
-            const tool = prevTools[toolName];
-            const updatedDurability = tool.durability - tool.corrodeRate;
-            return {
-                ...prevTools,
-                [toolName]: {
-                    ...tool,
-                    durability: Math.max(0, updatedDurability)
-                }
-            };
-        });
-      }
-
-      // Deduct the costs from the resources
-      const updatedOres = { ...ores };
-      const updatedIngredients = { ...ingredients };
-      const updatedNetworks = { ...networks};
-
-      Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
-        if (updatedOres[resourceName]) {
-            updatedOres[resourceName].count -= amountRequired;
-        } else if (updatedIngredients[resourceName]) {
-            updatedIngredients[resourceName].count -= amountRequired;
-            if(updatedIngredients[resourceName].idleCount){
-              updatedIngredients[resourceName].idleCount -= amountRequired
-            }
-        }
+  const onCraft = (itemName, item, child) => {
+    // Update the hammer's durability, if applicable
+    if(ingredients[itemName]){
+      setTools(prevTools => {
+          const toolName = "Hammer"
+          const tool = prevTools[toolName];
+          const updatedDurability = tool.durability - tool.corrodeRate;
+          return {
+              ...prevTools,
+              [toolName]: {
+                  ...tool,
+                  durability: Math.max(0, updatedDurability)
+              }
+          };
       });
+    }
 
-      let multiplier = 1;
+    // Deduct the costs from the resources
+    const updatedOres = { ...ores };
+    const updatedIngredients = { ...ingredients };
+    const updatedNetworks = { ...networks};
 
-      if(updatedIngredients[itemName]){
-        multiplier = updatedIngredients[itemName].multiplier || 1;
+    Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
+      if (updatedOres[resourceName]) {
+          updatedOres[resourceName].count -= amountRequired;
+      } else if (updatedIngredients[resourceName]) {
+          updatedIngredients[resourceName].count -= amountRequired;
+          if(updatedIngredients[resourceName].idleCount){
+            updatedIngredients[resourceName].idleCount -= amountRequired
+          }
       }
+    });
 
-      if(updatedIngredients[itemName]){
-        updatedIngredients[itemName].tempCount += multiplier;
-        //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
-      } else if(updatedNetworks[itemName]){
-        updatedNetworks[itemName].tempCount += 1;
-        //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
-      }
-      else{
-        console.log("Something went wrong onCraft!")
-      }
+    let multiplier = 1;
 
+    if(updatedIngredients[itemName]){
+      multiplier = updatedIngredients[itemName].multiplier || 1;
+    }
 
-      addToCraftQueue(itemName, item, multiplier)
+    if(updatedIngredients[itemName]){
+      updatedIngredients[itemName].tempCount += multiplier;
+      //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
+    } else if(updatedNetworks[itemName]){
+      updatedNetworks[itemName].tempCount += 1;
+      //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
+    }
+    else{
+      console.log("Something went wrong onCraft!")
+    }
+
+    // note: child does nothing in this function, other than pass to addToCraftQueue to denote which items are being crafted as intermediaries
+    addToCraftQueue(itemName, item, multiplier, child)
   };
 
   const craftPayout = (ingredientName, ingredient) => {
@@ -870,15 +870,16 @@ function App() {
       }));
     }
   };
-  
 
+  // ###### QUEUE LOGIC
+  // ###### QUEUE LOGIC
+  // ###### QUEUE LOGIC
 
-  // queue logic
   const [craftQueue, setCraftQueue] = useState([]); // for delays and queueing
   const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
   const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
   
-  const addToCraftQueue = (ingredientName, ingredient, multiplier) => {      
+  const addToCraftQueue = (ingredientName, ingredient, multiplier, child) => {      
     setCraftQueue(prevQueue => {
       // Check if the last item in the queue is the same as the new one
       const lastItem = prevQueue[prevQueue.length - 1];
@@ -897,6 +898,7 @@ function App() {
           ingredientName,
           ingredient,
           multiplier,
+          child,
           queue: 1 // Start with queue count of 1
         };
         return [...prevQueue, newItem];
@@ -907,8 +909,12 @@ function App() {
   };
 
   useEffect(() => {
+    // this catches the event when a queue is manually cancelled by the user, so we need to reinitialise
+    if(!craftQueue){
+      setCraftQueue([])
+    }
     // If there's something in the queue and nothing is currently crafting
-    if (craftQueue.length > 0 && !currentCrafting) {
+    else if (craftQueue.length > 0 && !currentCrafting) {
       const [nextItem] = craftQueue; // Get the first item in the queue
       setCurrentCrafting(nextItem); // Set the current item as crafting
       setIsAnimating(true); // Start the animation
@@ -916,14 +922,18 @@ function App() {
       const { ingredientName, ingredient } = nextItem;
 
       setTimeout(() => {
-        craftPayout(ingredientName, ingredient ); // Process crafting
-        setIsAnimating(false); // End the animation
-        setCurrentCrafting(null); // Reset current crafting item
-
         // Decrease the count of the first item or remove it if count becomes 1
         setCraftQueue(prevQueue => {
-          if (prevQueue[0].queue > 1) {
+          if(!prevQueue[0]){
+            // the only available item in the queue was cancelled - setCurrentlyCrafting to null and remove the animation
+            setIsAnimating(false);
+            setCurrentCrafting(null);
+          }
+          else if (prevQueue[0].queue > 1) {
             // If there are more than 1 in the queue, reduce the count
+            craftPayout(ingredientName, ingredient ); // Process crafting
+            setIsAnimating(false); // End the animation
+            setCurrentCrafting(null); // Reset current crafting item
             return prevQueue.map((item, index) => {
               if (index === 0) {
                 return { ...item, queue: item.queue - 1 };
@@ -932,13 +942,71 @@ function App() {
             });
           } else {
             // If there's only 1 left, remove the item after crafting completes
+            craftPayout(ingredientName, ingredient ); // Process crafting
+            setIsAnimating(false); // End the animation
+            setCurrentCrafting(null); // Reset current crafting item
             return prevQueue.slice(1);
           }
         });
       }, ingredient.craftTime * 1000);
     }
   }, [craftQueue, currentCrafting]);
-    
+
+  const cancelCraft = (ingredient, itemStack, queueIndex) => {
+
+    // refund the cost
+    refundCraft(ingredient)
+
+    setCraftQueue((prevQueue) => {
+      console.log(`Queue: ${JSON.stringify(prevQueue)}`)
+      return prevQueue.map((item, index) => {
+        // If the queue count is more than 1, decrease the count
+        if (itemStack > 1 && item.ingredientName === ingredient.ingredientName && queueIndex === index) {
+          console.log(`Queue count is > 1. item.ingredientName is ${item.ingredientName} and index is: ${queueIndex}`)
+          return { ...item, queue: item.queue - 1 };
+        } 
+        // If the queue count is 1, remove the item from the queue
+        else if(item.ingredientName === ingredient.ingredientName && queueIndex === index){
+          console.log(`Queue count is 1. item.ingredientName is ${item.ingredientName} and index is: ${queueIndex}`)
+          return null;
+        }
+        // for all other items, return them as they are:
+        return item;
+      }).filter(Boolean); // Remove null entries (items removed from queue)
+    });
+  }
+
+  const refundCraft = (item) => {
+    const ingredientName = item.ingredientName
+    const cancelledItem = ingredients[ingredientName];
+    const multiplier = cancelledItem.multiplier || 1;
+    if (!cancelledItem) return; // If the item is not found, return early
+
+    // Create copies of ores and ingredients to modify them
+    const updatedOres = { ...ores };
+    const updatedIngredients = { ...ingredients };
+
+    // Refund the cost of the cancelled item
+    Object.entries(cancelledItem.cost).forEach(([resourceName, amountRequired]) => {
+      // If it's an ore, refund the ore count
+      if (updatedOres[resourceName]) {
+        updatedOres[resourceName].count += amountRequired;
+      }
+      // If it's an ingredient, refund the ingredient count
+      else if (updatedIngredients[resourceName]) {
+        updatedIngredients[resourceName].count += amountRequired;
+      }
+    });
+
+    // Reduce the tempCount of the cancelled item
+    if (updatedIngredients[ingredientName]) {
+      updatedIngredients[ingredientName].tempCount = Math.max(0, updatedIngredients[ingredientName].tempCount - multiplier);
+    }
+
+    // Update the state with the refunded resources and reduced tempCount
+    setOres(updatedOres);
+    setIngredients(updatedIngredients);
+  };
 
   return (
     <>
@@ -1007,6 +1075,7 @@ function App() {
                 craftQueue={craftQueue}
                 currentCrafting={currentCrafting}
                 isAnimating={isAnimating}
+                cancelCraft={cancelCraft}
               />
             </div>
 

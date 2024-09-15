@@ -216,9 +216,18 @@ button:not(:disabled):hover {
   overflow: hidden;
   z-index: 1;
   background-color: orangered;
-  background: linear-gradient(to bottom, #3a3f4a 50%, orangered 50%);
+  background: linear-gradient(to bottom, var(--button-grey) 50%, orangered 50%);
   background-size: 100% 200%; /* Make background twice as tall */
   background-position: bottom; /* Start with orangered fully covering */
+  transition: background-position var(--craft-time) linear;
+  animation: none; /* Ensure no animation is applied initially */
+}
+
+.craftItem-child {
+  background-color: var(--full);
+  background: linear-gradient(to bottom, var(--button-grey) 50%, var(--full) 50%);
+  background-size: 100% 200%;
+  background-position: bottom;
   transition: background-position var(--craft-time) linear;
   animation: none; /* Ensure no animation is applied initially */
 }
