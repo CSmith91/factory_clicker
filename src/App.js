@@ -700,8 +700,22 @@ function App() {
       return requiredAmount;
     };
 
+    // Check if there are enough resources, including intermediaries, for the final product
+    const canCraftFinalProduct = (item) => {
+      return Object.entries(item.cost).every(([resourceName, amountRequired]) => {
+        const resource = ores[resourceName] || ingredients[resourceName];
+
+        // If not enough direct resources, check if the missing resource can be crafted
+        if (!resource || (resource.count + resource.tempCount) < amountRequired) {
+          return canCraftWithRawMaterials(resourceName, amountRequired);
+        }
+
+        return true;
+      });
+    };
+
     // Helper function to check if crafting is possible, including crafting raw materials
-    const canCraftWithRawMaterials = (item, missingResourceName, requiredAmount) => {
+    const canCraftWithRawMaterials = (missingResourceName, requiredAmount) => {
       const missingResource = ingredients[missingResourceName];
 
       // If missing resource is not craftable, return false
@@ -722,40 +736,30 @@ function App() {
       );
     };
 
-    // Check if there are enough resources to craft directly or if we need to craft raw materials
-    const hasEnoughResources = Object.entries(item.cost).every(
-      ([resourceName, amountRequired]) => {
-        const resource = ores[resourceName] || ingredients[resourceName];
-
-        if (!resource || (resource.count + resource.tempCount) < amountRequired) {
-          // If not enough resources, check if we can craft the missing resource
-          if (canCraftWithRawMaterials(item, resourceName, amountRequired)) {
-            const adjustedAmount = calculateRequiredRawMaterial(resourceName, amountRequired);
-
-            // Queue crafting for the exact amount of missing resource
-            for (let i = 0; i < adjustedAmount; i++) {
-              onCraft(resourceName, ingredients[resourceName], 'child');
-            }
-
-            // Continue checking other resources
-            return true;
-          } else {
-            return false; // Can't craft the resource or its raw materials
-          }
-        }
-
-        return true;
-      }
-    );
-
-    if (!hasEnoughResources) {
-      onAlert(`Not enough resources to craft ${ingredientName}`);
-    } else {
-      // If enough resources (directly or by crafting raw materials), craft the item
-      onCraft(ingredientName, item);
-      return true; // Success -- used for the right click function
+    // Pre-check if crafting the final product is possible
+    if (!canCraftFinalProduct(item)) {
+      onAlert(`Not enough resources to craft ${ingredientName}.`);
+      return; // Exit if crafting the final product is not possible
     }
-  }
+
+    // If all resources are available, queue the crafting of intermediaries
+    Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
+      const resource = ores[resourceName] || ingredients[resourceName];
+
+      if ((resource.count + resource.tempCount) < amountRequired) {
+        const adjustedAmount = calculateRequiredRawMaterial(resourceName, amountRequired);
+
+        // Queue crafting for the exact amount of missing resource
+        for (let i = 0; i < adjustedAmount; i++) {
+          onCraft(resourceName, ingredients[resourceName], 'child');
+        }
+      }
+    });
+
+    // Finally, queue crafting of the final item
+    onCraft(ingredientName, item);
+    return true; // Success -- used for the right click function
+  };
 
   const onCraft = (itemName, item, child) => {
     // Update the hammer's durability, if applicable
