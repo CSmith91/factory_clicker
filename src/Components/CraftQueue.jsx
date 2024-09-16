@@ -2,7 +2,7 @@ import React, { useEffect, useRef} from 'react';
 import images from './Images/images';
 
 
-const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft }) => {
+const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, debug }) => {
 
   const previousCraftingRef = useRef(null);
 
@@ -42,7 +42,7 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft }) =
   }, []);
 
   const handleCancel = (item, index) => {
-    cancelCraft(item, item.queue, index)
+    //cancelCraft(item, item.queue, index)
   }
 
   return (
@@ -66,6 +66,12 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft }) =
             )}
             {item.queue === 1 && item.multiplier > 1 && (
               <span className="item-count">{item.multiplier}</span>
+            )}
+            {debug && (
+              <div>
+                <p>{item.child ? "Child" : "Parent"}</p>
+                <p>{item.queue}</p>
+              </div>
             )}
           </div>
         ))}

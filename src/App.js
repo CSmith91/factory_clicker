@@ -51,8 +51,8 @@ function App() {
     "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 1.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 2.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 5.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 5.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
   })
 
@@ -928,7 +928,10 @@ function App() {
       setTimeout(() => {
         // Decrease the count of the first item or remove it if count becomes 1
         setCraftQueue(prevQueue => {
-          if(!prevQueue[0]){
+          if(!prevQueue){
+            setCraftQueue([])
+          }
+          else if(!prevQueue[0]){
             // the only available item in the queue was cancelled - setCurrentlyCrafting to null and remove the animation
             setIsAnimating(false);
             setCurrentCrafting(null);
@@ -962,7 +965,7 @@ function App() {
     refundCraft(ingredient)
 
     setCraftQueue((prevQueue) => {
-      console.log(`Queue: ${JSON.stringify(prevQueue)}`)
+      //console.log(`Queue: ${JSON.stringify(prevQueue)}`)
       return prevQueue.map((item, index) => {
         // If the queue count is more than 1, decrease the count
         if (itemStack > 1 && item.ingredientName === ingredient.ingredientName && queueIndex === index) {
@@ -1080,6 +1083,7 @@ function App() {
                 currentCrafting={currentCrafting}
                 isAnimating={isAnimating}
                 cancelCraft={cancelCraft}
+                debug={debug}
               />
             </div>
 
