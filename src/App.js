@@ -903,6 +903,7 @@ function App() {
           ingredient,
           multiplier,
           child,
+          id: Date.now() + Math.random(), // Generate a unique ID for each craft item
           queue: 1 // Start with queue count of 1
         };
         return [...prevQueue, newItem];
@@ -959,23 +960,23 @@ function App() {
     }
   }, [craftQueue, currentCrafting]);
 
-  const cancelCraft = (ingredient, itemStack, queueIndex) => {
+  const cancelCraft = (ingredient, id) => {
 
     // refund the cost
     refundCraft(ingredient)
 
     setCraftQueue((prevQueue) => {
-      //console.log(`Queue: ${JSON.stringify(prevQueue)}`)
+      // Map over the current queue and modify it
       return prevQueue.map((item, index) => {
-        // If the queue count is more than 1, decrease the count
-        if (itemStack > 1 && item.ingredientName === ingredient.ingredientName && queueIndex === index) {
-          console.log(`Queue count is > 1. item.ingredientName is ${item.ingredientName} and index is: ${queueIndex}`)
-          return { ...item, queue: item.queue - 1 };
-        } 
-        // If the queue count is 1, remove the item from the queue
-        else if(item.ingredientName === ingredient.ingredientName && queueIndex === index){
-          console.log(`Queue count is 1. item.ingredientName is ${item.ingredientName} and index is: ${queueIndex}`)
-          return null;
+        if (item.id === id) {
+          // If the queue count is more than 1, decrease the count
+          if (item.queue > 1) {
+            return { ...item, queue: item.queue - 1 };
+          } 
+          // If the queue count is 1, remove the item from the queue
+          else{
+            return null;
+          }
         }
         // for all other items, return them as they are:
         return item;

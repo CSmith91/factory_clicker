@@ -41,8 +41,8 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
     return acc;
   }, []);
 
-  const handleCancel = (item, index) => {
-    //cancelCraft(item, item.queue, index)
+  const handleCancel = (item, id) => {
+    cancelCraft(item, id)
   }
 
   return (
@@ -53,7 +53,7 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
             key={index} 
             className={`craftItem craftItem-${index} craftItem-${item.child} ${item.ingredientName === currentCrafting?.ingredientName && index === 0 && isAnimating ? 'animating' : ''}`}
             style={{ '--craft-time': `${item.ingredient.craftTime}s`, cursor:"pointer"}} 
-            onClick={() => handleCancel(item, index)}
+            onClick={() => handleCancel(item, item.id)}
           >
             <img
               src={images[item.ingredientName]} // Get the image corresponding to the ingredientName
@@ -70,7 +70,8 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
             {debug && (
               <div>
                 <p>{item.child ? "Child" : "Parent"}</p>
-                <p>{item.queue}</p>
+                <p>Index: {index}</p>
+                <p>ID: {item.id}</p>
               </div>
             )}
           </div>
