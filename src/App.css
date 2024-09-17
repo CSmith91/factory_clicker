@@ -202,12 +202,14 @@ button:not(:disabled):hover {
 /* Ensure items in craftQueue are displayed in a single line */
 .craftQueue {
   display: flex;           /* Use flexbox to align items in a row */
+  flex-wrap: nowrap; 
   align-items: center;     /* Vertically center items */
   margin: 5px;             /* Add margin between items if needed */
 }
 
 /* Style for individual images */
 .craftItem {
+  display: inline-block;
   margin: 0px 6px;  /* Space between images */
   padding: 5px;
   border-radius: 4px; /* Optional: rounded corners for images */

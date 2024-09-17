@@ -51,8 +51,8 @@ function App() {
     "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 5.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 5.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
   })
 
@@ -742,6 +742,10 @@ function App() {
       return; // Exit if crafting the final product is not possible
     }
 
+    // we now setup a group ID for this craft. Items that require specific children will get a specific ID
+    let groupId = '';
+    let craftArray = [];
+
     // If all resources are available, queue the crafting of intermediaries
     Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
       const resource = ores[resourceName] || ingredients[resourceName];
@@ -751,17 +755,25 @@ function App() {
 
         // Queue crafting for the exact amount of missing resource
         for (let i = 0; i < adjustedAmount; i++) {
-          onCraft(resourceName, ingredients[resourceName], 'child');
+          groupId += `${resourceName}`;
+          craftArray.push([resourceName, ingredients[resourceName], 'child']);
         }
       }
     });
 
-    // Finally, queue crafting of the final item
-    onCraft(ingredientName, item);
+    groupId += `-${ingredientName}`
+    craftArray.push([ingredientName, item]);
+
+    //console.log(`groupId is: ${groupId} and craftArray is: ${craftArray}`)
+
+    // we've built up a groupId and array for our craft execution order:
+    craftArray.forEach(([resourceName, ingredient, type]) => {
+      onCraft(resourceName, ingredient, groupId, type);  // Pass groupId to ensure grouping
+    });
     return true; // Success -- used for the right click function
   };
 
-  const onCraft = (itemName, item, child) => {
+  const onCraft = (itemName, item, groupId, child) => {
     // Update the hammer's durability, if applicable
     if(ingredients[itemName]){
       setTools(prevTools => {
@@ -812,7 +824,7 @@ function App() {
     }
 
     // note: child does nothing in this function, other than pass to addToCraftQueue to denote which items are being crafted as intermediaries
-    addToCraftQueue(itemName, item, multiplier, child)
+    addToCraftQueue(itemName, item, multiplier, child, groupId)
   };
 
   const craftPayout = (ingredientName, ingredient) => {
@@ -883,33 +895,37 @@ function App() {
   const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
   const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
   
-  const addToCraftQueue = (ingredientName, ingredient, multiplier, child) => {      
+  const addToCraftQueue = (ingredientName, ingredient, multiplier, parentIngredientName = null, groupId) => {
     setCraftQueue(prevQueue => {
-      // Check if the last item in the queue is the same as the new one
+      // Get the last item in the queue
       const lastItem = prevQueue[prevQueue.length - 1];
-
-      // If the last item is the same, increment the count
-      if (lastItem && lastItem.ingredientName === ingredientName) {
+  
+      // Check if the last item matches the new one (both ingredient and parent must match)
+      if (
+        lastItem &&
+        lastItem.ingredientName === ingredientName &&
+        lastItem.parentIngredientName === parentIngredientName
+      ) {
+        // If the last item matches, stack it by increasing the queue count
         return prevQueue.map((item, index) => {
           if (index === prevQueue.length - 1) {
-            return { ...item, queue: item.queue + 1 };
+            return { ...item, queue: item.queue + multiplier };
           }
           return item;
         });
       } else {
-        // Otherwise, add the new item with a count of 1
+        // Otherwise, add the new item as a separate entry
         const newItem = {
           ingredientName,
           ingredient,
           multiplier,
-          child,
+          parentIngredientName, // Track the parent ingredient
+          groupId,
           id: Date.now() + Math.random(), // Generate a unique ID for each craft item
-          queue: 1 // Start with queue count of 1
+          queue: multiplier // Start with the specified multiplier
         };
         return [...prevQueue, newItem];
       }
-
-    
     });
   };
 
@@ -960,7 +976,7 @@ function App() {
     }
   }, [craftQueue, currentCrafting]);
 
-  const cancelCraft = (ingredient, id) => {
+  const cancelCraft = (ingredient, id, groupId) => {
 
     // refund the cost
     refundCraft(ingredient)
