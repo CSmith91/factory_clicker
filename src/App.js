@@ -965,6 +965,7 @@ function App() {
     // refund the cost
     refundCraft(ingredient)
 
+    // remove the clicked item from the queue by id
     setCraftQueue((prevQueue) => {
       // Map over the current queue and modify it
       return prevQueue.map((item, index) => {
