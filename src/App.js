@@ -51,8 +51,8 @@ function App() {
     "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
   })
 
@@ -755,13 +755,14 @@ function App() {
 
         // Queue crafting for the exact amount of missing resource
         for (let i = 0; i < adjustedAmount; i++) {
-          groupId += `${resourceName}`;
+          groupId += `${resourceName}-`;
           craftArray.push([resourceName, ingredients[resourceName], 'child']);
         }
       }
     });
 
-    groupId += `-${ingredientName}`
+
+    groupId += `${ingredientName}-${Date.now() + Math.random()}`
     craftArray.push([ingredientName, item]);
 
     //console.log(`groupId is: ${groupId} and craftArray is: ${craftArray}`)
@@ -909,7 +910,7 @@ function App() {
         // If the last item matches, stack it by increasing the queue count
         return prevQueue.map((item, index) => {
           if (index === prevQueue.length - 1) {
-            return { ...item, queue: item.queue + multiplier };
+            return { ...item, queue: item.queue + 1 };
           }
           return item;
         });
@@ -922,7 +923,7 @@ function App() {
           parentIngredientName, // Track the parent ingredient
           groupId,
           id: Date.now() + Math.random(), // Generate a unique ID for each craft item
-          queue: multiplier // Start with the specified multiplier
+          queue: 1 // Start with the specified multiplier
         };
         return [...prevQueue, newItem];
       }
@@ -978,8 +979,38 @@ function App() {
 
   const cancelCraft = (ingredient, id, groupId) => {
 
-    // refund the cost
-    refundCraft(ingredient)
+    // Initialize an empty cancelList
+    let cancelList = [];
+
+    // Filter the craftQueue to find all items that belong to the same groupId
+    const groupItems = craftQueue.filter(item => item.groupId === groupId);
+
+    // Find the parent item (where parentIngredientName is null)
+    const parentItem = groupItems.find(item => !item.parentIngredientName);
+
+    // Collect the ingredient names and queue numbers of all items in the same group
+    cancelList = groupItems.map(item => {
+      return {
+        ingredientName: item.ingredientName,
+        queue: item.queue,
+        isChild: item.parentIngredientName ? true : false // Check if it's a child or not
+      };
+    });
+
+    // Log the cancel list with ingredient names, queue numbers, and child/parent info
+    console.log(`Cancelled groupId: ${groupId}`);
+    console.log(`Ingredients in this group with queue numbers: ${JSON.stringify(cancelList)}`);
+
+    if (parentItem) {
+      console.log(`Parent ingredient: ${parentItem.ingredientName}, Queue: ${parentItem.queue}`);
+    } else {
+      console.error('No parent ingredient found.');
+    }
+
+  // You can then proceed with your cancel logic here
+
+    // // refund the cost
+    // refundCraft(ingredient)
 
     // remove the clicked item from the queue by id
     setCraftQueue((prevQueue) => {

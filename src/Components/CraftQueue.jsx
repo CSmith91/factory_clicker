@@ -85,6 +85,7 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
                   <p>Index: {index}</p>
                   <p>GIndex: {groupIndex}</p>
                   <p>ID: {item.id}</p>
+                  <p>Queue: {item.queue}</p>
                 </div>
               )}
             </div>
