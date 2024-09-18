@@ -8,6 +8,7 @@ const Inventory = ({
     ingredients, 
     getStorage, 
     checkCraft,
+    bulkCheck,
     craftQueue,
     currentCrafting,
     isAnimating,
@@ -51,24 +52,27 @@ const Inventory = ({
                           
                                 // Attempt to craft 5 times
                                 if (isCraftable) {
-                                  for (let i = 0; i < 5; i++) {
-                                    const success = checkCraft(ingredientName);
-                                    
-                                    // If checkCraft fails (i.e. not enough resources), break out of the loop
-                                    if (!success) {
-                                      break;
-                                    }
-                                  }
+                                    bulkCheck(ingredientName);
                                 }
                             }}
                         >
                             <img src={`${images[ingredientName]}`} alt={ingredientName} className="ingredient-image" />
-                            <div className="ingredient-count">
-                                {ingredientData.count} / {getStorage(ingredientName)} {tempData !== 0 && `(${tempData})`} 
-                                <br />
-                                {ingredientData.idleCount > 0 && (`Available: ${ingredientData.idleCount}`)}
-                                {ingredientData.idleCount === 0 && ingredientData.count > 0 && (`All in use`)}
-                            </div>
+                            {debug && (
+                                <div className="ingredient-count">
+                                    {ingredientData.count} / {getStorage(ingredientName)} {tempData !== 0 && `(${tempData})`} 
+                                    <br />
+                                    {ingredientData.idleCount > 0 && (`Available: ${ingredientData.idleCount}`)}
+                                    {ingredientData.idleCount === 0 && ingredientData.count > 0 && (`All in use`)}
+                                </div>
+                            )}
+                            {!debug && (
+                                <div className="ingredient-count">
+                                    {ingredientData.count >= 0 ? ingredientData.count : 0 } / {getStorage(ingredientName)}
+                                    <br />
+                                    {ingredientData.idleCount > 0 && (`Available: ${ingredientData.idleCount}`)}
+                                    {ingredientData.idleCount === 0 && ingredientData.count > 0 && (`All in use`)}
+                                </div>
+                            )}
 
                             <div className="ingredient-cost">
                             {Object.entries(ingredientData.cost).map(([costName, costAmount]) => (
@@ -99,9 +103,16 @@ const Inventory = ({
                             onClick={() => isCraftable && checkCraft(oreName)}
                         >
                             <img src={`${images[oreName]}`} alt={oreName} className="ingredient-image" />
+                            {debug && (
                             <div className="ingredient-count">
                                 {oreData.count} / {getStorage(oreName)} {tempData !== 0 && `(${tempData})`}
                             </div>
+                            )}
+                            {!debug && (
+                                <div className="ingredient-count">
+                                    {oreData.count >= 0 ? oreData.count : 0} / {getStorage(oreName)}
+                                </div> 
+                            )}
                         </div>
                     )
                 })}

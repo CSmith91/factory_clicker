@@ -664,7 +664,7 @@ function App() {
   }
 
   // Function for crafting
-  const checkCraft = (ingredientName) => {
+  const checkCraft = (ingredientName, bulkCheck) => {
     const toolName = ingredients[ingredientName] ? 'Hammer' : null;
     const items = ingredients[ingredientName] ? ingredients : networks;
     const item = items[ingredientName]
@@ -762,19 +762,24 @@ function App() {
     });
 
 
-    groupId += `${ingredientName}-${Date.now() + Math.random()}`
+    groupId += `${ingredientName}--${Date.now() + Math.random()}`
     craftArray.push([ingredientName, item]);
 
     //console.log(`groupId is: ${groupId} and craftArray is: ${craftArray}`)
 
-    // we've built up a groupId and array for our craft execution order:
-    craftArray.forEach(([resourceName, ingredient, type]) => {
-      onCraft(resourceName, ingredient, groupId, type);  // Pass groupId to ensure grouping
-    });
-    return true; // Success -- used for the right click function
+    // we've built up a groupId and array for our craft execution order
+    // if this was a 5x craft, we feed this info here:
+    if(bulkCheck){
+      return [true, groupId, craftArray]
+    }
+    else{
+      craftArray.forEach(([resourceName, ingredient, type]) => {
+        onCraft(resourceName, ingredient, groupId, type);  // Pass groupId to ensure grouping
+      });
+    }
   };
 
-  const onCraft = (itemName, item, groupId, child) => {
+  const onCraft = (itemName, item, groupId, child, bulk) => {
     // Update the hammer's durability, if applicable
     if(ingredients[itemName]){
       setTools(prevTools => {
@@ -824,6 +829,10 @@ function App() {
       console.log("Something went wrong onCraft!")
     }
 
+    // if this is a single craft, we can just add straight to queue, otherwise we need to process the craft order
+    if(bulk){
+      return {itemName, item, groupId, child }
+    }
     // note: child does nothing in this function, other than pass to addToCraftQueue to denote which items are being crafted as intermediaries
     addToCraftQueue(itemName, item, multiplier, child, groupId)
   };
@@ -887,6 +896,93 @@ function App() {
       }));
     }
   };
+
+  // ###### BULK CRAFT LOGIC
+  // ###### BULK CRAFT LOGIC  
+  // ###### BULK CRAFT LOGIC
+
+  const bulkCheck = (ingredientName) => {
+
+    let totalCrafts = 5; // Attempt to craft 5x
+    let allCrafts = {};  // Collect all craft groups by groupId
+  
+    for (let i = 0; i < totalCrafts; i++) {
+      // Call checkCraft to trigger crafting logic and deductions
+      const result = checkCraft(ingredientName, true); // This triggers onCraft
+  
+      if (!result) {
+        // Exit if onCraft returned no result (e.g., tool broke or resources ran out)
+        break;
+      }
+
+      // Extract the craftArray from the result
+      const groupId = result[1]
+      const craftArray = result[2];
+
+      // Initialize the groupId in allCrafts if not already present
+      if (!allCrafts[groupId]) {
+        allCrafts[groupId] = []; // Create an empty array to store all crafts for this groupId
+      }
+
+      // Iterate through the craftArray and call onCraft for each resource
+      craftArray.forEach(([resourceName, ingredient, child], index) => {
+        const isParent = (index === craftArray.length - 1); // Last item is the parent
+
+        // Call onCraft with child as undefined for the parent (final item)
+        const craftResult = onCraft(resourceName, ingredient, groupId, isParent ? undefined : child, true);
+        
+        // Append the craft result to the respective group in allCrafts
+        allCrafts[groupId].push(craftResult);
+      });
+    }
+
+    const stackedCrafts = reorderBulk(allCrafts)
+
+    console.log(`stackedCrafts: ${JSON.stringify(stackedCrafts)}`)
+
+  };
+
+  const reorderBulk = (allCrafts) => {
+    const newAllCrafts = {}; // Object to store the reorganized groups
+  
+    // Step 1: Extract the order from the first `groupId`
+    let firstGroupId = Object.keys(allCrafts)[0];
+    let prefixOrder = firstGroupId.split('--')[0].split('-');
+  
+    // Step 2: Collect and group all items by their prefix
+    const groupedItems = {};
+    for (const groupId in allCrafts) {
+      const prefix = groupId.split('--')[0]; // Extract the prefix
+      if (!groupedItems[prefix]) {
+        groupedItems[prefix] = [];
+      }
+      groupedItems[prefix].push(...allCrafts[groupId]);
+    }
+  
+    // Step 3: Iterate through each prefix and re-order based on the first group prefixOrder
+    for (const prefix in groupedItems) {
+      // Sort items based on the prefixOrder (i.e., Gear -> Stone Furnace -> Burner Drill)
+      const sortedItems = groupedItems[prefix].sort((a, b) => {
+        const itemAIndex = prefixOrder.indexOf(a.itemName);
+        const itemBIndex = prefixOrder.indexOf(b.itemName);
+        return itemAIndex - itemBIndex;
+      });
+  
+      // Step 4: Assign a new groupId with the prefix and random number
+      const newGroupId = `${prefix}--${Date.now() + Math.random()}`;
+      newAllCrafts[newGroupId] = sortedItems;
+  
+      // Replace the groupId for each item in the sorted list
+      sortedItems.forEach((item) => {
+        item.groupId = newGroupId;
+      });
+    }
+  
+    return newAllCrafts;
+  };
+  
+
+
 
   // ###### QUEUE LOGIC
   // ###### QUEUE LOGIC
@@ -1012,24 +1108,24 @@ function App() {
     // // refund the cost
     // refundCraft(ingredient)
 
-    // remove the clicked item from the queue by id
-    setCraftQueue((prevQueue) => {
-      // Map over the current queue and modify it
-      return prevQueue.map((item, index) => {
-        if (item.id === id) {
-          // If the queue count is more than 1, decrease the count
-          if (item.queue > 1) {
-            return { ...item, queue: item.queue - 1 };
-          } 
-          // If the queue count is 1, remove the item from the queue
-          else{
-            return null;
-          }
-        }
-        // for all other items, return them as they are:
-        return item;
-      }).filter(Boolean); // Remove null entries (items removed from queue)
-    });
+    // // remove the clicked item from the queue by id
+    // setCraftQueue((prevQueue) => {
+    //   // Map over the current queue and modify it
+    //   return prevQueue.map((item, index) => {
+    //     if (item.id === id) {
+    //       // If the queue count is more than 1, decrease the count
+    //       if (item.queue > 1) {
+    //         return { ...item, queue: item.queue - 1 };
+    //       } 
+    //       // If the queue count is 1, remove the item from the queue
+    //       else{
+    //         return null;
+    //       }
+    //     }
+    //     // for all other items, return them as they are:
+    //     return item;
+    //   }).filter(Boolean); // Remove null entries (items removed from queue)
+    // });
   }
 
   const refundCraft = (item) => {
@@ -1128,6 +1224,7 @@ function App() {
                 ingredients={ingredients} 
                 getStorage={getStorage} 
                 checkCraft={checkCraft}
+                bulkCheck={bulkCheck}
                 craftQueue={craftQueue}
                 currentCrafting={currentCrafting}
                 isAnimating={isAnimating}
