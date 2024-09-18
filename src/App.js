@@ -51,8 +51,8 @@ function App() {
     "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
   })
 
@@ -929,16 +929,33 @@ function App() {
         const isParent = (index === craftArray.length - 1); // Last item is the parent
 
         // Call onCraft with child as undefined for the parent (final item)
-        const craftResult = onCraft(resourceName, ingredient, groupId, isParent ? undefined : child, true);
+        const craftResult = onCraft(resourceName, ingredient, groupId, isParent ? undefined : "child", true);
         
         // Append the craft result to the respective group in allCrafts
         allCrafts[groupId].push(craftResult);
       });
     }
 
+    // console.log(`allCrafts: ${JSON.stringify(allCrafts)}`)
+
     const stackedCrafts = reorderBulk(allCrafts)
 
-    console.log(`stackedCrafts: ${JSON.stringify(stackedCrafts)}`)
+    // console.log(`stackedCrafts: ${JSON.stringify(stackedCrafts)}`)
+
+    for (const groupId in stackedCrafts) { // Loop through each groupId in allCrafts
+      const resources = stackedCrafts[groupId]; // Get the array of resources under this groupId
+      
+      // Loop through each resource in the group
+      for (const resource of resources) {
+        const resourceName = resource.itemName; // Get the item name
+        const item = resource.item; // Get the entire resource object as the ingredient
+        const child = resource.child ? "child" : false; // Check if the resource is marked as a child
+        const multiplier = item.multiplier || 1;
+  
+        // Add these items to the queue now they've been reordered
+        addToCraftQueue(resourceName, item, multiplier, child, groupId)
+      }
+    }
 
   };
 
@@ -946,7 +963,10 @@ function App() {
     const newAllCrafts = {}; // Object to store the reorganized groups
   
     // Step 1: Extract the order from the first `groupId`
-    let firstGroupId = Object.keys(allCrafts)[0];
+    let firstGroupId = Object.keys(allCrafts)[0] ? Object.keys(allCrafts)[0] : false;
+    if(!firstGroupId){
+      return;
+    }
     let prefixOrder = firstGroupId.split('--')[0].split('-');
   
     // Step 2: Collect and group all items by their prefix
