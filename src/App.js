@@ -51,8 +51,8 @@ function App() {
     "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
   })
 
@@ -1072,7 +1072,7 @@ function App() {
           }
           else if (prevQueue[0].queue > 1) {
             // If there are more than 1 in the queue, reduce the count
-            craftPayout(ingredientName, ingredient ); // Process crafting
+            //craftPayout(ingredientName, ingredient ); // Process crafting
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
             return prevQueue.map((item, index) => {
@@ -1083,7 +1083,7 @@ function App() {
             });
           } else {
             // If there's only 1 left, remove the item after crafting completes
-            craftPayout(ingredientName, ingredient ); // Process crafting
+            //craftPayout(ingredientName, ingredient ); // Process crafting
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
             return prevQueue.slice(1);
@@ -1113,44 +1113,77 @@ function App() {
       };
     });
 
-    // Log the cancel list with ingredient names, queue numbers, and child/parent info
-    console.log(`Cancelled groupId: ${groupId}`);
-    console.log(`Ingredients in this group with queue numbers: ${JSON.stringify(cancelList)}`);
-
-    if (parentItem) {
-      console.log(`Parent ingredient: ${parentItem.ingredientName}, Queue: ${parentItem.queue}`);
-    } else {
+    if (!parentItem) {
       console.error('No parent ingredient found.');
     }
 
-  // You can then proceed with your cancel logic here
+    // Cancel logic -- unlike factorio, if intermediary items have already been crafted, they still get canelled and refunded.
+    // This is because crafting intermdiary items creates negative counts and positive tempCounts, which out. To convert cancelled-yet-crafted items to keep
+    // would require re-programming the storage limit and craft behaviours which present work.
+    const cancelledParent = ingredients[parentItem.ingredientName]
+    let cancelArray = []
+    Object.entries(cancelledParent.cost).forEach(([itemName, amount]) => { 
+      cancelArray.push({itemName: itemName, amount: amount})
+    })
 
-    // // refund the cost
-    // refundCraft(ingredient)
+    // refund the costs
+    refundGroup(parentItem.ingredientName, cancelArray, groupId.split('--')[0])
 
-    // // remove the clicked item from the queue by id
-    // setCraftQueue((prevQueue) => {
-    //   // Map over the current queue and modify it
-    //   return prevQueue.map((item, index) => {
-    //     if (item.id === id) {
-    //       // If the queue count is more than 1, decrease the count
-    //       if (item.queue > 1) {
-    //         return { ...item, queue: item.queue - 1 };
-    //       } 
-    //       // If the queue count is 1, remove the item from the queue
-    //       else{
-    //         return null;
-    //       }
-    //     }
-    //     // for all other items, return them as they are:
-    //     return item;
-    //   }).filter(Boolean); // Remove null entries (items removed from queue)
-    // });
+    // remove the parent item (and any child items) from the queue
+    //deleteQueue(parentItem.ingredientName, cancelArray, groupId.split('--')[0])
   }
 
-  const refundCraft = (item) => {
-    const ingredientName = item.ingredientName
-    const cancelledItem = ingredients[ingredientName];
+  const refundGroup = (parentName, itemsArray, groupName) => {
+    // this function takes the parent item that's being cancelled, alongside the array of items that are being crafted to make the parent item and the group name
+    console.log(`
+      parentItem = ${JSON.stringify(parentName)}
+      itemsArray = ${JSON.stringify(itemsArray)}
+      groupName = ${JSON.stringify(groupName)}
+      `)
+
+    // we have a group, e.g. Gear-Gear-Gear-Stone Furnace-Burner Drill. We split the group by '-' and add it to a new array and reduce the array
+    const toRefundList = groupName.split('-');
+
+    // check with this is a direct craft. If it is, we can do a straight refund
+    if(toRefundList.length === 1){
+      refundToRaw(toRefundList[0], true);
+      itemsArray.splice(0, 1)
+    }
+    else{
+      // Iterate through toRefundList and update itemsArray
+      toRefundList.forEach(item => {
+        // Call refundRaw function
+        if(item !== parentName){
+          refundToRaw(item);
+        }
+
+      // Find the item in itemsArray
+      const itemIndex = itemsArray.findIndex(i => i.itemName === item);
+        const multiplier = ores[item] ? ores[item].multiplier || 1 : ingredients[item].multiplier || 1
+        // If item exists, decrement its amount
+        if (itemIndex !== -1) {
+          itemsArray[itemIndex].amount -= multiplier;
+
+          // If amount reaches 0, remove the item from itemsArray
+          if (itemsArray[itemIndex].amount === 0) {
+            itemsArray.splice(itemIndex, 1);
+          }
+        }
+      });
+    }
+    
+    // we may now have a remainder of items that where used to craft the item that we used directly, these are what remain in itemArray
+    console.log(itemsArray);
+
+    itemsArray.forEach(item => {
+      reverseRawCost(item.itemName, item.amount);
+    });
+
+  }
+
+  // fully refunds an ingredient
+  const refundToRaw = (itemName, direct) => {
+    const cancelledItem = ingredients[itemName] ? ingredients[itemName] : ores[itemName];
     const multiplier = cancelledItem.multiplier || 1;
     if (!cancelledItem) return; // If the item is not found, return early
 
@@ -1171,14 +1204,90 @@ function App() {
     });
 
     // Reduce the tempCount of the cancelled item
-    if (updatedIngredients[ingredientName]) {
-      updatedIngredients[ingredientName].tempCount = Math.max(0, updatedIngredients[ingredientName].tempCount - multiplier);
+    if (updatedIngredients[itemName]) {
+      if(!direct){
+        updatedIngredients[itemName].count = updatedIngredients[itemName].count + multiplier;
+      }
+      updatedIngredients[itemName].tempCount = updatedIngredients[itemName].tempCount - multiplier;
     }
 
     // Update the state with the refunded resources and reduced tempCount
     setOres(updatedOres);
     setIngredients(updatedIngredients);
   };
+
+  const reverseRawCost = (itemName, amount) => {
+    const allItems = ores[itemName] ? ores : ingredients
+    const setItems = allItems === ores ? setOres : setIngredients
+    const cancelledItem = allItems[itemName]
+    const multiplier = cancelledItem.multiplier || 1;
+    if (!cancelledItem) return; // If the item is not found, return early
+
+    // Create copies of ores and ingredients to modify them
+    const updatedItems = { ...allItems };
+
+    // Reduce the tempCount of the cancelled item
+    updatedItems[itemName].count = updatedItems[itemName].count + amount * multiplier;
+
+    // Update the state with the refunded resources and reduced count
+    setItems(updatedItems);
+  }
+
+  // return these items back to exactly where they were as they were in the inventory prior
+
+  // partially refunds an ingredient -- adjusts the count/tempCount of a parent item that was made from child ingredients
+  // const reverseParent = (item) => {
+  //   const ingredientName = item.ingredientName
+  //   const cancelledItem = ingredients[ingredientName];
+  //   const multiplier = cancelledItem.multiplier || 1;
+  //   if (!cancelledItem) return; // If the item is not found, return early
+
+  //   // Create copies of ores and ingredients to modify them
+  //   const updatedOres = { ...ores };
+  //   const updatedIngredients = { ...ingredients };
+
+  //   // Refund the cost of the cancelled item
+  //   Object.entries(cancelledItem.cost).forEach(([resourceName, amountRequired]) => {
+  //     // If it's an ore, refund the ore count
+  //     if (updatedOres[resourceName]) {
+  //       updatedOres[resourceName].count += amountRequired;
+  //     }
+  //     // If it's an ingredient, refund the ingredient count
+  //     else if (updatedIngredients[resourceName]) {
+  //       updatedIngredients[resourceName].count += amountRequired;
+  //     }
+  //   });
+
+  //   // Reduce the tempCount of the cancelled item
+  //   if (updatedIngredients[ingredientName]) {
+  //     updatedIngredients[ingredientName].tempCount = Math.max(0, updatedIngredients[ingredientName].tempCount - multiplier);
+  //   }
+
+  //   // Update the state with the refunded resources and reduced tempCount
+  //   setOres(updatedOres);
+  //   setIngredients(updatedIngredients);
+  // };
+
+  const deleteQueue = (parentName, cancelArray, groupName) => {
+    // // remove the clicked item from the queue by id
+    // setCraftQueue((prevQueue) => {
+    //   // Map over the current queue and modify it
+    //   return prevQueue.map((item, index) => {
+    //     if (item.id === id) {
+    //       // If the queue count is more than 1, decrease the count
+    //       if (item.queue > 1) {
+    //         return { ...item, queue: item.queue - 1 };
+    //       } 
+    //       // If the queue count is 1, remove the item from the queue
+    //       else{
+    //         return null;
+    //       }
+    //     }
+    //     // for all other items, return them as they are:
+    //     return item;
+    //   }).filter(Boolean); // Remove null entries (items removed from queue)
+    // });
+  }
 
   return (
     <>
