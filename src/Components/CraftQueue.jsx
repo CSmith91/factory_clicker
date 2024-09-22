@@ -58,7 +58,7 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
   }, []);
 
   const handleCancel = (item, id, groupId) => {
-    cancelCraft(item, id, groupId)
+    cancelCraft(groupId)
   }
 
   return (

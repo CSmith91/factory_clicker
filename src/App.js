@@ -1072,7 +1072,7 @@ function App() {
           }
           else if (prevQueue[0].queue > 1) {
             // If there are more than 1 in the queue, reduce the count
-            //craftPayout(ingredientName, ingredient ); // Process crafting
+            craftPayout(ingredientName, ingredient ); // Process crafting
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
             return prevQueue.map((item, index) => {
@@ -1083,7 +1083,7 @@ function App() {
             });
           } else {
             // If there's only 1 left, remove the item after crafting completes
-            //craftPayout(ingredientName, ingredient ); // Process crafting
+            craftPayout(ingredientName, ingredient ); // Process crafting
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
             return prevQueue.slice(1);
@@ -1093,7 +1093,7 @@ function App() {
     }
   }, [craftQueue, currentCrafting]);
 
-  const cancelCraft = (ingredient, id, groupId) => {
+  const cancelCraft = (groupId) => {
 
     // Initialize an empty cancelList
     let cancelList = [];
@@ -1130,16 +1130,16 @@ function App() {
     refundGroup(parentItem.ingredientName, cancelArray, groupId.split('--')[0])
 
     // remove the parent item (and any child items) from the queue
-    //deleteQueue(parentItem.ingredientName, cancelArray, groupId.split('--')[0])
+    deleteQueue(groupId.split('--')[0], groupId)
   }
 
   const refundGroup = (parentName, itemsArray, groupName) => {
     // this function takes the parent item that's being cancelled, alongside the array of items that are being crafted to make the parent item and the group name
-    console.log(`
-      parentItem = ${JSON.stringify(parentName)}
-      itemsArray = ${JSON.stringify(itemsArray)}
-      groupName = ${JSON.stringify(groupName)}
-      `)
+    // console.log(`
+    //   parentItem = ${JSON.stringify(parentName)} //  parentItem = "Burner Drill"
+    //   itemsArray = ${JSON.stringify(itemsArray)} // itemsArray = [{"itemName":"Iron Plate","amount":3},{"itemName":"Gear","amount":3},{"itemName":"Stone Furnace","amount":1}]
+    //   groupName = ${JSON.stringify(groupName)} // groupName = "Gear-Gear-Gear-Stone Furnace-Burner Drill"
+    //   `)
 
     // we have a group, e.g. Gear-Gear-Gear-Stone Furnace-Burner Drill. We split the group by '-' and add it to a new array and reduce the array
     const toRefundList = groupName.split('-');
@@ -1173,8 +1173,6 @@ function App() {
     }
     
     // we may now have a remainder of items that where used to craft the item that we used directly, these are what remain in itemArray
-    console.log(itemsArray);
-
     itemsArray.forEach(item => {
       reverseRawCost(item.itemName, item.amount);
     });
@@ -1240,8 +1238,6 @@ function App() {
     setItems(updatedItems);
   }
 
-  // return these items back to exactly where they were as they were in the inventory prior
-
   // refunds the parent item only -- adjusts the count/tempCount
   const reverseParent = (itemName) => {
     const ingredient = ingredients[itemName]
@@ -1258,26 +1254,48 @@ function App() {
     setIngredients(updatedIngredients);
   };
 
-  const deleteQueue = (parentName, cancelArray, groupName) => {
-    // // remove the clicked item from the queue by id
-    // setCraftQueue((prevQueue) => {
-    //   // Map over the current queue and modify it
-    //   return prevQueue.map((item, index) => {
-    //     if (item.id === id) {
-    //       // If the queue count is more than 1, decrease the count
-    //       if (item.queue > 1) {
-    //         return { ...item, queue: item.queue - 1 };
-    //       } 
-    //       // If the queue count is 1, remove the item from the queue
-    //       else{
-    //         return null;
-    //       }
-    //     }
-    //     // for all other items, return them as they are:
-    //     return item;
-    //   }).filter(Boolean); // Remove null entries (items removed from queue)
-    // });
-  }
+  const deleteQueue = (groupName, groupId) => {
+    // remove the clicked item from the queue by id
+    setCraftQueue((prevQueue) => {
+      console.log(`
+        prevQueue: ${JSON.stringify(prevQueue)}
+        groupName: ${groupName}
+        groupId: ${groupId}
+        `)
+
+      // Split the groupName by '-' to get the list of ingredients to remove
+      const toRemoveList = groupName.split('-');
+
+      // Count the occurrences of each item in the groupName
+    const removeCounts = toRemoveList.reduce((acc, item) => {
+      acc[item] = (acc[item] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Iterate through the queue and update the items
+    return prevQueue.map((item) => {
+      // Check if the item is part of the group and matches the groupId
+      if (item.groupId === groupId && removeCounts[item.ingredientName]) {
+        // Determine how many to remove based on the count in groupName
+        const removeCount = removeCounts[item.ingredientName];
+        const updatedQueue = item.queue - removeCount;
+
+        // If the updated queue count is greater than 0, update the item
+        if (updatedQueue > 0) {
+          return { ...item, queue: updatedQueue };
+        }
+        // If the queue reaches 0 or less, remove the item by returning null
+        else {
+          return null;
+        }
+      }
+
+      // Return all other items as they are
+      return item;
+    })
+    .filter(Boolean); // Remove null entries (items that were removed)
+  });
+};
 
   return (
     <>
