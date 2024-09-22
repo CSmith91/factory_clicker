@@ -1179,6 +1179,8 @@ function App() {
       reverseRawCost(item.itemName, item.amount);
     });
 
+    // now we reverse the parent (remove the tempCount)
+    reverseParent(parentName)
   }
 
   // fully refunds an ingredient
@@ -1227,7 +1229,12 @@ function App() {
     const updatedItems = { ...allItems };
 
     // Reduce the tempCount of the cancelled item
-    updatedItems[itemName].count = updatedItems[itemName].count + amount * multiplier;
+    if(amount < 0){
+      updatedItems[itemName].count = updatedItems[itemName].count + amount;
+    }
+    else{
+      updatedItems[itemName].count = updatedItems[itemName].count + amount * multiplier;
+    }
 
     // Update the state with the refunded resources and reduced count
     setItems(updatedItems);
@@ -1235,38 +1242,21 @@ function App() {
 
   // return these items back to exactly where they were as they were in the inventory prior
 
-  // partially refunds an ingredient -- adjusts the count/tempCount of a parent item that was made from child ingredients
-  // const reverseParent = (item) => {
-  //   const ingredientName = item.ingredientName
-  //   const cancelledItem = ingredients[ingredientName];
-  //   const multiplier = cancelledItem.multiplier || 1;
-  //   if (!cancelledItem) return; // If the item is not found, return early
+  // refunds the parent item only -- adjusts the count/tempCount
+  const reverseParent = (itemName) => {
+    const ingredient = ingredients[itemName]
+    const multiplier = ingredient.multiplier || 1;
+    if (!ingredient) return; // If the item is not found, return early
 
-  //   // Create copies of ores and ingredients to modify them
-  //   const updatedOres = { ...ores };
-  //   const updatedIngredients = { ...ingredients };
+    // Create copy of ingredients to modify it
+    const updatedIngredients = { ...ingredients };
 
-  //   // Refund the cost of the cancelled item
-  //   Object.entries(cancelledItem.cost).forEach(([resourceName, amountRequired]) => {
-  //     // If it's an ore, refund the ore count
-  //     if (updatedOres[resourceName]) {
-  //       updatedOres[resourceName].count += amountRequired;
-  //     }
-  //     // If it's an ingredient, refund the ingredient count
-  //     else if (updatedIngredients[resourceName]) {
-  //       updatedIngredients[resourceName].count += amountRequired;
-  //     }
-  //   });
+    // Reduce the tempCount of the cancelled item
+    updatedIngredients[itemName].tempCount = Math.max(0, updatedIngredients[itemName].tempCount - multiplier);
 
-  //   // Reduce the tempCount of the cancelled item
-  //   if (updatedIngredients[ingredientName]) {
-  //     updatedIngredients[ingredientName].tempCount = Math.max(0, updatedIngredients[ingredientName].tempCount - multiplier);
-  //   }
-
-  //   // Update the state with the refunded resources and reduced tempCount
-  //   setOres(updatedOres);
-  //   setIngredients(updatedIngredients);
-  // };
+    // Update the state with the refunded resources and reduced tempCount
+    setIngredients(updatedIngredients);
+  };
 
   const deleteQueue = (parentName, cancelArray, groupName) => {
     // // remove the clicked item from the queue by id
