@@ -1261,11 +1261,11 @@ function App() {
   const deleteQueue = (groupName, groupId) => {
     // remove the clicked item from the queue by id
     setCraftQueue((prevQueue) => {
-      console.log(`
-        prevQueue: ${JSON.stringify(prevQueue)}
-        groupName: ${groupName}
-        groupId: ${groupId}
-        `)
+      // console.log(`
+      //   prevQueue: ${JSON.stringify(prevQueue)}
+      //   groupName: ${groupName}
+      //   groupId: ${groupId}
+      //   `)
 
       // Split the groupName by '-' to get the list of ingredients to remove
       const toRemoveList = groupName.split('-');

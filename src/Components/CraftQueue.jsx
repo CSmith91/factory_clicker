@@ -57,9 +57,29 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
     return acc;
   }, []);
 
-  const handleCancel = (item, id, groupId) => {
-    cancelCraft(groupId)
-  }
+  const handleCancel = (item, id, groupId, bulk) => {
+    if (!bulk) {
+      cancelCraft(groupId);
+    } else {
+      // Handle bulk cancellation
+      let cancelCount = 0;
+      let maxCancel = 5; // We want to cancel up to 5 times
+      let remainingQueue = getRemainingQueue(groupId); // Helper function to get remaining items in the queue for the groupId
+      console.log(`remainingQueue: ${remainingQueue}`)
+  
+      while (cancelCount < maxCancel && remainingQueue > 0) {
+        cancelCraft(groupId);
+        cancelCount++;
+        remainingQueue--; // Update remaining items after each cancel
+      }
+    }
+  };
+  
+  // Helper function to find how many items are left in the queue for the given groupId
+  const getRemainingQueue = (groupId) => {
+    const groupItems = craftQueue.filter(item => item.groupId === groupId && item.parentIngredientName !== 'child');
+    return groupItems.reduce((total, item) => total + item.queue, 0); // Sum up the queue counts for all items in the group
+  };
 
   return (
     <div className='craftSection'>
@@ -70,7 +90,12 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
               key={`${item.id}-${index}`} 
               className={`craftItem craftItem-${index} craftItem-${item.parentIngredientName} ${item.ingredientName === currentCrafting?.ingredientName && index === 0 && groupIndex === 0 && isAnimating ? 'animating' : ''}`}
               style={{ '--craft-time': `${item.ingredient.craftTime}s`, cursor:"pointer"}} 
-              onClick={() => handleCancel(item, item.id, item.groupId)}
+              onClick={() => handleCancel(item, item.id, item.groupId, false)}
+              // right click for crafting x5
+              onContextMenu={(e) => {
+                e.preventDefault(); // Prevent the default right-click menu
+                handleCancel(item, item.id, item.groupId, true);
+            }}
             >
               <img
                 src={images[item.ingredientName]} // Get the image corresponding to the ingredientName
