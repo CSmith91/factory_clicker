@@ -47,13 +47,14 @@ function App() {
     "Stone Furnace": { group: 'p4', count: 0, tempCount: 0, unlocked: testMode, cost: {"Stone": 5}, isCraftable: true, craftTime: 0.5, isFuel: false, isMachine: true, isFurnace: true, isBurner: true, machineSpeed: 1, idleCount: 0},
     "Steel Furnace": { group: 'p4', count: 0, tempCount: 0, unlocked: testMode, cost: {"Steel": 6, "Brick": 10}, isCraftable: true, craftTime: 3, isFuel: false, isMachine: true, isFurnace: true, isBurner: true, machineSpeed: 2, idleCount: 0},
     "Electric Furnace": {group: 'p4', count: 0, tempCount: 0, unlocked: testMode, cost: {"Advanced Circuit": 5, "Steel": 10, "Brick": 10}, isCraftable: true, craftTime: 5, isFuel: false, isMachine: true, isFurnace: true, isBurner: false, machineSpeed: 2, idleCount: 0, energy: {"idle": 6, "active": 180}},
-    "Brick": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Stone": 2}, craftTime: 3.2, canBus: true},
-    "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true},
-    "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true},
-    "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true},
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Brick": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Stone": 2}, craftTime: 3.2, canBus: true, isRaw: true},
+    "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true, isRaw: true},
+    "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true, isRaw: true},
+    "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true, isRaw: true},
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
     "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 }
+    "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 },
+    "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2}, isCraftable: true, craftTime: 6 } // add plastic 2 cost
   })
 
   const [networks, setNetworks] = useState({
@@ -837,7 +838,7 @@ function App() {
     addToCraftQueue(itemName, item, multiplier, child, groupId)
   };
 
-  const craftPayout = (ingredientName, ingredient) => {
+  const craftPayout = (ingredientName, ingredient, groupId) => {
     // check if ingredient -- if not, it's a network item
     if (ingredients[ingredientName]) {
   
@@ -1071,9 +1072,7 @@ function App() {
             setCurrentCrafting(null);
           }
           else if (prevQueue[0].queue > 1) {
-            if(prevQueue[0].parentIngredientName !== 'child'){
-              craftPayout(ingredientName, ingredient ); // Process crafting
-            }
+            craftPayout(ingredientName, ingredient, prevQueue[0].groupId ); // Process crafting
             // If there are more than 1 in the queue, reduce the count
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
@@ -1084,9 +1083,7 @@ function App() {
               return item;
             });
           } else {
-            if(prevQueue[0].parentIngredientName !== 'child'){
-              craftPayout(ingredientName, ingredient ); // Process crafting
-            }
+            craftPayout(ingredientName, ingredient, prevQueue[0].groupId ); // Process crafting
             // If there's only 1 left, remove the item after crafting completes
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item

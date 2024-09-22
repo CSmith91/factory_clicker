@@ -27,6 +27,7 @@ import fastBelt from './fast_belt.png'
 import expressBelt from './express_belt.png'
 import wire from './wire.png'
 import chip1 from './green_chip.png'
+import chip2 from './red_chip.png'
 // networks
 import beltLane1 from './underground_belt.png'
 import beltLane2 from './fast_underground_belt.png'
@@ -67,6 +68,7 @@ const images = {
     'Gear': gear,
     'Wire': wire,
     "Electronic Circuit": chip1,
+    "Advanced Circuit": chip2,
 
     // Networks
     "Belt Lane": beltLane1,
