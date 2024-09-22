@@ -1071,8 +1071,10 @@ function App() {
             setCurrentCrafting(null);
           }
           else if (prevQueue[0].queue > 1) {
+            if(prevQueue[0].parentIngredientName !== 'child'){
+              craftPayout(ingredientName, ingredient ); // Process crafting
+            }
             // If there are more than 1 in the queue, reduce the count
-            craftPayout(ingredientName, ingredient ); // Process crafting
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
             return prevQueue.map((item, index) => {
@@ -1082,8 +1084,10 @@ function App() {
               return item;
             });
           } else {
+            if(prevQueue[0].parentIngredientName !== 'child'){
+              craftPayout(ingredientName, ingredient ); // Process crafting
+            }
             // If there's only 1 left, remove the item after crafting completes
-            craftPayout(ingredientName, ingredient ); // Process crafting
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
             return prevQueue.slice(1);
