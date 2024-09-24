@@ -16,6 +16,7 @@ import brick from './brick.png'
 import ironPlate from './iron_plate.png'
 import copperPlate from './copper_plate.png'
 import steel from './steel.png'
+import plastic from './plastic.png'
 import gear from './gear.png'
 import burnerInserter from './burner_inserter.png'
 import inserter from './inserter.png'
@@ -65,6 +66,7 @@ const images = {
     'Iron Plate': ironPlate,
     'Copper Plate': copperPlate,
     'Steel': steel,
+    'Plastic': plastic,
     'Gear': gear,
     'Wire': wire,
     "Electronic Circuit": chip1,
