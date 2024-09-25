@@ -47,15 +47,18 @@ function App() {
     "Stone Furnace": { group: 'p4', count: 0, tempCount: 0, unlocked: testMode, cost: {"Stone": 5}, isCraftable: true, craftTime: 0.5, isFuel: false, isMachine: true, isFurnace: true, isBurner: true, machineSpeed: 1, idleCount: 0},
     "Steel Furnace": { group: 'p4', count: 0, tempCount: 0, unlocked: testMode, cost: {"Steel": 6, "Brick": 10}, isCraftable: true, craftTime: 3, isFuel: false, isMachine: true, isFurnace: true, isBurner: true, machineSpeed: 2, idleCount: 0},
     "Electric Furnace": {group: 'p4', count: 0, tempCount: 0, unlocked: testMode, cost: {"Advanced Circuit": 5, "Steel": 10, "Brick": 10}, isCraftable: true, craftTime: 5, isFuel: false, isMachine: true, isFurnace: true, isBurner: false, machineSpeed: 2, idleCount: 0, energy: {"idle": 6, "active": 180}},
-    "Brick": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Stone": 2}, craftTime: 3.2, canBus: true, isRaw: true},
-    "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, craftTime: 3.2, canFurnace: true, canBus: true, isRaw: true},
-    "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, craftTime: 3.2, canBus: true, isRaw: true},
-    "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, craftTime: 16, canBus: true, isRaw: true},
+    "Brick": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Stone": 2}, isCraftable: false, craftTime: 3.2, canBus: true, isRaw: true},
+    "Iron Plate" : { group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Ore": 1}, isCraftable: false, craftTime: 3.2, canFurnace: true, canBus: true, isRaw: true},
+    "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, isCraftable: false, craftTime: 3.2, canBus: true, isRaw: true},
+    "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, isCraftable: false, craftTime: 16, canBus: true },
     "Plastic": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Coal": 1, "Petroleum": 20}, multiplier: 2, isCraftable: false, craftTime: 1 },
     "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
     "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 },
-    "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2, "Plastic": 2}, isCraftable: true, craftTime: 6 } // add plastic 2 cost
+    "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2, "Plastic": 2}, isCraftable: true, craftTime: 6 },
+    "Elite Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Advanced Circuit": 2}, isCraftable: true, craftTime: 6 },
+    "Professional Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Elite Circuit": 2}, isCraftable: true, craftTime: 6 },
+    "God Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Professional Circuit": 2, "Gear": 30}, isCraftable: true, craftTime: 6 }
   })
 
   const [networks, setNetworks] = useState({
@@ -693,79 +696,158 @@ function App() {
       }
     }
 
-    // Helper function to calculate the amount of raw material required, considering the multiplier
-    const calculateRequiredRawMaterial = (resourceName, requiredAmount) => {
-      const resource = ingredients[resourceName];
-      if (resource?.multiplier) {
-        return Math.ceil(requiredAmount / resource.multiplier); // Divide by multiplier to get the correct number of raw materials
-      }
-      return requiredAmount;
-    };
+    // // Helper function to calculate the amount of raw material required, considering the multiplier
+    // const calculateRequiredRawMaterial = (resourceName, requiredAmount) => {
+    //   const resource = ingredients[resourceName];
+    //   if (resource?.multiplier) {
+    //     return Math.ceil(requiredAmount / resource.multiplier); // Divide by multiplier to get the correct number of raw materials
+    //   }
+    //   return requiredAmount;
+    // };
 
-    // Check if there are enough resources, including intermediaries, for the final product
-    const canCraftFinalProduct = (item) => {
-      return Object.entries(item.cost).every(([resourceName, amountRequired]) => {
-        const resource = ores[resourceName] || ingredients[resourceName];
+    // // Check if there are enough resources, including intermediaries, for the final product
+    // const canCraftFinalProduct = (item) => {
+    //   return Object.entries(item.cost).every(([resourceName, amountRequired]) => {
+    //     const resource = ores[resourceName] || ingredients[resourceName];
 
-        // If not enough direct resources, check if the missing resource can be crafted
-        if (!resource || (resource.count + resource.tempCount) < amountRequired) {
-          return canCraftWithRawMaterials(resourceName, amountRequired);
-        }
+    //     // If not enough direct resources, check if the missing resource can be crafted
+    //     if (!resource || (resource.count + resource.tempCount) < amountRequired) {
+    //       return canCraftWithRawMaterials(resourceName, amountRequired);
+    //     }
 
-        return true;
-      });
-    };
+    //     return true;
+    //   });
+    // };
 
-    // Helper function to check if crafting is possible, including crafting raw materials
-    const canCraftWithRawMaterials = (missingResourceName, requiredAmount) => {
-      const missingResource = ingredients[missingResourceName];
+    // // Helper function to check if crafting is possible, including crafting raw materials, with recursion
+    // const canCraftWithRawMaterials = (missingResourceName, requiredAmount) => {
+    //   const missingResource = ingredients[missingResourceName];
 
-      // If missing resource is not craftable, return false
-      if (!missingResource?.isCraftable) {
-        return false;
-      }
+    //   // If missing resource is not craftable or we have no resource info, return false
+    //   if (!missingResource || !missingResource.isCraftable) {
+    //     return false;
+    //   }
 
-      const adjustedAmount = calculateRequiredRawMaterial(missingResourceName, requiredAmount);
+    //   // If the missing resource is raw material or belongs to ores, return true (base case)
+    //   if (missingResource.isRaw || ores[missingResourceName]) {
+    //     return true;
+    //   }
 
-      // Check if we have enough raw materials to craft the missing resource
-      return Object.entries(missingResource.cost).every(
-        ([rawResourceName, amountRequired]) => {
-          const rawResource = ores[rawResourceName] || ingredients[rawResourceName];
-          const totalRequired = amountRequired * adjustedAmount; // Adjust by the required amount
+    //   const adjustedAmount = calculateRequiredRawMaterial(missingResourceName, requiredAmount);
 
-          return rawResource?.count >= totalRequired;
-        }
-      );
-    };
+    //   // Check if we have enough of the lower-level resources to craft the missing resource
+    //   return Object.entries(missingResource.cost).every(
+    //     ([rawResourceName, amountRequired]) => {
+    //       const rawResource = ores[rawResourceName] || ingredients[rawResourceName];
+    //       const totalRequired = amountRequired * adjustedAmount; // Adjust by the required amount
 
-    // Pre-check if crafting the final product is possible
-    if (!canCraftFinalProduct(item)) {
-      onAlert(`Not enough resources to craft ${ingredientName}.`);
-      return; // Exit if crafting the final product is not possible
-    }
+    //       // If we have enough raw resources, return true
+    //       if (rawResource && rawResource.count >= totalRequired) {
+    //         return true;
+    //       }
+          
+    //       // If the resource is raw, return false (we can't go deeper)
+    //       if (rawResource?.isRaw || ores[rawResourceName]) {
+    //         return rawResource?.count >= totalRequired;
+    //       }
 
-    // we now setup a group ID for this craft. Items that require specific children will get a specific ID
+    //       // Otherwise, recursively check if we can craft the missing intermediate resource
+    //       return canCraftWithRawMaterials(rawResourceName, totalRequired);
+    //     }
+    //   );
+    // };
+
+    // // Pre-check if crafting the final product is possible
+    // if (!canCraftFinalProduct(item)) {
+    //   onAlert(`Not enough resources to craft ${ingredientName}.`);
+    //   return; // Exit if crafting the final product is not possible
+    // }
+
+    // we setup a group ID for this craft. Items that require specific children will get a specific ID
     let groupId = '';
     let craftArray = [];
 
-    // If all resources are available, queue the crafting of intermediaries
-    Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
-      const resource = ores[resourceName] || ingredients[resourceName];
+    const craftBuilder = (ingredientName, item) => {
+      // ###### WE ALSO NEED TO ALLOCATE USAGE BY DECREMENTING THE TEMPCOUNT OF ITEMS AS THEY ARE 'USED' IN CRAFTING
 
-      if ((resource.count + resource.tempCount) < amountRequired) {
-        const adjustedAmount = calculateRequiredRawMaterial(resourceName, amountRequired);
+      let buildInstruction = {groupId: '', craftArray: []}
 
-        // Queue crafting for the exact amount of missing resource
-        for (let i = 0; i < adjustedAmount; i++) {
-          groupId += `${resourceName}-`;
-          craftArray.push([resourceName, ingredients[resourceName], 'child']);
+      const smartBuild = (ingredientName, item, buildList = '') => {
+        console.log(`checking: ${JSON.stringify(ingredientName)}, which has an object of ${JSON.stringify(item)}`)
+        let toDoList = item.cost // {"Wire":3,"Iron Plate":1}
+        console.log(`toDoList: ${JSON.stringify(toDoList)}`)
+        
+        // helper function that we loop through continually
+        // here we build a list of all the things we need. We loop continuously until we get to raw ingredients (or get a 'no'), and builds this list along the way
+        for (const [resourceName, amountRequired] of Object.entries(toDoList)) {
+          const resource = ores[resourceName] || ingredients[resourceName];
+          const multiplier = resource.multiplier || 1;
+          let countdown = amountRequired
+
+          while(countdown > 0){
+            // Check if we have the direct ingredients
+            if ((resource.count + resource.tempCount) >= 1) {
+              console.log(`We have ${resourceName}, so we can reduce the countdown to ${countdown-1}`);
+              // Reduce the countdown
+              countdown--;
+            } 
+            // if we don't have the direct resource, check if we can craft that instead         
+            else if(!resource.isCraftable || ores[resourceName]){
+              console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
+              return false;
+            }
+            // now check if we can do a smart craft of this item
+            else{
+              buildList = `${resourceName}-`+buildList
+              console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
+              buildList = smartBuild(resourceName, resource, buildList)
+              if(!buildList){
+                return false
+              }
+              return buildList
+            }
+          }
         }
       }
-    });
+
+      const callSmartBuild = `${smartBuild(ingredientName, item)}${ingredientName}`
+      return callSmartBuild
+
+    }
+
+    // now we build our craft list
+    const craftList = craftBuilder(ingredientName, item)
+    console.log(`craftList is: ${JSON.stringify(craftList)}`)
+
+    // if we received a false boolean at any point, we would have received an alert. Now end the check 
+    if(craftList.includes('false')){
+      onAlert(`Not enough resources to craft ${ingredientName}.`)
+      return
+    }
 
 
-    groupId += `${ingredientName}--${Date.now() + Math.random()}`
-    craftArray.push([ingredientName, item]);
+    // // we setup a group ID for this craft. Items that require specific children will get a specific ID
+    // let groupId = '';
+    // let craftArray = [];
+
+    // If we got this far, resources are available for this craft, so we can queue the crafting of intermediaries (or just craft direct)
+    // Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
+    //   const resource = ores[resourceName] || ingredients[resourceName];
+
+    //   if ((resource.count + resource.tempCount) < amountRequired) {
+    //     const adjustedAmount = calculateRequiredRawMaterial(resourceName, amountRequired);
+
+    //     // Queue crafting for the exact amount of missing resource
+    //     for (let i = 0; i < adjustedAmount; i++) {
+    //       groupId += `${resourceName}-`;
+    //       craftArray.push([resourceName, ingredients[resourceName], 'child']);
+    //     }
+    //   }
+    // });
+
+
+    // groupId += `${ingredientName}--${Date.now() + Math.random()}`
+    // craftArray.push([ingredientName, item]);
 
     //console.log(`groupId is: ${groupId} and craftArray is: ${craftArray}`)
 
@@ -775,8 +857,8 @@ function App() {
       return [true, groupId, craftArray]
     }
     else{
-      craftArray.forEach(([resourceName, ingredient, type]) => {
-        onCraft(resourceName, ingredient, groupId, type);  // Pass groupId to ensure grouping
+      craftArray.forEach(([resourceName, ingredient, child]) => {
+        onCraft(resourceName, ingredient, groupId, child);  // Pass groupId to ensure grouping
       });
     }
   };
