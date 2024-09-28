@@ -805,26 +805,22 @@ function App() {
             buildList = smartBuild(resourceName, newCost, buildList, overBuild)
             
             // if we weren't able to craft the required item, we return false
-            if(!buildList){
-              return false
-            }
+            if (!buildList) return false;
             // otherwise, we've got enough for 1 of the item, so we reduce the reducer
-            else{
-              // Reduce the reduceCount
-              reduceCount = reduceCount-multiplier;
-              // Remove 1x the item from reduceItems
-              reduceItems[resourceName] = reduceItems[resourceName]-multiplier;
-              console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
-              // if we've wrangled more ingredients that we need, we can increase the tempCount
-              if(reduceCount < 0){
-                //
-              }
+            reduceCount = reduceCount-multiplier;
+            // Remove 1 ( x multiplier if it makes more) of the item from reduceItems
+            reduceItems[resourceName] = reduceItems[resourceName]-multiplier;
+            console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            // if we've wrangled more ingredients that we need, we can increase the tempCount
+            if(reduceCount < 0){
+              //
+              
             }
           }
         }
       }
       // Return after all items are processed
-      return [buildList, overBuild]
+      return buildList
     }
 
     const smartCost = (ingredientName, craftList) =>{
