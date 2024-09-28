@@ -696,76 +696,9 @@ function App() {
       }
     }
 
-    // // Helper function to calculate the amount of raw material required, considering the multiplier
-    // const calculateRequiredRawMaterial = (resourceName, requiredAmount) => {
-    //   const resource = ingredients[resourceName];
-    //   if (resource?.multiplier) {
-    //     return Math.ceil(requiredAmount / resource.multiplier); // Divide by multiplier to get the correct number of raw materials
-    //   }
-    //   return requiredAmount;
-    // };
-
-    // // Check if there are enough resources, including intermediaries, for the final product
-    // const canCraftFinalProduct = (item) => {
-    //   return Object.entries(item.cost).every(([resourceName, amountRequired]) => {
-    //     const resource = ores[resourceName] || ingredients[resourceName];
-
-    //     // If not enough direct resources, check if the missing resource can be crafted
-    //     if (!resource || (resource.count + resource.tempCount) < amountRequired) {
-    //       return canCraftWithRawMaterials(resourceName, amountRequired);
-    //     }
-
-    //     return true;
-    //   });
-    // };
-
-    // // Helper function to check if crafting is possible, including crafting raw materials, with recursion
-    // const canCraftWithRawMaterials = (missingResourceName, requiredAmount) => {
-    //   const missingResource = ingredients[missingResourceName];
-
-    //   // If missing resource is not craftable or we have no resource info, return false
-    //   if (!missingResource || !missingResource.isCraftable) {
-    //     return false;
-    //   }
-
-    //   // If the missing resource is raw material or belongs to ores, return true (base case)
-    //   if (missingResource.isRaw || ores[missingResourceName]) {
-    //     return true;
-    //   }
-
-    //   const adjustedAmount = calculateRequiredRawMaterial(missingResourceName, requiredAmount);
-
-    //   // Check if we have enough of the lower-level resources to craft the missing resource
-    //   return Object.entries(missingResource.cost).every(
-    //     ([rawResourceName, amountRequired]) => {
-    //       const rawResource = ores[rawResourceName] || ingredients[rawResourceName];
-    //       const totalRequired = amountRequired * adjustedAmount; // Adjust by the required amount
-
-    //       // If we have enough raw resources, return true
-    //       if (rawResource && rawResource.count >= totalRequired) {
-    //         return true;
-    //       }
-          
-    //       // If the resource is raw, return false (we can't go deeper)
-    //       if (rawResource?.isRaw || ores[rawResourceName]) {
-    //         return rawResource?.count >= totalRequired;
-    //       }
-
-    //       // Otherwise, recursively check if we can craft the missing intermediate resource
-    //       return canCraftWithRawMaterials(rawResourceName, totalRequired);
-    //     }
-    //   );
-    // };
-
-    // // Pre-check if crafting the final product is possible
-    // if (!canCraftFinalProduct(item)) {
-    //   onAlert(`Not enough resources to craft ${ingredientName}.`);
-    //   return; // Exit if crafting the final product is not possible
-    // }
-
     const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = '') => {
       console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
-      let reduceItems = outstandingItems // {"Wire":3,"Iron Plate":1}
+      let reduceItems = JSON.parse(JSON.stringify(outstandingItems)); // Make a deep copy of outstandingItems // {"Wire":3,"Iron Plate":1}
       
       // here we build a list of all the things we need. We loop continuously until we get to raw ingredients (or get a 'no'), and builds this list along the way
       for (const [resourceName, amountRequired] of Object.entries(reduceItems)) {
