@@ -696,7 +696,7 @@ function App() {
       }
     }
 
-    const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = '') => {
+    const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}) => {
       console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
       let reduceItems = JSON.parse(JSON.stringify(outstandingItems)); // Make a deep copy of outstandingItems // {"Wire":3,"Iron Plate":1}
       
@@ -732,13 +732,21 @@ function App() {
           else{
             buildList = `${resourceName}-`+buildList
             console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
+
             // Make a deep copy of resource.cost to avoid mutation
             const newCost = JSON.parse(JSON.stringify(resource.cost));
             console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
-            buildList = smartBuild(resourceName, newCost, buildList, overBuild)
+
+            // Recursive call to smartBuild for the current resource
+            const [newBuildList, newOverBuild] = smartBuild(resourceName, newCost, buildList, overBuild)
             
-            // if we weren't able to craft the required item, we return false
-            if (!buildList) return false;
+            // If we failed to craft, return false
+            if (!newBuildList) return false;
+
+            // Otherwise, update the lists
+            buildList = newBuildList;
+            overBuild = newOverBuild;
+        
             // otherwise, we've got enough for 1 of the item, so we reduce the reducer
             reduceCount = reduceCount-multiplier;
             // Remove 1 ( x multiplier if it makes more) of the item from reduceItems
@@ -746,14 +754,27 @@ function App() {
             console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
             // if we've wrangled more ingredients that we need, we can increase the tempCount
             if(reduceCount < 0){
-              //
-              
+              if (overBuild[resourceName]) {
+                // If the resource already exists, increment the amount
+                overBuild[resourceName] += -reduceCount;
+              } else {
+                // Otherwise, add the new resource with its amount
+                overBuild[resourceName] = -reduceCount ;
+              }
             }
           }
         }
       }
       // Return after all items are processed
-      return buildList
+      return [buildList, overBuild];
+    }
+
+    const cleanBuild = (list, surplus) => {
+      let initialList = list;
+      let initialSurplus = surplus;
+
+      
+      return cleanList
     }
 
     const smartCost = (ingredientName, craftList) =>{
@@ -763,11 +784,13 @@ function App() {
     }
 
     // now we build our craft list - what we need
-    const craftList = smartBuild(ingredientName, item.cost)
+    const [craftList, surplusList] = smartBuild(ingredientName, item.cost)
+    // where we may have built multiples, see if we have enough to reduce the craftList
+    const cleanList = cleanBuild(craftList, surplusList)
     // work out the total cost of all items and check we have all these in full
-    const costList = smartCost(ingredientName, craftList)
+    const costList = smartCost(ingredientName, cleanList)
     // check our hammer can craft all these items without breaking
-    const hammerDeteriation = craftList
+    const hammerDeteriation = cleanList
 
     // if we received a false boolean at any point, we would have received an alert. Now end the check 
     if(!craftList){
@@ -779,7 +802,8 @@ function App() {
     const groupId = `${craftList}${ingredientName}--${Date.now() + Math.random()}`;
     let craftArray = [];
 
-    console.log(`groupId is: ${JSON.stringify(groupId)}`)
+    console.log(`groupId is: ${JSON.stringify(groupId)}
+    surplusList: ${JSON.stringify(surplusList)}`)
 
 
     // // we setup a group ID for this craft. Items that require specific children will get a specific ID
