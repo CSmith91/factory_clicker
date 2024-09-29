@@ -682,7 +682,7 @@ function App() {
         onAlert(`Storage is full. You cannot craft ${ingredientName}.`);
       }
       else{
-        onAlert(`You've reach the max number of lanes for ${ingredientName}.`);
+        onAlert(`You've reached the max number of lanes for ${ingredientName}.`);
       }
       return; // Exit the function if storage is full
     }
@@ -696,7 +696,7 @@ function App() {
       }
     }
 
-    const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}) => {
+    const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}, costList = {}) => {
       //console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
       let reduceItems = JSON.parse(JSON.stringify(outstandingItems)); // Make a deep copy of outstandingItems // {"Wire":3,"Iron Plate":1}
       
@@ -713,7 +713,14 @@ function App() {
             reduceCount = 0;
             // Remove the item from reduceItems
             reduceItems[resourceName] -= amountRequired;
-            //console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            if (costList[resourceName]) {
+              // If the resource already exists, increment the amount
+              costList[resourceName] += amountRequired;
+            } else {
+              // Otherwise, add the new resource with its amount
+              costList[resourceName] = amountRequired ;
+            }
+            console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
           }
           // Check if we have this ingredient directly, in part
           else if ((resource.count + resource.tempCount) >= 1) {
@@ -721,37 +728,45 @@ function App() {
             reduceCount--;
             // Remove 1x the item from reduceItems
             reduceItems[resourceName]--;
-            //console.log(`We have at least 1 ${resourceName}, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            if (costList[resourceName]) {
+              // If the resource already exists, increment the amount
+              costList[resourceName] ++;
+            } else {
+              // Otherwise, add the new resource with its amount
+              costList[resourceName] = 1 ;
+            }
+            console.log(`We have at least 1 ${resourceName}, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
           } 
           // if we don't have (any more of) the resource directly, check if we can craft it instead         
           else if(!resource.isCraftable || ores[resourceName]){
-            //console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
-            return false;
+            console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
+            return [false, false, false]; // Return an array indicating failure
           }
           // now check if we can do a smart craft of this item
           else{
             buildList = `${resourceName}-`+buildList
-            //console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
+            console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
 
             // Make a deep copy of resource.cost to avoid mutation
             const newCost = JSON.parse(JSON.stringify(resource.cost));
-            //console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
+            console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
 
             // Recursive call to smartBuild for the current resource
-            const [newBuildList, newOverBuild] = smartBuild(resourceName, newCost, buildList, overBuild)
+            const [newBuildList, newOverBuild, newCostList] = smartBuild(resourceName, newCost, buildList, overBuild, costList)
             
             // If we failed to craft, return false
-            if (!newBuildList) return false;
+            if (!newBuildList) return [false, false, false];
 
             // Otherwise, update the lists
             buildList = newBuildList;
             overBuild = newOverBuild;
+            costList = newCostList;
         
             // otherwise, we've got enough for 1 of the item, so we reduce the reducer
             reduceCount = reduceCount-multiplier;
             // Remove 1 ( x multiplier if it makes more) of the item from reduceItems
             reduceItems[resourceName] = reduceItems[resourceName]-multiplier;
-            //console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
             // if we've wrangled more ingredients that we need, we can increase the tempCount
             if(reduceCount < 0){
               if (overBuild[resourceName]) {
@@ -766,19 +781,21 @@ function App() {
         }
       }
       // Return after all items are processed
-      return [buildList, overBuild];
+      return [buildList, overBuild, costList];
     }
 
-    const cleanBuild = (list, surplus) => {
+    const cleanBuild = (list, surplus, raw) => {
       let initialList = list;
       let initialSurplus = surplus;
       let leftovers = {};
+      let cleanRaw = raw;
 
       // Split the initial list into an array for easier manipulation
       let initialArray = initialList.split('-');
 
       console.log(`Our split list is: ${initialArray}
-        & our surplus is: ${JSON.stringify(initialSurplus)}`)
+        & our surplus is: ${JSON.stringify(initialSurplus)}
+        & cleanRaw starts as: ${JSON.stringify(cleanRaw)}`)
 
       // Function to remove items from the back
       const removeFromBack = (array, itemName, countToRemove) => {
@@ -797,10 +814,17 @@ function App() {
         let multiplier = ingredients[itemName].multiplier || 1; // Default multiplier to 1 if not found
         let timesToRemove = Math.floor(itemAmount / multiplier); // Calculate how many to remove
         let remainder = itemAmount % multiplier; // Calculate leftover (lost) items
+        let rawBase = ingredients[itemName].cost
         console.log(`Removing ${timesToRemove} instances of ${itemName}`);
+        console.log(`This ${itemName} is equivalent to ${JSON.stringify(rawBase)}`)
 
         // Remove the item from the initial list starting from the back
         initialArray = removeFromBack(initialArray, itemName, timesToRemove);
+        // Reduce the raw cost collection
+        for (const [itemName, _] of Object.entries(rawBase)) {
+          cleanRaw[itemName] -= timesToRemove;
+        }
+        console.log(`cleanRaw is now: ${JSON.stringify(cleanRaw)}`)
 
         // If there is any remainder, add it to leftovers
         if (remainder > 0) {
@@ -817,31 +841,63 @@ function App() {
       let cleanList = initialArray.join('-');
       console.log(cleanList);
 
-      return [cleanList, leftovers]
+      console.log(`cleanRaw ends as: ${JSON.stringify(cleanRaw)}`)
+
+      return [cleanList, leftovers, cleanRaw]
     }
 
-    const smartCost = (ingredientName, craftList) =>{
-      console.log(`ingredientName is: ${ingredientName} & craftList is: ${JSON.stringify(craftList)}`)
+    const smartCost = (cleanRawCost) => {
+      for (const [itemName, itemAmount] of Object.entries(cleanRawCost)){
+        const item = ores[itemName] ? ores[itemName] : ingredients[itemName];
+        if(item.count < itemAmount){
+          return false
+        }
+      }
+      return true;
     }
 
-    const checkHammer = (cleanList) => {
+    const checkHammer = (cleanList, toolName) => {
+      // Count the number of hyphens in the string
+      let hyphenCount = (cleanList.match(/-/g) || []).length;
 
+      // Add 1 to the hyphen count (as specified)
+      let totalOperations = hyphenCount + 1;
+
+      // Retrieve the tool's corrodeRate and durability
+      let corrodeRate = tools[toolName]?.corrodeRate || 0;
+      let durability = tools[toolName]?.durability || 0;
+
+      // Calculate how much durability is required for the operation
+      let durabilityRequired = corrodeRate * totalOperations;
+
+      // Check if the tool has enough durability
+      if (durability - durabilityRequired > 0) {
+        return true;  // Return true if the tool has enough durability
+      } else {
+        return false; // Return false if the tool doesn't have enough durability
+      }
     }
 
     // now we build our craft list - what we need
-    const [craftList, surplusList] = smartBuild(ingredientName, item.cost)
-    // where we may have built multiples, see if we have enough to reduce the craftList
-    const [cleanList, leftover] = cleanBuild(craftList, surplusList)
-    // work out the total cost of all items and check we have all these in full
-    const costList = smartCost(ingredientName, `${cleanList}${ingredientName}`)
-    // check our hammer can craft all these items without breaking
-    const hammerDeteriation = checkHammer(cleanList)
+    const [craftList, surplusList, rawCost] = smartBuild(ingredientName, item.cost)
 
-    // if we received a false boolean at any point, we would have received an alert. Now end the check 
-    if(!craftList || !costList){
+    if(craftList === false){
       onAlert(`Not enough resources to craft ${ingredientName}.`)
       return
     }
+
+    // where we may have built multiples, see if we have enough to reduce the craftList
+    const [cleanList, leftover, cleanRawCost] = cleanBuild(craftList, surplusList, rawCost)
+
+    // check we have enough raw ingredients
+    const canAfford = smartCost(cleanRawCost)
+    if(!canAfford){
+      onAlert(`Not enough resources to craft ${ingredientName}.`)
+      return
+    }
+
+    // check our hammer can craft all these items without breaking
+    const hammerDeteriation = checkHammer(cleanList, toolName)
 
     if(!hammerDeteriation){
       onAlert(`Your hammer will break before crafting ${ingredientName}. Either repair it or craft more intermediary ingredients.`)
@@ -851,36 +907,44 @@ function App() {
     // we setup a group ID for this craft. Items that require specific children will get a specific ID
     const groupId = `${cleanList}${ingredientName}--${Date.now() + Math.random()}`;
 
-
+    // we now send the instructions to onCraft
     const buildCraftArray = (groupId) => {
+      // Split by '--' to remove the timestamp part
+      const splitParts = groupId.split('--');
+      
+      // The first part before '--' is the list of resources
+      const resourceString = splitParts[0];
+      
+      // Split the resource string by '-' to get individual items
+      const splitGroup = resourceString.split('-').filter(Boolean); // Filter to remove empty items if any
 
-    }
+      const craftArray = [];
+
+      // Iterate through the split array
+      for (let i = 0; i < splitGroup.length; i++) {
+        const resourceName = splitGroup[i];
+
+        // Check if resourceName exists in ingredients
+        if (ingredients[resourceName]) {
+          if (i === splitGroup.length - 1) {
+            // For the last item, don't add 'child'
+            craftArray.push([resourceName, ingredients[resourceName]]);
+          } else {
+            // For all other items, add 'child'
+            craftArray.push([resourceName, ingredients[resourceName], 'child']);
+          }
+        }
+      }
+
+      return craftArray;
+    };
 
     const craftArray = buildCraftArray(groupId);
 
-    // console.log(`groupId is: ${JSON.stringify(groupId)}
-    // leftover: ${JSON.stringify(leftover)}`)
-
-    // We've got this far, resources are available for this craft, so we can queue the crafting of intermediaries (or just craft direct)
-    // Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
-    //   const resource = ores[resourceName] || ingredients[resourceName];
-
-    //   if ((resource.count + resource.tempCount) < amountRequired) {
-    //     const adjustedAmount = calculateRequiredRawMaterial(resourceName, amountRequired);
-
-    //     // Queue crafting for the exact amount of missing resource
-    //     for (let i = 0; i < adjustedAmount; i++) {
-    //       groupId += `${resourceName}-`;
-    //       craftArray.push([resourceName, ingredients[resourceName], 'child']);
-    //     }
-    //   }
-    // });
-
-
-    // groupId += `${ingredientName}--${Date.now() + Math.random()}`
-    // craftArray.push([ingredientName, item]);
-
-    //console.log(`groupId is: ${groupId} and craftArray is: ${craftArray}`)
+    console.log(`groupId is: ${JSON.stringify(groupId)}
+    leftover: ${JSON.stringify(leftover)}
+    cleanRawCost: ${JSON.stringify(cleanRawCost)}
+    craftArray: ${JSON.stringify(craftArray)}`)
 
     // we've built up a groupId and array for our craft execution order
     // if this was a 5x craft, we feed this info here:
@@ -889,12 +953,12 @@ function App() {
     }
     else{
       craftArray.forEach(([resourceName, ingredient, child]) => {
-        onCraft(resourceName, ingredient, groupId, child);  // Pass groupId to ensure grouping
+        onCraft(resourceName, ingredient, groupId, child, false, leftover);  // Pass groupId to ensure grouping
       });
     }
   };
 
-  const onCraft = (itemName, item, groupId, child, bulk) => {
+  const onCraft = (itemName, item, groupId, child, bulk, leftover) => {
     // Update the hammer's durability, if applicable
     if(ingredients[itemName]){
       setTools(prevTools => {
@@ -949,10 +1013,10 @@ function App() {
       return {itemName, item, groupId, child }
     }
     // note: child does nothing in this function, other than pass to addToCraftQueue to denote which items are being crafted as intermediaries
-    addToCraftQueue(itemName, item, multiplier, child, groupId)
+    addToCraftQueue(itemName, item, multiplier, child, groupId, leftover)
   };
 
-  const craftPayout = (ingredientName, ingredient, groupId) => {
+  const craftPayout = (ingredientName, ingredient, child, leftover) => {
     // check if ingredient -- if not, it's a network item
     if (ingredients[ingredientName]) {
   
@@ -1124,7 +1188,7 @@ function App() {
   const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
   const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
   
-  const addToCraftQueue = (ingredientName, ingredient, multiplier, parentIngredientName = null, groupId) => {
+  const addToCraftQueue = (ingredientName, ingredient, multiplier, parentIngredientName = null, groupId, leftover) => {
     setCraftQueue(prevQueue => {
       // Get the last item in the queue
       const lastItem = prevQueue[prevQueue.length - 1];
@@ -1150,6 +1214,7 @@ function App() {
           multiplier,
           parentIngredientName, // Track the parent ingredient
           groupId,
+          leftover,
           id: Date.now() + Math.random(), // Generate a unique ID for each craft item
           queue: 1 // Start with the specified multiplier
         };
@@ -1183,7 +1248,7 @@ function App() {
             setCurrentCrafting(null);
           }
           else if (prevQueue[0].queue > 1) {
-            craftPayout(ingredientName, ingredient, prevQueue[0].groupId ); // Process crafting
+            craftPayout(ingredientName, ingredient, prevQueue[0].child, prevQueue[0].leftover ); // Process crafting
             // If there are more than 1 in the queue, reduce the count
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
@@ -1194,7 +1259,7 @@ function App() {
               return item;
             });
           } else {
-            craftPayout(ingredientName, ingredient, prevQueue[0].groupId ); // Process crafting
+            craftPayout(ingredientName, ingredient, prevQueue[0].child, prevQueue[0].leftover  ); // Process crafting
             // If there's only 1 left, remove the item after crafting completes
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
