@@ -697,7 +697,7 @@ function App() {
     }
 
     const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}, costList = {}) => {
-      //console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
+      console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
       let reduceItems = JSON.parse(JSON.stringify(outstandingItems)); // Make a deep copy of outstandingItems // {"Wire":3,"Iron Plate":1}
       
       // here we build a list of all the things we need. We loop continuously until we get to raw ingredients (or get a 'no'), and builds this list along the way
@@ -705,6 +705,7 @@ function App() {
         const resource = ores[resourceName] || ingredients[resourceName];
         const multiplier = resource.multiplier || 1;
         let reduceCount = amountRequired;
+        let checkFlag = true;
 
         while(reduceCount > 0){
           // Check if we have this ingredient directly, in full
@@ -723,19 +724,20 @@ function App() {
             console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
           }
           // Check if we have this ingredient directly, in part
-          else if ((resource.count + resource.tempCount) >= 1) {
+          else if ((resource.count + resource.tempCount) >= 1 && checkFlag) {
             // Reduce the reduceCount
-            reduceCount--;
+            reduceCount = reduceCount - (resource.count + resource.tempCount);
             // Remove 1x the item from reduceItems
-            reduceItems[resourceName]--;
+            reduceItems[resourceName] = reduceItems[resourceName] - (resource.count + resource.tempCount);
             if (costList[resourceName]) {
               // If the resource already exists, increment the amount
-              costList[resourceName] ++;
+              costList[resourceName] = costList[resourceName] + resource.count + resource.tempCount;
             } else {
               // Otherwise, add the new resource with its amount
-              costList[resourceName] = 1 ;
+              costList[resourceName] = resource.count + resource.tempCount ;
             }
-            console.log(`We have at least 1 ${resourceName}, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            checkFlag = false;
+            console.log(`We have ${resource.count + resource.tempCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
           } 
           // if we don't have (any more of) the resource directly, check if we can craft it instead         
           else if(!resource.isCraftable || ores[resourceName]){
