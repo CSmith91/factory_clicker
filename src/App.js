@@ -697,7 +697,7 @@ function App() {
     }
 
     const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}, costList = {}, undoCheck = {}) => {
-      //console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
+      console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
       let reduceItems = JSON.parse(JSON.stringify(outstandingItems)); // Make a deep copy of outstandingItems // {"Wire":3,"Iron Plate":1}
       
       // here we build a list of all the things we need. We loop continuously until we get to raw ingredients (or get a 'no'), and builds this list along the way
@@ -706,12 +706,21 @@ function App() {
         const setTempVal = ores[resourceName] ? setOres : setIngredients;
         const multiplier = resource.multiplier || 1;
         let reduceCount = amountRequired;
-        const availableCount = resource.isMachine ?  resource.idleCount : resource.count
-        const fullCount = availableCount + resource.tempCount
+        let availableCount = resource.isMachine ?  resource.idleCount : resource.count;
+        let floatingCount = resource.tempCount < 0 ? resource.tempCount : 0;
+        let fullCount = availableCount + floatingCount;
+
+        console.log(`
+          availableCount is: ${availableCount}
+          floatingCount is: ${floatingCount}
+          fullCount is: ${fullCount}
+          reduceCount: ${reduceCount}
+          amountRequired: ${amountRequired}
+          `)
 
         while(reduceCount > 0){
           // Check if we have this ingredient directly, in full
-          if ((fullCount) >= amountRequired) {
+          if (fullCount >= amountRequired) {
             // Reduce the reduceCount
             reduceCount = 0;
             // Remove the item from reduceItems
@@ -723,7 +732,7 @@ function App() {
               // Otherwise, add the new resource with its amount
               costList[resourceName] = amountRequired ;
             }
-            //console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
             setTempVal(prevIngredients => ({
               ...prevIngredients,
               [resourceName]: {
@@ -731,27 +740,24 @@ function App() {
                 tempCount: prevIngredients[resourceName].tempCount - amountRequired
               }
             }));
-            if(undoCheck[resourceName]){
-              undoCheck[resourceName] += amountRequired;
-            } else {
-              undoCheck[resourceName] = amountRequired ;
-            }
-            //console.log(`undoCheck is now: ${JSON.stringify(undoCheck)}`);
+            // Update undoCheck
+            undoCheck[resourceName] = (undoCheck[resourceName] || 0) + amountRequired;
+        
+            // Decrease fullCount accordingly
+            fullCount -= amountRequired;
+
+            console.log(`undoCheck is now: ${JSON.stringify(undoCheck)}`);
           }
           // Check if we have this ingredient directly, in part
-          else if ((fullCount) >= 1) {
+          else if (fullCount >= 1) {
             // Reduce the reduceCount
-            reduceCount = reduceCount - (fullCount);
-            // Remove 1x the item from reduceItems
-            reduceItems[resourceName] = reduceItems[resourceName] - (fullCount);
-            if (costList[resourceName]) {
-              // If the resource already exists, increment the amount
-              costList[resourceName] = costList[resourceName] + fullCount;
-            } else {
-              // Otherwise, add the new resource with its amount
-              costList[resourceName] = fullCount ;
-            }
-            //console.log(`We have ${fullCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            reduceCount -= fullCount;
+            reduceItems[resourceName] -= fullCount;
+            costList[resourceName] = (costList[resourceName] || 0) + fullCount;
+            undoCheck[resourceName] = (undoCheck[resourceName] || 0) + fullCount;
+
+            console.log(`We have ${fullCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            
             setTempVal(prevIngredients => ({
               ...prevIngredients,
               [resourceName]: {
@@ -759,27 +765,24 @@ function App() {
                 tempCount: prevIngredients[resourceName].tempCount--
               }
             }));
-            if(undoCheck[resourceName]){
-              undoCheck[resourceName]++;
-            } else {
-              undoCheck[resourceName] = 1 ;
-            }
-            //console.log(`undoCheck is now: ${JSON.stringify(undoCheck)}`);
-            
+
+            console.log(`undoCheck is now: ${JSON.stringify(undoCheck)}`);
+            // update fullCount
+            fullCount = 0;
           } 
           // if we don't have (any more of) the resource directly, check if we can craft it instead         
           else if(!resource.isCraftable || ores[resourceName]){
-            //console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
+            console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
             return [false, false, false, undoCheck]; // Return an array indicating failure
           }
           // now check if we can do a smart craft of this item
           else{
             buildList = `${resourceName}-`+buildList
-            //console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
+            console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
 
             // Make a deep copy of resource.cost to avoid mutation
             const newCost = JSON.parse(JSON.stringify(resource.cost));
-            //console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
+            console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
 
             // Recursive call to smartBuild for the current resource
             const [newBuildList, newOverBuild, newCostList, newUndoCheck] = smartBuild(resourceName, newCost, buildList, overBuild, costList, undoCheck)
@@ -794,10 +797,14 @@ function App() {
             undoCheck = newUndoCheck;
         
             // otherwise, we've got enough for 1 of the item, so we reduce the reducer
-            reduceCount = reduceCount-multiplier;
-            // Remove 1 ( x multiplier if it makes more) of the item from reduceItems
-            reduceItems[resourceName] = reduceItems[resourceName]-multiplier;
-            //console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            reduceCount -= multiplier;
+            reduceItems[resourceName] -= multiplier;
+
+            console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+
+            // Decrease fullCount accordingly for subsequent crafting
+            fullCount--;
+
             // if we've wrangled more ingredients that we need, we can increase the tempCount
             if(reduceCount < 0){
               if (overBuild[resourceName]) {
@@ -823,6 +830,7 @@ function App() {
       let cleanUndo = undo;
 
       // Split the initial list into an array for easier manipulation
+      console.log(`initialList: ${JSON.stringify(initialList)}`)
       let initialArray = initialList.split('-');
 
       // console.log(`Our split list is: ${initialArray}
@@ -847,15 +855,23 @@ function App() {
         let timesToRemove = Math.floor(itemAmount / multiplier); // Calculate how many to remove
         let remainder = itemAmount % multiplier; // Calculate leftover (lost) items
         let rawBase = ingredients[itemName].cost
+        let setTempVal = ores[itemName] ? setOres : setIngredients;
         // console.log(`Removing ${timesToRemove} instances of ${itemName}`);
         // console.log(`This ${itemName} is equivalent to ${JSON.stringify(rawBase)}`)
 
         // Remove the item from the initial list starting from the back
         initialArray = removeFromBack(initialArray, itemName, timesToRemove);
         // Reduce the raw cost collection
-        for (const [itemName, _] of Object.entries(rawBase)) {
+        for (const [itemName, itemAmount] of Object.entries(rawBase)) {
           cleanRaw[itemName] -= timesToRemove;
           cleanUndo[itemName] -= timesToRemove;
+          setTempVal(prevIngredients => ({
+            ...prevIngredients,
+            [itemName]: {
+              ...prevIngredients[itemName],
+              tempCount: prevIngredients[itemName].tempCount + timesToRemove
+            }
+          }));
         }
         // console.log(`cleanRaw is now: ${JSON.stringify(cleanRaw)}`)
 
@@ -872,10 +888,9 @@ function App() {
 
       // Join the array back into a string
       let cleanList = initialArray.join('-');
-      console.log(cleanList);
 
-      console.log(`cleanRaw ends as: ${JSON.stringify(cleanRaw)}`)
-      console.log(`cleanUndo ends as: ${JSON.stringify(cleanUndo)}`)
+      // console.log(`cleanRaw ends as: ${JSON.stringify(cleanRaw)}`)
+      // console.log(`cleanUndo ends as: ${JSON.stringify(cleanUndo)}`)
 
       return [cleanList, leftovers, cleanRaw, cleanUndo]
     }
@@ -903,10 +918,11 @@ function App() {
 
       // Calculate how much durability is required for the operation
       let durabilityRequired = corrodeRate * totalOperations;
+      let finalCondition = durability - durabilityRequired
 
       // Check if the tool has enough durability
-      if (durability - durabilityRequired > 0) {
-        return true;  // Return true if the tool has enough durability
+      if (finalCondition > 0) {
+        return finalCondition;  // Return true if the tool has enough durability
       } else {
         return false; // Return false if the tool doesn't have enough durability
       }
@@ -929,6 +945,18 @@ function App() {
 
     // now we build our craft list - what we need
     const [craftList, surplusList, rawCost, undoCraft] = smartBuild(ingredientName, item.cost)
+
+    console.log(`craftList: ${JSON.stringify(craftList)}
+    surplusList: ${JSON.stringify(surplusList)}
+    rawCost: ${JSON.stringify(rawCost)}
+    undoCraft: ${JSON.stringify(undoCraft)}`)
+
+    // this should only catch missing RAW items (like plastic). Potential issue with this is that we might be 1 wire short but we have over-crafted 2 wire before cleanBuild kicks in
+    if(craftList === false){
+      onAlert(`Not enough resources to craft ${ingredientName}.`)
+      clearTempCounts(undoCraft)
+      return
+    }
 
     // where we may have built multiples, see if we have enough to reduce the craftList
     const [cleanList, leftover, cleanRawCost, cleanUndo] = cleanBuild(craftList, surplusList, rawCost, undoCraft)
@@ -958,45 +986,9 @@ function App() {
     // we setup a group ID for this craft. Items that require specific children will get a specific ID
     const groupId = `${cleanList}${ingredientName}--${Date.now() + Math.random()}`;
 
-    // // we now send the instructions to onCraft
-    // const buildCraftArray = (groupId) => {
-    //   // Split by '--' to remove the timestamp part
-    //   const splitParts = groupId.split('--');
-      
-    //   // The first part before '--' is the list of resources
-    //   const resourceString = splitParts[0];
-      
-    //   // Split the resource string by '-' to get individual items
-    //   const splitGroup = resourceString.split('-').filter(Boolean); // Filter to remove empty items if any
-
-    //   const craftArray = [];
-
-    //   // Iterate through the split array
-    //   for (let i = 0; i < splitGroup.length; i++) {
-    //     const resourceName = splitGroup[i];
-
-    //     // Check if resourceName exists in ingredients
-    //     if (ingredients[resourceName]) {
-    //       if (i === splitGroup.length - 1) {
-    //         // For the last item, don't add 'child'
-    //         craftArray.push([resourceName, ingredients[resourceName]]);
-    //       } else {
-    //         // For all other items, add 'child'
-    //         craftArray.push([resourceName, ingredients[resourceName], 'child']);
-    //       }
-    //     }
-    //   }
-
-    //   return craftArray;
-    // };
-
-    // const craftArray = buildCraftArray(groupId);
-
     console.log(`groupId is: ${JSON.stringify(groupId)}
                 leftover: ${JSON.stringify(leftover)}
                 cleanRawCost: ${JSON.stringify(cleanRawCost)}`)
-                // craftArray: ${JSON.stringify(craftArray)}
-                // `)
 
     // almost there, we now clear the tempCounts for all the ingredients we reserved for this:
     clearTempCounts(cleanRawCost)
@@ -1004,22 +996,29 @@ function App() {
     // we've built up a groupId and array for our craft execution order
     // if this was a 5x craft, we feed this info here:
     if(bulkCheck){
-      return [true, groupId, craftArray]
+      return [true, groupId]
     }
     else{
-      craftArray.forEach(([resourceName, ingredient, child]) => {
-        onCraft(resourceName, ingredient, groupId, child, false, leftover);  // Pass groupId to ensure grouping
-      });
+      onCraft(ingredientName, groupId, cleanRawCost, leftover, hammerDeteriation, false);  // Pass groupId to ensure grouping
     }
   };
 
-  const onCraft = (itemName, item, groupId, child, bulk, leftover) => {
+  const onCraft = (itemName, groupId, totalCost, leftover, hammerCost, bulk) => {
+
+    console.log(`onCraft
+    itemName is: ${JSON.stringify(itemName)}
+    groupId is: ${JSON.stringify(groupId)}
+    totalCost is: ${JSON.stringify(totalCost)}
+    leftover is: ${JSON.stringify(leftover)}
+    hammer goes down to: ${JSON.stringify(hammerCost)}
+    bulk: ${JSON.stringify(bulk)}`)
+
     // Update the hammer's durability, if applicable
     if(ingredients[itemName]){
       setTools(prevTools => {
           const toolName = "Hammer"
           const tool = prevTools[toolName];
-          const updatedDurability = tool.durability - tool.corrodeRate;
+          const updatedDurability = hammerCost;
           return {
               ...prevTools,
               [toolName]: {
@@ -1030,12 +1029,10 @@ function App() {
       });
     }
 
-    let multiplier = 1;
-
-    // Use functional updates to handle asynchronous state updates
+    // Deduct all the raw items
     setOres(prevOres => {
       const updatedOres = { ...prevOres };
-      Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
+      Object.entries(totalCost).forEach(([resourceName, amountRequired]) => {
         if (updatedOres[resourceName]) {
           updatedOres[resourceName].count -= amountRequired;
         }
@@ -1045,7 +1042,7 @@ function App() {
 
     setIngredients(prevIngredients => {
       const updatedIngredients = { ...prevIngredients };
-      Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
+      Object.entries(totalCost).forEach(([resourceName, amountRequired]) => {
         if (updatedIngredients[resourceName]) {
           updatedIngredients[resourceName].count -= amountRequired;
           if (updatedIngredients[resourceName].idleCount) {
@@ -1053,12 +1050,31 @@ function App() {
           }
         }
       });
+      return updatedIngredients;
+    });
 
-      // Handle tempCount updates with multipliers
-      if (updatedIngredients[itemName]) {
-        multiplier = updatedIngredients[itemName].multiplier ? updatedIngredients[itemName].multiplier : 1;
-        updatedIngredients[itemName].tempCount += multiplier;
-      }
+    const multiplier = ingredients[itemName].multiplier || 1;
+
+    // Reserve storage space for the item we're crafting, as well as any leftovers
+    setIngredients(prevIngredients => {
+      const updatedIngredients = { ...prevIngredients };
+    
+      // Increment the tempCount for itemName
+      updatedIngredients[itemName] = {
+        ...updatedIngredients[itemName],
+        tempCount: updatedIngredients[itemName].tempCount + multiplier
+      };
+    
+      // Iterate through the leftover object and increment the tempCount for each resource
+      Object.entries(leftover).forEach(([resourceName, amount]) => {
+        if (updatedIngredients[resourceName]) {
+          updatedIngredients[resourceName] = {
+            ...updatedIngredients[resourceName],
+            tempCount: updatedIngredients[resourceName].tempCount + amount
+          };
+        }
+      });
+    
       return updatedIngredients;
     });
 
@@ -1070,178 +1086,58 @@ function App() {
       return updatedNetworks;
     });
 
-    // // if this is a single craft, we can just add straight to queue, otherwise we need to process the craft order
-    // if(bulk){
-    //   return {itemName, item, groupId, child }
-    // }
-    // // note: child does nothing in this function, other than pass to addToCraftQueue to denote which items are being crafted as intermediaries
-    // addToCraftQueue(itemName, item, multiplier, child, groupId, leftover)
-  };
+    // now we've done the deductions, we setup the items for queuing, including adding 'child' labels
+    const item = ingredients[itemName] || networks[itemName];
 
-  const craftPayout = (ingredientName, ingredient, child, leftover) => {
-    // check if ingredient -- if not, it's a network item
-    if (ingredients[ingredientName]) {
-  
-      setIngredients(prevIngredients => {
-        const currentIngredient = prevIngredients[ingredientName];
-        let updatedIngredient = { ...currentIngredient };
-        
-        // Update count and tempCount
-        updatedIngredient.count += (updatedIngredient.multiplier || 1);
-        updatedIngredient.tempCount -= (updatedIngredient.multiplier || 1);
-    
-        // Handle machines
-        if (ingredient.isMachine) {
-          updatedIngredient.idleCount = Math.min(
-            currentIngredient.idleCount + (updatedIngredient.multiplier || 1),
-            updatedIngredient.count
-          );
-        }
-    
-        // Update ores and ingredients together
-        return {
-          ...prevIngredients,
-          [ingredientName]: updatedIngredient,
-        };
-      });
-  
-      // Early-stage unlock check - #myFirstFurnace       
-      if (ingredients["Stone Furnace"].count === 0 && !unlockables.smelt1.isVisible) {
-        setUnlockables(prevUnlockables => ({
-          ...prevUnlockables,
-          smelt1: {
-            ...prevUnlockables.smelt1,
-            isVisible: true
-          }
-        }));
-        
-        setIngredients(prevIngredients => ({
-          ...prevIngredients,
-          Brick: {
-            ...prevIngredients.Brick,
-            unlocked: true
-          }
-        }));
-      }
-    } 
-    // Handle network items
-    else {
-      setNetworks(prevNetworks => ({
-        ...prevNetworks,
-        [ingredientName]: {
-          ...prevNetworks[ingredientName],
-          count: prevNetworks[ingredientName].count + 1,
-          idleCount: prevNetworks[ingredientName].idleCount + 1,
-          tempCount: prevNetworks[ingredientName].tempCount - 1,
-        }
-      }));
-    }
-  };
-
-  // ###### BULK CRAFT LOGIC
-  // ###### BULK CRAFT LOGIC  
-  // ###### BULK CRAFT LOGIC
-
-  const bulkCheck = (ingredientName) => {
-
-    let totalCrafts = 5; // Attempt to craft 5x
-    let allCrafts = {};  // Collect all craft groups by groupId
-  
-    for (let i = 0; i < totalCrafts; i++) {
-      // Call checkCraft to trigger crafting logic and deductions
-      const result = checkCraft(ingredientName, true); // This triggers onCraft
-  
-      if (!result) {
-        // Exit if onCraft returned no result (e.g., tool broke or resources ran out)
-        break;
-      }
-
-      // Extract the craftArray from the result
-      const groupId = result[1]
-      const craftArray = result[2];
-
-      // Initialize the groupId in allCrafts if not already present
-      if (!allCrafts[groupId]) {
-        allCrafts[groupId] = []; // Create an empty array to store all crafts for this groupId
-      }
-
-      // Iterate through the craftArray and call onCraft for each resource
-      craftArray.forEach(([resourceName, ingredient, child], index) => {
-        const isParent = (index === craftArray.length - 1); // Last item is the parent
-
-        // Call onCraft with child as undefined for the parent (final item)
-        const craftResult = onCraft(resourceName, ingredient, groupId, isParent ? undefined : "child", true);
-        
-        // Append the craft result to the respective group in allCrafts
-        allCrafts[groupId].push(craftResult);
-      });
-    }
-
-    // console.log(`allCrafts: ${JSON.stringify(allCrafts)}`)
-
-    const stackedCrafts = reorderBulk(allCrafts)
-
-    // console.log(`stackedCrafts: ${JSON.stringify(stackedCrafts)}`)
-
-    for (const groupId in stackedCrafts) { // Loop through each groupId in allCrafts
-      const resources = stackedCrafts[groupId]; // Get the array of resources under this groupId
+    // we now send the instructions to onCraft
+    const buildCraftArray = (groupId) => {
+      // Split by '--' to remove the timestamp part
+      const splitParts = groupId.split('--');
       
-      // Loop through each resource in the group
-      for (const resource of resources) {
-        const resourceName = resource.itemName; // Get the item name
-        const item = resource.item; // Get the entire resource object as the ingredient
-        const child = resource.child ? "child" : false; // Check if the resource is marked as a child
-        const multiplier = item.multiplier || 1;
-  
-        // Add these items to the queue now they've been reordered
-        addToCraftQueue(resourceName, item, multiplier, child, groupId)
-      }
-    }
+      // The first part before '--' is the list of resources
+      const resourceString = splitParts[0];
+      
+      // Split the resource string by '-' to get individual items
+      const splitGroup = resourceString.split('-').filter(Boolean); // Filter to remove empty items if any
 
+      const craftArray = [];
+
+      // Iterate through the split array
+      for (let i = 0; i < splitGroup.length; i++) {
+        const resourceName = splitGroup[i];
+
+        // Check if resourceName exists in ingredients
+        if (ingredients[resourceName]) {
+          const multiplier = ingredients[resourceName].multiplier || 1;
+
+          if (i === splitGroup.length - 1) {
+            // For the last item, don't add 'child'
+            craftArray.push([resourceName, ingredients[resourceName], multiplier, null, groupId, leftover, totalCost, hammerCost]);
+          } else {
+            // For all other items, add 'child'
+            craftArray.push([resourceName, ingredients[resourceName], multiplier, 'child', groupId, leftover, totalCost, hammerCost]);
+          }
+        }
+      }
+
+      return craftArray;
+    };
+
+    const craftArray = buildCraftArray(groupId, leftover, totalCost, hammerCost);
+
+
+    // if this is a single craft, we can just add straight to queue, otherwise we need to process the craft order
+    if(bulk){
+      return {craftArray}
+    }
+    // note: child items dont get crafted, but are passed to addToCraftQueue to denote which items are being crafted as intermediaries
+    craftArray.forEach(craftItem => {
+      const [itemName, item, multiplier, child, groupId, leftover, totalCost, hammerCost] = craftItem
+      addToCraftQueue(itemName, item, multiplier, child, groupId, leftover, totalCost, hammerCost)
+    })
+    
   };
 
-  const reorderBulk = (allCrafts) => {
-    const newAllCrafts = {}; // Object to store the reorganized groups
-  
-    // Step 1: Extract the order from the first `groupId`
-    let firstGroupId = Object.keys(allCrafts)[0] ? Object.keys(allCrafts)[0] : false;
-    if(!firstGroupId){
-      return;
-    }
-    let prefixOrder = firstGroupId.split('--')[0].split('-');
-  
-    // Step 2: Collect and group all items by their prefix
-    const groupedItems = {};
-    for (const groupId in allCrafts) {
-      const prefix = groupId.split('--')[0]; // Extract the prefix
-      if (!groupedItems[prefix]) {
-        groupedItems[prefix] = [];
-      }
-      groupedItems[prefix].push(...allCrafts[groupId]);
-    }
-  
-    // Step 3: Iterate through each prefix and re-order based on the first group prefixOrder
-    for (const prefix in groupedItems) {
-      // Sort items based on the prefixOrder (i.e., Gear -> Stone Furnace -> Burner Drill)
-      const sortedItems = groupedItems[prefix].sort((a, b) => {
-        const itemAIndex = prefixOrder.indexOf(a.itemName);
-        const itemBIndex = prefixOrder.indexOf(b.itemName);
-        return itemAIndex - itemBIndex;
-      });
-  
-      // Step 4: Assign a new groupId with the prefix and random number
-      const newGroupId = `${prefix}--${Date.now() + Math.random()}`;
-      newAllCrafts[newGroupId] = sortedItems;
-  
-      // Replace the groupId for each item in the sorted list
-      sortedItems.forEach((item) => {
-        item.groupId = newGroupId;
-      });
-    }
-  
-    return newAllCrafts;
-  };
-  
   // ###### QUEUE LOGIC
   // ###### QUEUE LOGIC
   // ###### QUEUE LOGIC
@@ -1250,7 +1146,7 @@ function App() {
   const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
   const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
   
-  const addToCraftQueue = (ingredientName, ingredient, multiplier, parentIngredientName = null, groupId, leftover) => {
+  const addToCraftQueue = (ingredientName, ingredient, multiplier, parentIngredientName = null, groupId, leftover, totalCost, hammerCost) => {
     setCraftQueue(prevQueue => {
       // Get the last item in the queue
       const lastItem = prevQueue[prevQueue.length - 1];
@@ -1310,7 +1206,9 @@ function App() {
             setCurrentCrafting(null);
           }
           else if (prevQueue[0].queue > 1) {
-            craftPayout(ingredientName, ingredient, prevQueue[0].child, prevQueue[0].leftover ); // Process crafting
+            if(prevQueue[0].parentIngredientName !== 'child'){
+              craftPayout(ingredientName, prevQueue[0].leftover); // Process crafting
+            }
             // If there are more than 1 in the queue, reduce the count
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
@@ -1321,7 +1219,9 @@ function App() {
               return item;
             });
           } else {
-            craftPayout(ingredientName, ingredient, prevQueue[0].child, prevQueue[0].leftover  ); // Process crafting
+            if(prevQueue[0].parentIngredientName !== 'child'){
+              craftPayout(ingredientName, prevQueue[0].leftover); // Process crafting
+            }
             // If there's only 1 left, remove the item after crafting completes
             setIsAnimating(false); // End the animation
             setCurrentCrafting(null); // Reset current crafting item
@@ -1331,6 +1231,94 @@ function App() {
       }, ingredient.craftTime * 1000);
     }
   }, [craftQueue, currentCrafting]);
+
+  const craftPayout = (ingredientName, leftover) => {
+    // check if ingredient -- if not, it's a network item
+    if (ingredients[ingredientName]) {
+  
+      setIngredients(prevIngredients => {
+        const updatedIngredients = { ...prevIngredients };
+      
+        // Handle the main ingredient's update
+        const currentIngredient = updatedIngredients[ingredientName];
+        let updatedIngredient = { ...currentIngredient };
+      
+        // Update count and tempCount
+        updatedIngredient.count += (updatedIngredient.multiplier || 1);
+        updatedIngredient.tempCount -= (updatedIngredient.multiplier || 1);
+      
+        // Handle machines
+        if (currentIngredient.isMachine) {
+          updatedIngredient.idleCount = Math.min(
+            currentIngredient.idleCount + (updatedIngredient.multiplier || 1),
+            updatedIngredient.count
+          );
+        }
+      
+        // Update the ingredientName entry
+        updatedIngredients[ingredientName] = updatedIngredient;
+      
+        return updatedIngredients;
+      });
+
+      if (leftover) {
+        // Iterate through leftover object
+        Object.keys(leftover).forEach((item) => {
+          setIngredients((prevIngredients) => {
+            // Check if the item exists in ingredients
+            if (prevIngredients[item]) {
+              return {
+                ...prevIngredients,
+                [item]: {
+                  ...prevIngredients[item],
+                  // Increase the count by leftover amount
+                  count: prevIngredients[item].count + leftover[item],
+                  // Decrease the tempCount by the leftover amount
+                  tempCount: prevIngredients[item].tempCount - leftover[item],
+                }
+              };
+            }
+            return prevIngredients; // Return unchanged if the item doesn't exist
+          });
+        });
+      }
+  
+      // Early-stage unlock check - #myFirstFurnace       
+      if (ingredients["Stone Furnace"].count === 0 && !unlockables.smelt1.isVisible) {
+        setUnlockables(prevUnlockables => ({
+          ...prevUnlockables,
+          smelt1: {
+            ...prevUnlockables.smelt1,
+            isVisible: true
+          }
+        }));
+        
+        setIngredients(prevIngredients => ({
+          ...prevIngredients,
+          Brick: {
+            ...prevIngredients.Brick,
+            unlocked: true
+          }
+        }));
+      }
+    } 
+    // Handle network items
+    else {
+      setNetworks(prevNetworks => ({
+        ...prevNetworks,
+        [ingredientName]: {
+          ...prevNetworks[ingredientName],
+          count: prevNetworks[ingredientName].count + 1,
+          idleCount: prevNetworks[ingredientName].idleCount + 1,
+          tempCount: prevNetworks[ingredientName].tempCount - 1,
+        }
+      }));
+    }
+  };
+
+  // ###### CANCEL LOGIC
+  // ###### CANCEL LOGIC
+  // ###### CANCEL LOGIC
 
   const cancelCraft = (groupId) => {
 
@@ -1535,6 +1523,110 @@ function App() {
     .filter(Boolean); // Remove null entries (items that were removed)
   });
 };
+
+  // ###### BULK CRAFT LOGIC
+  // ###### BULK CRAFT LOGIC  
+  // ###### BULK CRAFT LOGIC
+
+  const bulkCheck = (ingredientName) => {
+
+    let totalCrafts = 5; // Attempt to craft 5x
+    let allCrafts = {};  // Collect all craft groups by groupId
+  
+    for (let i = 0; i < totalCrafts; i++) {
+      // Call checkCraft to trigger crafting logic and deductions
+      const result = checkCraft(ingredientName, true); // This triggers onCraft
+  
+      if (!result) {
+        // Exit if onCraft returned no result (e.g., tool broke or resources ran out)
+        break;
+      }
+
+      // Extract the craftArray from the result
+      const groupId = result[1]
+      const craftArray = result[2];
+
+      // Initialize the groupId in allCrafts if not already present
+      if (!allCrafts[groupId]) {
+        allCrafts[groupId] = []; // Create an empty array to store all crafts for this groupId
+      }
+
+      // Iterate through the craftArray and call onCraft for each resource
+      craftArray.forEach(([resourceName, ingredient, child], index) => {
+        const isParent = (index === craftArray.length - 1); // Last item is the parent
+
+        // Call onCraft with child as undefined for the parent (final item)
+        const craftResult = onCraft(resourceName, ingredient, groupId, isParent ? undefined : "child", true);
+        
+        // Append the craft result to the respective group in allCrafts
+        allCrafts[groupId].push(craftResult);
+      });
+    }
+
+    // console.log(`allCrafts: ${JSON.stringify(allCrafts)}`)
+
+    const stackedCrafts = reorderBulk(allCrafts)
+
+    // console.log(`stackedCrafts: ${JSON.stringify(stackedCrafts)}`)
+
+    for (const groupId in stackedCrafts) { // Loop through each groupId in allCrafts
+      const resources = stackedCrafts[groupId]; // Get the array of resources under this groupId
+      
+      // Loop through each resource in the group
+      for (const resource of resources) {
+        const resourceName = resource.itemName; // Get the item name
+        const item = resource.item; // Get the entire resource object as the ingredient
+        const child = resource.child ? "child" : false; // Check if the resource is marked as a child
+        const multiplier = item.multiplier || 1;
+  
+        // Add these items to the queue now they've been reordered
+        addToCraftQueue(resourceName, item, multiplier, child, groupId)
+      }
+    }
+
+  };
+
+  const reorderBulk = (allCrafts) => {
+    const newAllCrafts = {}; // Object to store the reorganized groups
+  
+    // Step 1: Extract the order from the first `groupId`
+    let firstGroupId = Object.keys(allCrafts)[0] ? Object.keys(allCrafts)[0] : false;
+    if(!firstGroupId){
+      return;
+    }
+    let prefixOrder = firstGroupId.split('--')[0].split('-');
+  
+    // Step 2: Collect and group all items by their prefix
+    const groupedItems = {};
+    for (const groupId in allCrafts) {
+      const prefix = groupId.split('--')[0]; // Extract the prefix
+      if (!groupedItems[prefix]) {
+        groupedItems[prefix] = [];
+      }
+      groupedItems[prefix].push(...allCrafts[groupId]);
+    }
+  
+    // Step 3: Iterate through each prefix and re-order based on the first group prefixOrder
+    for (const prefix in groupedItems) {
+      // Sort items based on the prefixOrder (i.e., Gear -> Stone Furnace -> Burner Drill)
+      const sortedItems = groupedItems[prefix].sort((a, b) => {
+        const itemAIndex = prefixOrder.indexOf(a.itemName);
+        const itemBIndex = prefixOrder.indexOf(b.itemName);
+        return itemAIndex - itemBIndex;
+      });
+  
+      // Step 4: Assign a new groupId with the prefix and random number
+      const newGroupId = `${prefix}--${Date.now() + Math.random()}`;
+      newAllCrafts[newGroupId] = sortedItems;
+  
+      // Replace the groupId for each item in the sorted list
+      sortedItems.forEach((item) => {
+        item.groupId = newGroupId;
+      });
+    }
+  
+    return newAllCrafts;
+  };
 
   return (
     <>
