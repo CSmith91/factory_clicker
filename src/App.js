@@ -696,20 +696,22 @@ function App() {
       }
     }
 
-    const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}, costList = {}) => {
-      console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
+    const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}, costList = {}, undoCheck = {}) => {
+      //console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
       let reduceItems = JSON.parse(JSON.stringify(outstandingItems)); // Make a deep copy of outstandingItems // {"Wire":3,"Iron Plate":1}
       
       // here we build a list of all the things we need. We loop continuously until we get to raw ingredients (or get a 'no'), and builds this list along the way
       for (const [resourceName, amountRequired] of Object.entries(reduceItems)) {
         const resource = ores[resourceName] || ingredients[resourceName];
+        const setTempVal = ores[resourceName] ? setOres : setIngredients;
         const multiplier = resource.multiplier || 1;
         let reduceCount = amountRequired;
-        let checkFlag = true;
+        const availableCount = resource.isMachine ?  resource.idleCount : resource.count
+        const fullCount = availableCount + resource.tempCount
 
         while(reduceCount > 0){
           // Check if we have this ingredient directly, in full
-          if ((resource.count + resource.tempCount) >= amountRequired) {
+          if ((fullCount) >= amountRequired) {
             // Reduce the reduceCount
             reduceCount = 0;
             // Remove the item from reduceItems
@@ -721,54 +723,81 @@ function App() {
               // Otherwise, add the new resource with its amount
               costList[resourceName] = amountRequired ;
             }
-            console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            //console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            setTempVal(prevIngredients => ({
+              ...prevIngredients,
+              [resourceName]: {
+                ...prevIngredients[resourceName],
+                tempCount: prevIngredients[resourceName].tempCount - amountRequired
+              }
+            }));
+            if(undoCheck[resourceName]){
+              undoCheck[resourceName] += amountRequired;
+            } else {
+              undoCheck[resourceName] = amountRequired ;
+            }
+            //console.log(`undoCheck is now: ${JSON.stringify(undoCheck)}`);
           }
           // Check if we have this ingredient directly, in part
-          else if ((resource.count + resource.tempCount) >= 1 && checkFlag) {
+          else if ((fullCount) >= 1) {
             // Reduce the reduceCount
-            reduceCount = reduceCount - (resource.count + resource.tempCount);
+            reduceCount = reduceCount - (fullCount);
             // Remove 1x the item from reduceItems
-            reduceItems[resourceName] = reduceItems[resourceName] - (resource.count + resource.tempCount);
+            reduceItems[resourceName] = reduceItems[resourceName] - (fullCount);
             if (costList[resourceName]) {
               // If the resource already exists, increment the amount
-              costList[resourceName] = costList[resourceName] + resource.count + resource.tempCount;
+              costList[resourceName] = costList[resourceName] + fullCount;
             } else {
               // Otherwise, add the new resource with its amount
-              costList[resourceName] = resource.count + resource.tempCount ;
+              costList[resourceName] = fullCount ;
             }
-            checkFlag = false;
-            console.log(`We have ${resource.count + resource.tempCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            //console.log(`We have ${fullCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            setTempVal(prevIngredients => ({
+              ...prevIngredients,
+              [resourceName]: {
+                ...prevIngredients[resourceName],
+                tempCount: prevIngredients[resourceName].tempCount--
+              }
+            }));
+            if(undoCheck[resourceName]){
+              undoCheck[resourceName]++;
+            } else {
+              undoCheck[resourceName] = 1 ;
+            }
+            //console.log(`undoCheck is now: ${JSON.stringify(undoCheck)}`);
+            
           } 
           // if we don't have (any more of) the resource directly, check if we can craft it instead         
           else if(!resource.isCraftable || ores[resourceName]){
-            console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
-            return [false, false, false]; // Return an array indicating failure
+            //console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
+            return [false, false, false, undoCheck]; // Return an array indicating failure
           }
           // now check if we can do a smart craft of this item
           else{
             buildList = `${resourceName}-`+buildList
-            console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
+            //console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
 
             // Make a deep copy of resource.cost to avoid mutation
             const newCost = JSON.parse(JSON.stringify(resource.cost));
-            console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
+            //console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
 
             // Recursive call to smartBuild for the current resource
-            const [newBuildList, newOverBuild, newCostList] = smartBuild(resourceName, newCost, buildList, overBuild, costList)
+            const [newBuildList, newOverBuild, newCostList, newUndoCheck] = smartBuild(resourceName, newCost, buildList, overBuild, costList, undoCheck)
             
             // If we failed to craft, return false
-            if (!newBuildList) return [false, false, false];
+            if (!newBuildList) return [false, false, false, undoCheck];
 
             // Otherwise, update the lists
             buildList = newBuildList;
             overBuild = newOverBuild;
             costList = newCostList;
+            undoCheck = newUndoCheck;
         
             // otherwise, we've got enough for 1 of the item, so we reduce the reducer
             reduceCount = reduceCount-multiplier;
             // Remove 1 ( x multiplier if it makes more) of the item from reduceItems
             reduceItems[resourceName] = reduceItems[resourceName]-multiplier;
-            console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            //console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
             // if we've wrangled more ingredients that we need, we can increase the tempCount
             if(reduceCount < 0){
               if (overBuild[resourceName]) {
@@ -783,21 +812,22 @@ function App() {
         }
       }
       // Return after all items are processed
-      return [buildList, overBuild, costList];
+      return [buildList, overBuild, costList, undoCheck];
     }
 
-    const cleanBuild = (list, surplus, raw) => {
+    const cleanBuild = (list, surplus, raw, undo) => {
       let initialList = list;
       let initialSurplus = surplus;
       let leftovers = {};
       let cleanRaw = raw;
+      let cleanUndo = undo;
 
       // Split the initial list into an array for easier manipulation
       let initialArray = initialList.split('-');
 
-      console.log(`Our split list is: ${initialArray}
-        & our surplus is: ${JSON.stringify(initialSurplus)}
-        & cleanRaw starts as: ${JSON.stringify(cleanRaw)}`)
+      // console.log(`Our split list is: ${initialArray}
+      //   & our surplus is: ${JSON.stringify(initialSurplus)}
+      //   & cleanRaw starts as: ${JSON.stringify(cleanRaw)}`)
 
       // Function to remove items from the back
       const removeFromBack = (array, itemName, countToRemove) => {
@@ -817,16 +847,17 @@ function App() {
         let timesToRemove = Math.floor(itemAmount / multiplier); // Calculate how many to remove
         let remainder = itemAmount % multiplier; // Calculate leftover (lost) items
         let rawBase = ingredients[itemName].cost
-        console.log(`Removing ${timesToRemove} instances of ${itemName}`);
-        console.log(`This ${itemName} is equivalent to ${JSON.stringify(rawBase)}`)
+        // console.log(`Removing ${timesToRemove} instances of ${itemName}`);
+        // console.log(`This ${itemName} is equivalent to ${JSON.stringify(rawBase)}`)
 
         // Remove the item from the initial list starting from the back
         initialArray = removeFromBack(initialArray, itemName, timesToRemove);
         // Reduce the raw cost collection
         for (const [itemName, _] of Object.entries(rawBase)) {
           cleanRaw[itemName] -= timesToRemove;
+          cleanUndo[itemName] -= timesToRemove;
         }
-        console.log(`cleanRaw is now: ${JSON.stringify(cleanRaw)}`)
+        // console.log(`cleanRaw is now: ${JSON.stringify(cleanRaw)}`)
 
         // If there is any remainder, add it to leftovers
         if (remainder > 0) {
@@ -844,8 +875,9 @@ function App() {
       console.log(cleanList);
 
       console.log(`cleanRaw ends as: ${JSON.stringify(cleanRaw)}`)
+      console.log(`cleanUndo ends as: ${JSON.stringify(cleanUndo)}`)
 
-      return [cleanList, leftovers, cleanRaw]
+      return [cleanList, leftovers, cleanRaw, cleanUndo]
     }
 
     const smartCost = (cleanRawCost) => {
@@ -880,21 +912,37 @@ function App() {
       }
     }
 
-    // now we build our craft list - what we need
-    const [craftList, surplusList, rawCost] = smartBuild(ingredientName, item.cost)
-
-    if(craftList === false){
-      onAlert(`Not enough resources to craft ${ingredientName}.`)
-      return
+    const clearTempCounts = (craftObj) => {
+      // e.g. {"Wire":3,"Iron Plate":1}
+      Object.entries(craftObj).forEach(([resourceName, resourceAmount]) => {
+        const setTempVal = ores[resourceName] ? setOres : setIngredients;
+      
+        setTempVal(prevState => ({
+          ...prevState,
+          [resourceName]: {
+            ...prevState[resourceName],
+            tempCount: prevState[resourceName].tempCount + resourceAmount
+          }
+        }));
+      });
     }
 
+    // now we build our craft list - what we need
+    const [craftList, surplusList, rawCost, undoCraft] = smartBuild(ingredientName, item.cost)
+
     // where we may have built multiples, see if we have enough to reduce the craftList
-    const [cleanList, leftover, cleanRawCost] = cleanBuild(craftList, surplusList, rawCost)
+    const [cleanList, leftover, cleanRawCost, cleanUndo] = cleanBuild(craftList, surplusList, rawCost, undoCraft)
+
+    console.log(`cleanList: ${JSON.stringify(cleanList)}
+    leftover: ${JSON.stringify(leftover)}
+    cleanRawCost: ${JSON.stringify(cleanRawCost)}
+    cleanUndo: ${JSON.stringify(cleanUndo)}`)
 
     // check we have enough raw ingredients
     const canAfford = smartCost(cleanRawCost)
     if(!canAfford){
       onAlert(`Not enough resources to craft ${ingredientName}.`)
+      clearTempCounts(cleanUndo)
       return
     }
 
@@ -903,50 +951,55 @@ function App() {
 
     if(!hammerDeteriation){
       onAlert(`Your hammer will break before crafting ${ingredientName}. Either repair it or craft more intermediary ingredients.`)
+      clearTempCounts(cleanUndo)
       return
     }
 
     // we setup a group ID for this craft. Items that require specific children will get a specific ID
     const groupId = `${cleanList}${ingredientName}--${Date.now() + Math.random()}`;
 
-    // we now send the instructions to onCraft
-    const buildCraftArray = (groupId) => {
-      // Split by '--' to remove the timestamp part
-      const splitParts = groupId.split('--');
+    // // we now send the instructions to onCraft
+    // const buildCraftArray = (groupId) => {
+    //   // Split by '--' to remove the timestamp part
+    //   const splitParts = groupId.split('--');
       
-      // The first part before '--' is the list of resources
-      const resourceString = splitParts[0];
+    //   // The first part before '--' is the list of resources
+    //   const resourceString = splitParts[0];
       
-      // Split the resource string by '-' to get individual items
-      const splitGroup = resourceString.split('-').filter(Boolean); // Filter to remove empty items if any
+    //   // Split the resource string by '-' to get individual items
+    //   const splitGroup = resourceString.split('-').filter(Boolean); // Filter to remove empty items if any
 
-      const craftArray = [];
+    //   const craftArray = [];
 
-      // Iterate through the split array
-      for (let i = 0; i < splitGroup.length; i++) {
-        const resourceName = splitGroup[i];
+    //   // Iterate through the split array
+    //   for (let i = 0; i < splitGroup.length; i++) {
+    //     const resourceName = splitGroup[i];
 
-        // Check if resourceName exists in ingredients
-        if (ingredients[resourceName]) {
-          if (i === splitGroup.length - 1) {
-            // For the last item, don't add 'child'
-            craftArray.push([resourceName, ingredients[resourceName]]);
-          } else {
-            // For all other items, add 'child'
-            craftArray.push([resourceName, ingredients[resourceName], 'child']);
-          }
-        }
-      }
+    //     // Check if resourceName exists in ingredients
+    //     if (ingredients[resourceName]) {
+    //       if (i === splitGroup.length - 1) {
+    //         // For the last item, don't add 'child'
+    //         craftArray.push([resourceName, ingredients[resourceName]]);
+    //       } else {
+    //         // For all other items, add 'child'
+    //         craftArray.push([resourceName, ingredients[resourceName], 'child']);
+    //       }
+    //     }
+    //   }
 
-      return craftArray;
-    };
+    //   return craftArray;
+    // };
 
-    const craftArray = buildCraftArray(groupId);
+    // const craftArray = buildCraftArray(groupId);
 
     console.log(`groupId is: ${JSON.stringify(groupId)}
-    leftover: ${JSON.stringify(leftover)}
-    cleanRawCost: ${JSON.stringify(cleanRawCost)}
-    craftArray: ${JSON.stringify(craftArray)}`)
+                leftover: ${JSON.stringify(leftover)}
+                cleanRawCost: ${JSON.stringify(cleanRawCost)}`)
+                // craftArray: ${JSON.stringify(craftArray)}
+                // `)
+
+    // almost there, we now clear the tempCounts for all the ingredients we reserved for this:
+    clearTempCounts(cleanRawCost)
 
     // we've built up a groupId and array for our craft execution order
     // if this was a 5x craft, we feed this info here:
@@ -977,45 +1030,52 @@ function App() {
       });
     }
 
-    // Deduct the costs from the resources
-    const updatedOres = { ...ores };
-    const updatedIngredients = { ...ingredients };
-    const updatedNetworks = { ...networks};
-
-    Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
-      if (updatedOres[resourceName]) {
-          updatedOres[resourceName].count -= amountRequired;
-      } else if (updatedIngredients[resourceName]) {
-          updatedIngredients[resourceName].count -= amountRequired;
-          if(updatedIngredients[resourceName].idleCount){
-            updatedIngredients[resourceName].idleCount -= amountRequired
-          }
-      }
-    });
-
     let multiplier = 1;
 
-    if(updatedIngredients[itemName]){
-      multiplier = updatedIngredients[itemName].multiplier || 1;
-    }
+    // Use functional updates to handle asynchronous state updates
+    setOres(prevOres => {
+      const updatedOres = { ...prevOres };
+      Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
+        if (updatedOres[resourceName]) {
+          updatedOres[resourceName].count -= amountRequired;
+        }
+      });
+      return updatedOres;
+    });
 
-    if(updatedIngredients[itemName]){
-      updatedIngredients[itemName].tempCount += multiplier;
-      //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
-    } else if(updatedNetworks[itemName]){
-      updatedNetworks[itemName].tempCount += 1;
-      //console.log(`${itemName}s tempCount is: ${updatedIngredients[itemName].tempCount}`)
-    }
-    else{
-      console.log("Something went wrong onCraft!")
-    }
+    setIngredients(prevIngredients => {
+      const updatedIngredients = { ...prevIngredients };
+      Object.entries(item.cost).forEach(([resourceName, amountRequired]) => {
+        if (updatedIngredients[resourceName]) {
+          updatedIngredients[resourceName].count -= amountRequired;
+          if (updatedIngredients[resourceName].idleCount) {
+            updatedIngredients[resourceName].idleCount -= amountRequired;
+          }
+        }
+      });
 
-    // if this is a single craft, we can just add straight to queue, otherwise we need to process the craft order
-    if(bulk){
-      return {itemName, item, groupId, child }
-    }
-    // note: child does nothing in this function, other than pass to addToCraftQueue to denote which items are being crafted as intermediaries
-    addToCraftQueue(itemName, item, multiplier, child, groupId, leftover)
+      // Handle tempCount updates with multipliers
+      if (updatedIngredients[itemName]) {
+        multiplier = updatedIngredients[itemName].multiplier ? updatedIngredients[itemName].multiplier : 1;
+        updatedIngredients[itemName].tempCount += multiplier;
+      }
+      return updatedIngredients;
+    });
+
+    setNetworks(prevNetworks => {
+      const updatedNetworks = { ...prevNetworks };
+      if (updatedNetworks[itemName]) {
+        updatedNetworks[itemName].tempCount += 1;
+      }
+      return updatedNetworks;
+    });
+
+    // // if this is a single craft, we can just add straight to queue, otherwise we need to process the craft order
+    // if(bulk){
+    //   return {itemName, item, groupId, child }
+    // }
+    // // note: child does nothing in this function, other than pass to addToCraftQueue to denote which items are being crafted as intermediaries
+    // addToCraftQueue(itemName, item, multiplier, child, groupId, leftover)
   };
 
   const craftPayout = (ingredientName, ingredient, child, leftover) => {
