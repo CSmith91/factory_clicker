@@ -53,7 +53,7 @@ function App() {
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, isCraftable: false, craftTime: 16, canBus: true },
     "Plastic": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Coal": 1, "Petroleum": 20}, multiplier: 2, isCraftable: false, craftTime: 1 },
     "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 },
     "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2, "Plastic": 2}, isCraftable: true, craftTime: 6 },
     "Elite Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Advanced Circuit": 2}, isCraftable: true, craftTime: 6 },
@@ -758,6 +758,7 @@ function App() {
           }
           // Check if we have this ingredient directly, in part
           else if (fullCount >= 1) {
+            console.log(`We have ${fullCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName}`)
             // Reduce the reduceCount
             reduceCount -= fullCount;
             reduceItems[resourceName] -= fullCount;
@@ -765,7 +766,9 @@ function App() {
             undoCheck[resourceName] = (undoCheck[resourceName] || 0) + fullCount;
             usedItems[resourceName] = (usedItems[resourceName] || 0) + fullCount;
 
-            console.log(`We have ${fullCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            // reduce fullCount as we've now used one of the items
+            fullCount -= costList[resourceName]
+            console.log(`After usage, we have ${fullCount} ${resourceName}(s). We can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
             
             setTempVal(prevIngredients => ({
               ...prevIngredients,
