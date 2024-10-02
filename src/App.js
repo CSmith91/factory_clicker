@@ -697,7 +697,7 @@ function App() {
     }
 
     const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}, costList = {}) => {
-      console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
+      //console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
       let reduceItems = JSON.parse(JSON.stringify(outstandingItems)); // Make a deep copy of outstandingItems // {"Wire":3,"Iron Plate":1}
       
       // here we build a list of all the things we need. We loop continuously until we get to raw ingredients (or get a 'no'), and builds this list along the way
@@ -712,19 +712,19 @@ function App() {
         // first, we deduct usedItems from fullCount
         if(costList[resourceName]){
           fullCount -= costList[resourceName]
-          console.log(`we've tweaked fullCount as we've used ${resourceName} already. We now have ${fullCount} remaining.`)
+          //console.log(`we've tweaked fullCount as we've used ${resourceName} already. We now have ${fullCount} remaining.`)
         }
 
-        console.log(`
-          ${resourceName}
-          availableCount is: ${availableCount}
-          floatingCount is: ${floatingCount}
-        ***fullCount is: ${fullCount}***
-          reduceCount: ${reduceCount}
-          amountRequired: ${amountRequired}
-          costList: ${JSON.stringify(costList)}
-          overBuild: ${JSON.stringify(overBuild)}
-          `)
+        // console.log(`
+        //   ${resourceName}
+        //   availableCount is: ${availableCount}
+        //   floatingCount is: ${floatingCount}
+        // ***fullCount is: ${fullCount}***
+        //   reduceCount: ${reduceCount}
+        //   amountRequired: ${amountRequired}
+        //   costList: ${JSON.stringify(costList)}
+        //   overBuild: ${JSON.stringify(overBuild)}
+        //   `)
 
         while(reduceCount > 0){
           // Check if we have this ingredient directly, in full
@@ -757,11 +757,11 @@ function App() {
           // now check if we can do a smart craft of this item
           else{
             buildList = `${resourceName}-`+buildList
-            console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
+            //console.log(`We don't have ${resourceName}, so buildList is now: ${JSON.stringify(buildList)}`);
 
             // Make a deep copy of resource.cost to avoid mutation
             const newCost = JSON.parse(JSON.stringify(resource.cost));
-            console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
+            //console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
 
             // Recursive call to smartBuild for the current resource
             const [newBuildList, newOverBuild, newCostList] = smartBuild(resourceName, newCost, buildList, overBuild, costList)
@@ -778,18 +778,18 @@ function App() {
             reduceCount -= multiplier;
             reduceItems[resourceName] -= multiplier;
 
-            console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            //console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
 
             // if we've wrangled more ingredients that we need, so we carry this forward
             if (reduceCount < 0) {
               overBuild[resourceName] = (overBuild[resourceName] || 0) - reduceCount;
-              console.log(`we have overBuild as: ${JSON.stringify(overBuild)} and our buildList is: ${buildList}`)
+              //console.log(`we have overBuild as: ${JSON.stringify(overBuild)} and our buildList is: ${buildList}`)
               if(overBuild[resourceName] >= multiplier){
-                console.log(`We've over-built enough ${resourceName} to reduce our costList`);
+                //console.log(`We've over-built enough ${resourceName} to reduce our costList`);
                 for (const [resourceName, amountRequired] of Object.entries(resource.cost)) {
                   costList[resourceName] -= amountRequired;
                 }
-                
+
                 // Correct the overBuild
                 overBuild[resourceName] -= [multiplier]
                 
@@ -800,7 +800,7 @@ function App() {
                 if (firstInstanceIndex !== -1) {
                   buildList = buildList.substring(0, firstInstanceIndex) + buildList.substring(firstInstanceIndex + resourceWithHyphen.length);
                 }
-                console.log(`we've corrected the overBuild, leaving us with overBuild as: ${JSON.stringify(overBuild)}, costList as: ${JSON.stringify(costList)} and buildList is: ${buildList}`)
+                //console.log(`we've corrected the overBuild, leaving us with overBuild as: ${JSON.stringify(overBuild)}, costList as: ${JSON.stringify(costList)} and buildList is: ${buildList}`)
               }
             }
           }
@@ -808,68 +808,6 @@ function App() {
       }
       // Return after all items are processed
       return [buildList, overBuild, costList];
-    }
-
-    const cleanBuild = (list, surplus, raw) => {
-      let initialList = list;
-      let initialSurplus = surplus;
-      let leftovers = {};
-      let cleanRaw = raw;
-
-      // Split the initial list into an array for easier manipulation
-      console.log(`initialList: ${JSON.stringify(initialList)}`)
-      let initialArray = initialList.split('-');
-
-      // console.log(`Our split list is: ${initialArray}
-      //   & our surplus is: ${JSON.stringify(initialSurplus)}
-      //   & cleanRaw starts as: ${JSON.stringify(cleanRaw)}`)
-
-      // Function to remove items from the back
-      const removeFromBack = (array, itemName, countToRemove) => {
-        // Iterate from the back of the array
-        for (let i = array.length - 1; i >= 0 && countToRemove > 0; i--) {
-          if (array[i] === itemName) {
-            array.splice(i, 1); // Remove the item
-            countToRemove--; // Decrease the counter
-          }
-        }
-        return array;
-      }
-
-      // Iterate over the items
-      for (const [itemName, itemAmount] of Object.entries(initialSurplus)) {
-        let multiplier = ingredients[itemName].multiplier || 1; // Default multiplier to 1 if not found
-        let timesToRemove = Math.floor(itemAmount / multiplier); // Calculate how many to remove
-        let remainder = itemAmount % multiplier; // Calculate leftover (lost) items
-        let rawBase = ingredients[itemName].cost
-        // console.log(`Removing ${timesToRemove} instances of ${itemName}`);
-        // console.log(`This ${itemName} is equivalent to ${JSON.stringify(rawBase)}`)
-
-        // Remove the item from the initial list starting from the back
-        initialArray = removeFromBack(initialArray, itemName, timesToRemove);
-        // Reduce the raw cost collection
-        for (const [itemName, itemAmount] of Object.entries(rawBase)) {
-          cleanRaw[itemName] -= timesToRemove;
-        }
-        // console.log(`cleanRaw is now: ${JSON.stringify(cleanRaw)}`)
-
-        // If there is any remainder, add it to leftovers
-        if (remainder > 0) {
-          // Add to leftovers, incrementing if the item already exists in leftovers
-          if (leftovers[itemName]) {
-            leftovers[itemName] += remainder;
-          } else {
-            leftovers[itemName] = remainder;
-          }
-        }
-      }
-
-      // Join the array back into a string
-      let cleanList = initialArray.join('-');
-
-      // console.log(`cleanRaw ends as: ${JSON.stringify(cleanRaw)}`)
-
-      return [cleanList, leftovers, cleanRaw]
     }
 
     const smartCost = (cleanRawCost) => {
@@ -908,9 +846,9 @@ function App() {
     // now we build our craft list - what we need
     const [craftList, surplusList, rawCost] = smartBuild(ingredientName, item.cost)
 
-    console.log(`craftList: ${JSON.stringify(craftList)}
-    surplusList: ${JSON.stringify(surplusList)}
-    rawCost: ${JSON.stringify(rawCost)}`)
+    // console.log(`craftList: ${JSON.stringify(craftList)}
+    // surplusList: ${JSON.stringify(surplusList)}
+    // rawCost: ${JSON.stringify(rawCost)}`)
 
     // this should only catch missing RAW items (like plastic). Potential issue with this is that we might be 1 wire short but we have over-crafted 2 wire before cleanBuild kicks in
     if(craftList === false){
@@ -918,22 +856,15 @@ function App() {
       return
     }
 
-    // where we may have built multiples, see if we have enough to reduce the craftList
-    const [cleanList, leftover, cleanRawCost] = cleanBuild(craftList, surplusList, rawCost)
-
-    console.log(`cleanList: ${JSON.stringify(cleanList)}
-    leftover: ${JSON.stringify(leftover)}
-    cleanRawCost: ${JSON.stringify(cleanRawCost)}`)
-
     // check we have enough raw ingredients
-    const canAfford = smartCost(cleanRawCost)
+    const canAfford = smartCost(rawCost)
     if(!canAfford){
       onAlert(`Not enough resources to craft ${ingredientName}.`)
       return
     }
 
     // check our hammer can craft all these items without breaking
-    const hammerDeteriation = checkHammer(cleanList, toolName)
+    const hammerDeteriation = checkHammer(craftList, toolName)
 
     if(!hammerDeteriation){
       onAlert(`Your hammer will break before crafting ${ingredientName}. Either repair it or craft more intermediary ingredients.`)
@@ -941,11 +872,9 @@ function App() {
     }
 
     // we setup a group ID for this craft. Items that require specific children will get a specific ID
-    const groupId = `${cleanList}${ingredientName}--${Date.now() + Math.random()}`;
+    const groupId = `${craftList}${ingredientName}--${Date.now() + Math.random()}`;
 
-    console.log(`groupId is: ${JSON.stringify(groupId)}
-                leftover: ${JSON.stringify(leftover)}
-                cleanRawCost: ${JSON.stringify(cleanRawCost)}`)
+    console.log(`groupId is: ${JSON.stringify(groupId)}`)
 
     // we've built up a groupId and array for our craft execution order
     // if this was a 5x craft, we feed this info here:
@@ -953,19 +882,19 @@ function App() {
       return [true, groupId]
     }
     else{
-      onCraft(ingredientName, groupId, cleanRawCost, leftover, hammerDeteriation, false);  // Pass groupId to ensure grouping
+      onCraft(ingredientName, groupId, rawCost, surplusList, hammerDeteriation, false);  // Pass groupId to ensure grouping
     }
   };
 
   const onCraft = (itemName, groupId, totalCost, leftover, hammerCost, bulk) => {
 
-    console.log(`onCraft
-    itemName is: ${JSON.stringify(itemName)}
-    groupId is: ${JSON.stringify(groupId)}
-    totalCost is: ${JSON.stringify(totalCost)}
-    leftover is: ${JSON.stringify(leftover)}
-    hammer goes down to: ${JSON.stringify(hammerCost)}
-    bulk: ${JSON.stringify(bulk)}`)
+    // console.log(`onCraft
+    // itemName is: ${JSON.stringify(itemName)}
+    // groupId is: ${JSON.stringify(groupId)}
+    // totalCost is: ${JSON.stringify(totalCost)}
+    // leftover is: ${JSON.stringify(leftover)}
+    // hammer goes down to: ${JSON.stringify(hammerCost)}
+    // bulk: ${JSON.stringify(bulk)}`)
 
     // Update the hammer's durability, if applicable
     if(ingredients[itemName]){
