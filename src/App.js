@@ -696,7 +696,7 @@ function App() {
       }
     }
 
-    const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}, costList = {}, undoCheck = {}) => {
+    const smartBuild = (ingredientName, outstandingItems, buildList = '', overBuild = {}, costList = {}, undoCheck = {}, usedItems = {}) => {
       console.log(`checking: ${JSON.stringify(ingredientName)}, which has a cost of ${JSON.stringify(outstandingItems)}`)
       let reduceItems = JSON.parse(JSON.stringify(outstandingItems)); // Make a deep copy of outstandingItems // {"Wire":3,"Iron Plate":1}
       
@@ -710,29 +710,40 @@ function App() {
         let floatingCount = resource.tempCount < 0 ? resource.tempCount : 0;
         let fullCount = availableCount + floatingCount;
 
+        // first, we deduct usedItems from fullCount
+        if(costList[resourceName]){
+          fullCount -= costList[resourceName]
+          console.log(`we've tweaked fullCount as we've used ${resourceName} already. We now have ${fullCount} remaining.`)
+        }
+
         console.log(`
+          ${resourceName}
           availableCount is: ${availableCount}
           floatingCount is: ${floatingCount}
-          fullCount is: ${fullCount}
+        ***fullCount is: ${fullCount}***
           reduceCount: ${reduceCount}
           amountRequired: ${amountRequired}
+          costList: ${JSON.stringify(costList)}
           `)
 
         while(reduceCount > 0){
+          // // first, we deduct usedItems from fullCount
+          // if(usedItems[resourceName]){
+          //   fullCount -= usedItems[resourceName]
+          //   delete usedItems[resourceName]
+          //   console.log(`we've tweaked fullCount as we've used ${resourceName} already. We now have ${fullCount} remaining.`)
+          // }
+
           // Check if we have this ingredient directly, in full
           if (fullCount >= amountRequired) {
             // Reduce the reduceCount
             reduceCount = 0;
             // Remove the item from reduceItems
             reduceItems[resourceName] -= amountRequired;
-            if (costList[resourceName]) {
-              // If the resource already exists, increment the amount
-              costList[resourceName] += amountRequired;
-            } else {
-              // Otherwise, add the new resource with its amount
-              costList[resourceName] = amountRequired ;
-            }
-            console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            costList[resourceName] = (costList[resourceName] || 0) + amountRequired;
+            
+            console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. CostList is now: ${JSON.stringify(costList)} ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            
             setTempVal(prevIngredients => ({
               ...prevIngredients,
               [resourceName]: {
@@ -740,13 +751,10 @@ function App() {
                 tempCount: prevIngredients[resourceName].tempCount - amountRequired
               }
             }));
-            // Update undoCheck
+            // Update undoCheck & usedItems
             undoCheck[resourceName] = (undoCheck[resourceName] || 0) + amountRequired;
-        
-            // Decrease fullCount accordingly
-            fullCount -= amountRequired;
-
-            console.log(`undoCheck is now: ${JSON.stringify(undoCheck)}`);
+            usedItems[resourceName] = (usedItems[resourceName] || 0) + amountRequired;
+            console.log(`undoCheck is now: ${JSON.stringify(undoCheck)} // usedItems is now: ${JSON.stringify(usedItems)}`);
           }
           // Check if we have this ingredient directly, in part
           else if (fullCount >= 1) {
@@ -755,6 +763,7 @@ function App() {
             reduceItems[resourceName] -= fullCount;
             costList[resourceName] = (costList[resourceName] || 0) + fullCount;
             undoCheck[resourceName] = (undoCheck[resourceName] || 0) + fullCount;
+            usedItems[resourceName] = (usedItems[resourceName] || 0) + fullCount;
 
             console.log(`We have ${fullCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
             
@@ -762,18 +771,16 @@ function App() {
               ...prevIngredients,
               [resourceName]: {
                 ...prevIngredients[resourceName],
-                tempCount: prevIngredients[resourceName].tempCount--
+                tempCount: prevIngredients[resourceName].tempCount - fullCount
               }
             }));
 
-            console.log(`undoCheck is now: ${JSON.stringify(undoCheck)}`);
-            // update fullCount
-            fullCount = 0;
+            console.log(`undoCheck is now: ${JSON.stringify(undoCheck)} // usedItems is now: ${JSON.stringify(usedItems)}`);
           } 
           // if we don't have (any more of) the resource directly, check if we can craft it instead         
           else if(!resource.isCraftable || ores[resourceName]){
             console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
-            return [false, false, false, undoCheck]; // Return an array indicating failure
+            return [false, false, false, undoCheck, usedItems]; // Return an array indicating failure
           }
           // now check if we can do a smart craft of this item
           else{
@@ -785,16 +792,17 @@ function App() {
             console.log(`Cost for ${resourceName} is: ${JSON.stringify(newCost)}`);
 
             // Recursive call to smartBuild for the current resource
-            const [newBuildList, newOverBuild, newCostList, newUndoCheck] = smartBuild(resourceName, newCost, buildList, overBuild, costList, undoCheck)
+            const [newBuildList, newOverBuild, newCostList, newUndoCheck, newUsedItems] = smartBuild(resourceName, newCost, buildList, overBuild, costList, undoCheck, usedItems)
             
             // If we failed to craft, return false
-            if (!newBuildList) return [false, false, false, undoCheck];
+            if (!newBuildList) return [false, false, false, undoCheck, usedItems];
 
             // Otherwise, update the lists
             buildList = newBuildList;
             overBuild = newOverBuild;
             costList = newCostList;
             undoCheck = newUndoCheck;
+            usedItems = newUsedItems;
         
             // otherwise, we've got enough for 1 of the item, so we reduce the reducer
             reduceCount -= multiplier;
@@ -802,24 +810,15 @@ function App() {
 
             console.log(`We've wrangled ${multiplier} ${resourceName}, so we can reduce the reduceCount to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
 
-            // Decrease fullCount accordingly for subsequent crafting
-            fullCount--;
-
-            // if we've wrangled more ingredients that we need, we can increase the tempCount
-            if(reduceCount < 0){
-              if (overBuild[resourceName]) {
-                // If the resource already exists, increment the amount
-                overBuild[resourceName] += -reduceCount;
-              } else {
-                // Otherwise, add the new resource with its amount
-                overBuild[resourceName] = -reduceCount ;
-              }
+            // if we've wrangled more ingredients that we need, so we carry this forward
+            if (reduceCount < 0) {
+              overBuild[resourceName] = (overBuild[resourceName] || 0) - reduceCount;
             }
           }
         }
       }
       // Return after all items are processed
-      return [buildList, overBuild, costList, undoCheck];
+      return [buildList, overBuild, costList, undoCheck, usedItems];
     }
 
     const cleanBuild = (list, surplus, raw, undo) => {
