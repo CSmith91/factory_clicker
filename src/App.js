@@ -723,6 +723,7 @@ function App() {
           reduceCount: ${reduceCount}
           amountRequired: ${amountRequired}
           costList: ${JSON.stringify(costList)}
+          overBuild: ${JSON.stringify(overBuild)}
           `)
 
         while(reduceCount > 0){
@@ -782,6 +783,25 @@ function App() {
             // if we've wrangled more ingredients that we need, so we carry this forward
             if (reduceCount < 0) {
               overBuild[resourceName] = (overBuild[resourceName] || 0) - reduceCount;
+              console.log(`we have overBuild as: ${JSON.stringify(overBuild)} and our buildList is: ${buildList}`)
+              if(overBuild[resourceName] >= multiplier){
+                console.log(`We've over-built enough ${resourceName} to reduce our costList`);
+                for (const [resourceName, amountRequired] of Object.entries(resource.cost)) {
+                  costList[resourceName] -= amountRequired;
+                }
+                
+                // Correct the overBuild
+                overBuild[resourceName] -= [multiplier]
+                
+                // Remove 1 instance of resourceName (plus hyphen) from the front of buildList
+                const resourceWithHyphen = resourceName + '-';
+                const firstInstanceIndex = buildList.indexOf(resourceWithHyphen);
+
+                if (firstInstanceIndex !== -1) {
+                  buildList = buildList.substring(0, firstInstanceIndex) + buildList.substring(firstInstanceIndex + resourceWithHyphen.length);
+                }
+                console.log(`we've corrected the overBuild, leaving us with overBuild as: ${JSON.stringify(overBuild)}, costList as: ${JSON.stringify(costList)} and buildList is: ${buildList}`)
+              }
             }
           }
         }
