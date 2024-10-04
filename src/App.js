@@ -52,13 +52,10 @@ function App() {
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, isCraftable: false, craftTime: 3.2, canBus: true, isRaw: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, isCraftable: false, craftTime: 16, canBus: true },
     "Plastic": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Coal": 1, "Petroleum": 20}, multiplier: 2, isCraftable: false, craftTime: 1 },
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 },
     "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2, "Plastic": 2}, isCraftable: true, craftTime: 6 },
-    "Elite Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Advanced Circuit": 2}, isCraftable: true, craftTime: 6 },
-    "Professional Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Elite Circuit": 2}, isCraftable: true, craftTime: 6 },
-    "God Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Professional Circuit": 2, "Gear": 5}, isCraftable: true, craftTime: 6 }
   })
 
   const [networks, setNetworks] = useState({
@@ -734,12 +731,12 @@ function App() {
             // Remove the item from reduceItems
             reduceItems[resourceName] -= amountRequired;
             costList[resourceName] = (costList[resourceName] || 0) + amountRequired;
-            console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. CostList is now: ${JSON.stringify(costList)} ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            //console.log(`We have ${resourceName} in full, so we can reduce the reduceCount of ${resourceName} to ${reduceCount}. CostList is now: ${JSON.stringify(costList)} ReduceItems is now: ${JSON.stringify(reduceItems)}`);
             
           }
           // Check if we have this ingredient directly, in part
           else if (fullCount >= 1) {
-            console.log(`We have ${fullCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName}`)
+            //console.log(`We have ${fullCount} ${resourceName}(s), so we can reduce the reduceCount of ${resourceName}`)
             // Reduce the reduceCount
             reduceCount -= fullCount;
             reduceItems[resourceName] -= fullCount;
@@ -747,7 +744,7 @@ function App() {
 
             // reduce fullCount as we've now used one of the items
             fullCount -= costList[resourceName]
-            console.log(`After usage, we have ${fullCount} ${resourceName}(s). We can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
+            //console.log(`After usage, we have ${fullCount} ${resourceName}(s). We can reduce the reduceCount of ${resourceName} to ${reduceCount}. ReduceItems is now: ${JSON.stringify(reduceItems)}`);
           } 
           // if we don't have (any more of) the resource directly, check if we can craft it instead         
           else if(!resource.isCraftable || ores[resourceName]){
@@ -837,7 +834,7 @@ function App() {
 
       // Check if the tool has enough durability
       if (finalCondition > 0) {
-        return finalCondition;  // Return true if the tool has enough durability
+        return durabilityRequired;  // Return cost if the tool has enough durability
       } else {
         return false; // Return false if the tool doesn't have enough durability
       }
@@ -886,22 +883,15 @@ function App() {
     }
   };
 
-  const onCraft = (itemName, groupId, totalCost, leftover, hammerCost, bulk) => {
-
-    // console.log(`onCraft
-    // itemName is: ${JSON.stringify(itemName)}
-    // groupId is: ${JSON.stringify(groupId)}
-    // totalCost is: ${JSON.stringify(totalCost)}
-    // leftover is: ${JSON.stringify(leftover)}
-    // hammer goes down to: ${JSON.stringify(hammerCost)}
-    // bulk: ${JSON.stringify(bulk)}`)
+  const craftDeductions = (itemName, totalCost, leftover, hammerCost, reverse) => {
+    const operation = reverse ? 1 : -1;  // If reverse is true, we add; if false, we subtract
 
     // Update the hammer's durability, if applicable
     if(ingredients[itemName]){
       setTools(prevTools => {
           const toolName = "Hammer"
           const tool = prevTools[toolName];
-          const updatedDurability = hammerCost;
+          const updatedDurability = tool.durability + operation * hammerCost;
           return {
               ...prevTools,
               [toolName]: {
@@ -918,7 +908,7 @@ function App() {
           ...prevIngredients,
           [resourceName]: {
             ...prevIngredients[resourceName],
-            count: prevIngredients[resourceName].count - amountRequired
+            count: prevIngredients[resourceName].count + operation * amountRequired
           }
         }));
       }
@@ -927,8 +917,8 @@ function App() {
           ...prevIngredients,
           [resourceName]: {
             ...prevIngredients[resourceName],
-            count: prevIngredients[resourceName].count - amountRequired,
-            idleCount: prevIngredients[resourceName].idleCount - amountRequired,
+            count: prevIngredients[resourceName].count + operation * amountRequired,
+            idleCount: prevIngredients[resourceName].idleCount + operation * amountRequired,
           }
         }));
       }
@@ -937,7 +927,7 @@ function App() {
           ...prevIngredients,
           [resourceName]: {
             ...prevIngredients[resourceName],
-            count: prevIngredients[resourceName].count - amountRequired
+            count: prevIngredients[resourceName].count + operation * amountRequired
           }
         }));
       }
@@ -952,7 +942,7 @@ function App() {
       // Increment the tempCount for itemName
       updatedIngredients[itemName] = {
         ...updatedIngredients[itemName],
-        tempCount: updatedIngredients[itemName].tempCount + multiplier
+        tempCount: updatedIngredients[itemName].tempCount - operation * multiplier
       };
     
       // Iterate through the leftover object and increment the tempCount for each resource
@@ -960,7 +950,7 @@ function App() {
         if (updatedIngredients[resourceName]) {
           updatedIngredients[resourceName] = {
             ...updatedIngredients[resourceName],
-            tempCount: updatedIngredients[resourceName].tempCount + amount
+            tempCount: updatedIngredients[resourceName].tempCount - operation * amount
           };
         }
       });
@@ -971,13 +961,23 @@ function App() {
     setNetworks(prevNetworks => {
       const updatedNetworks = { ...prevNetworks };
       if (updatedNetworks[itemName]) {
-        updatedNetworks[itemName].tempCount += 1;
+        updatedNetworks[itemName].tempCount += operation * 1;
       }
       return updatedNetworks;
     });
+  }
 
-    // now we've done the deductions, we setup the items for queuing, including adding 'child' labels
-    const item = ingredients[itemName] || networks[itemName];
+  const onCraft = (itemName, groupId, totalCost, leftover, hammerCost, bulk) => {
+
+    // console.log(`onCraft
+    // itemName is: ${JSON.stringify(itemName)}
+    // groupId is: ${JSON.stringify(groupId)}
+    // totalCost is: ${JSON.stringify(totalCost)}
+    // leftover is: ${JSON.stringify(leftover)}
+    // hammer goes down to: ${JSON.stringify(hammerCost)}
+    // bulk: ${JSON.stringify(bulk)}`)
+
+    craftDeductions(itemName, totalCost, leftover, hammerCost, false);
 
     // we now send the instructions to onCraft
     const buildCraftArray = (groupId) => {
@@ -1063,6 +1063,8 @@ function App() {
           parentIngredientName, // Track the parent ingredient
           groupId,
           leftover,
+          totalCost,
+          hammerCost,
           id: Date.now() + Math.random(), // Generate a unique ID for each craft item
           queue: 1 // Start with the specified multiplier
         };
@@ -1210,10 +1212,7 @@ function App() {
   // ###### CANCEL LOGIC
   // ###### CANCEL LOGIC
 
-  const cancelCraft = (groupId) => {
-
-    // Initialize an empty cancelList
-    let cancelList = [];
+  const cancelCraft = (groupId, totalCost, leftover, hammerCost, bulk) => {
 
     // Filter the craftQueue to find all items that belong to the same groupId
     const groupItems = craftQueue.filter(item => item.groupId === groupId);
@@ -1221,155 +1220,17 @@ function App() {
     // Find the parent item (where parentIngredientName is null)
     const parentItem = groupItems.find(item => !item.parentIngredientName);
 
-    // Collect the ingredient names and queue numbers of all items in the same group
-    cancelList = groupItems.map(item => {
-      return {
-        ingredientName: item.ingredientName,
-        queue: item.queue,
-        isChild: item.parentIngredientName ? true : false // Check if it's a child or not
-      };
-    });
-
-    if (!parentItem) {
-      console.error('No parent ingredient found.');
+    if(bulk){
+      bulkRefund(parentItem.ingredientName, groupId, totalCost, leftover, hammerCost)
+      return
     }
 
     // Cancel logic -- unlike factorio, if intermediary items have already been crafted, they still get canelled and refunded.
-    // This is because crafting intermdiary items creates negative counts and positive tempCounts, which out. To convert cancelled-yet-crafted items to keep
-    // would require re-programming the storage limit and craft behaviours which present work.
-    const cancelledParent = ingredients[parentItem.ingredientName]
-    let cancelArray = []
-    Object.entries(cancelledParent.cost).forEach(([itemName, amount]) => { 
-      cancelArray.push({itemName: itemName, amount: amount})
-    })
-
-    // refund the costs
-    refundGroup(parentItem.ingredientName, cancelArray, groupId.split('--')[0])
+    craftDeductions(parentItem.ingredientName, totalCost, leftover, hammerCost, true);
 
     // remove the parent item (and any child items) from the queue
     deleteQueue(groupId.split('--')[0], groupId)
   }
-
-  const refundGroup = (parentName, itemsArray, groupName) => {
-    // this function takes the parent item that's being cancelled, alongside the array of items that are being crafted to make the parent item and the group name
-    // console.log(`
-    //   parentItem = ${JSON.stringify(parentName)} //  parentItem = "Burner Drill"
-    //   itemsArray = ${JSON.stringify(itemsArray)} // itemsArray = [{"itemName":"Iron Plate","amount":3},{"itemName":"Gear","amount":3},{"itemName":"Stone Furnace","amount":1}]
-    //   groupName = ${JSON.stringify(groupName)} // groupName = "Gear-Gear-Gear-Stone Furnace-Burner Drill"
-    //   `)
-
-    // we have a group, e.g. Gear-Gear-Gear-Stone Furnace-Burner Drill. We split the group by '-' and add it to a new array and reduce the array
-    const toRefundList = groupName.split('-');
-
-    // check with this is a direct craft. If it is, we can do a straight refund
-    if(toRefundList.length === 1){
-      refundToRaw(toRefundList[0], true);
-      itemsArray.splice(0, 1)
-    }
-    else{
-      // Iterate through toRefundList and update itemsArray
-      toRefundList.forEach(item => {
-        // Call refundRaw function
-        if(item !== parentName){
-          refundToRaw(item);
-        }
-
-      // Find the item in itemsArray
-      const itemIndex = itemsArray.findIndex(i => i.itemName === item);
-        const multiplier = ores[item] ? ores[item].multiplier || 1 : ingredients[item].multiplier || 1
-        // If item exists, decrement its amount
-        if (itemIndex !== -1) {
-          itemsArray[itemIndex].amount -= multiplier;
-
-          // If amount reaches 0, remove the item from itemsArray
-          if (itemsArray[itemIndex].amount === 0) {
-            itemsArray.splice(itemIndex, 1);
-          }
-        }
-      });
-    }
-    
-    // we may now have a remainder of items that where used to craft the item that we used directly, these are what remain in itemArray
-    itemsArray.forEach(item => {
-      reverseRawCost(item.itemName, item.amount);
-    });
-
-    // now we reverse the parent (remove the tempCount)
-    reverseParent(parentName)
-  }
-
-  // fully refunds an ingredient
-  const refundToRaw = (itemName, direct) => {
-    const cancelledItem = ingredients[itemName] ? ingredients[itemName] : ores[itemName];
-    const multiplier = cancelledItem.multiplier || 1;
-    if (!cancelledItem) return; // If the item is not found, return early
-
-    // Create copies of ores and ingredients to modify them
-    const updatedOres = { ...ores };
-    const updatedIngredients = { ...ingredients };
-
-    // Refund the cost of the cancelled item
-    Object.entries(cancelledItem.cost).forEach(([resourceName, amountRequired]) => {
-      // If it's an ore, refund the ore count
-      if (updatedOres[resourceName]) {
-        updatedOres[resourceName].count += amountRequired;
-      }
-      // If it's an ingredient, refund the ingredient count
-      else if (updatedIngredients[resourceName]) {
-        updatedIngredients[resourceName].count += amountRequired;
-      }
-    });
-
-    // Reduce the tempCount of the cancelled item
-    if (updatedIngredients[itemName]) {
-      if(!direct){
-        updatedIngredients[itemName].count = updatedIngredients[itemName].count + multiplier;
-      }
-      updatedIngredients[itemName].tempCount = updatedIngredients[itemName].tempCount - multiplier;
-    }
-
-    // Update the state with the refunded resources and reduced tempCount
-    setOres(updatedOres);
-    setIngredients(updatedIngredients);
-  };
-
-  const reverseRawCost = (itemName, amount) => {
-    const allItems = ores[itemName] ? ores : ingredients
-    const setItems = allItems === ores ? setOres : setIngredients
-    const cancelledItem = allItems[itemName]
-    const multiplier = cancelledItem.multiplier || 1;
-    if (!cancelledItem) return; // If the item is not found, return early
-
-    // Create copies of ores and ingredients to modify them
-    const updatedItems = { ...allItems };
-
-    // Reduce the tempCount of the cancelled item
-    if(amount < 0){
-      updatedItems[itemName].count = updatedItems[itemName].count + amount;
-    }
-    else{
-      updatedItems[itemName].count = updatedItems[itemName].count + amount * multiplier;
-    }
-
-    // Update the state with the refunded resources and reduced count
-    setItems(updatedItems);
-  }
-
-  // refunds the parent item only -- adjusts the count/tempCount
-  const reverseParent = (itemName) => {
-    const ingredient = ingredients[itemName]
-    const multiplier = ingredient.multiplier || 1;
-    if (!ingredient) return; // If the item is not found, return early
-
-    // Create copy of ingredients to modify it
-    const updatedIngredients = { ...ingredients };
-
-    // Reduce the tempCount of the cancelled item
-    updatedIngredients[itemName].tempCount = Math.max(0, updatedIngredients[itemName].tempCount - multiplier);
-
-    // Update the state with the refunded resources and reduced tempCount
-    setIngredients(updatedIngredients);
-  };
 
   const deleteQueue = (groupName, groupId) => {
     // remove the clicked item from the queue by id
@@ -1517,6 +1378,11 @@ function App() {
   
     return newAllCrafts;
   };
+
+  const bulkRefund = (parentName, totalCost, leftover, hammerCost) => {
+    // code goes here
+    // do we need this?
+  }
 
   return (
     <>

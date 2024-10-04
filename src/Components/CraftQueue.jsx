@@ -57,9 +57,9 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
     return acc;
   }, []);
 
-  const handleCancel = (item, id, groupId, bulk) => {
+  const handleCancel = (item, id, groupId, totalCost, leftover, hammerCost, bulk) => {
     if (!bulk) {
-      cancelCraft(groupId);
+      cancelCraft(groupId, totalCost, leftover, hammerCost);
     } else {
       // Handle bulk cancellation
       let cancelCount = 0;
@@ -68,7 +68,7 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
       console.log(`remainingQueue: ${remainingQueue}`)
   
       while (cancelCount < maxCancel && remainingQueue > 0) {
-        cancelCraft(groupId);
+        cancelCraft(groupId, totalCost, leftover, hammerCost);
         cancelCount++;
         remainingQueue--; // Update remaining items after each cancel
       }
@@ -90,11 +90,11 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
               key={`${item.id}-${index}`} 
               className={`craftItem craftItem-${index} craftItem-${item.parentIngredientName} ${item.ingredientName === currentCrafting?.ingredientName && index === 0 && groupIndex === 0 && isAnimating ? 'animating' : ''}`}
               style={{ '--craft-time': `${item.ingredient.craftTime}s`, cursor:"pointer"}} 
-              onClick={() => handleCancel(item, item.id, item.groupId, false)}
+              onClick={() => handleCancel(item, item.id, item.groupId, item.totalCost, item.leftover, item.hammerCost, false)}
               // right click for crafting x5
               onContextMenu={(e) => {
                 e.preventDefault(); // Prevent the default right-click menu
-                handleCancel(item, item.id, item.groupId, true);
+                handleCancel(item, item.id, item.groupId, item.totalCost, item.leftover, item.hammerCost, true);
             }}
             >
               <img
