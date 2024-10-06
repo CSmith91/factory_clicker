@@ -52,8 +52,8 @@ function App() {
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, isCraftable: false, craftTime: 3.2, canBus: true, isRaw: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, isCraftable: false, craftTime: 16, canBus: true },
     "Plastic": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Coal": 1, "Petroleum": 20}, multiplier: 2, isCraftable: false, craftTime: 1 },
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 },
     "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2, "Plastic": 2}, isCraftable: true, craftTime: 6 },
   })
@@ -748,7 +748,7 @@ function App() {
           } 
           // if we don't have (any more of) the resource directly, check if we can craft it instead         
           else if(!resource.isCraftable || ores[resourceName]){
-            console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
+            //console.log(`We can't craft ${resourceName}, which we need, so we must stop`);
             return [false, false, false]; // Return an array indicating failure
           }
           // now check if we can do a smart craft of this item
@@ -870,13 +870,12 @@ function App() {
 
     // we setup a group ID for this craft. Items that require specific children will get a specific ID
     const groupId = `${craftList}${ingredientName}--${Date.now() + Math.random()}`;
-
-    console.log(`groupId is: ${JSON.stringify(groupId)}`)
+    //console.log(`groupId is: ${JSON.stringify(groupId)}`)
 
     // we've built up a groupId and array for our craft execution order
     // if this was a 5x craft, we feed this info here:
     if(bulkCheck){
-      return [true, groupId]
+      return [true, ingredientName, groupId, rawCost, surplusList, hammerDeteriation]
     }
     else{
       onCraft(ingredientName, groupId, rawCost, surplusList, hammerDeteriation, false);  // Pass groupId to ensure grouping
@@ -967,7 +966,7 @@ function App() {
     });
   }
 
-  const onCraft = (itemName, groupId, totalCost, leftover, hammerCost, bulk) => {
+  const onCraft = (itemName, groupId, totalCost, leftover, hammerCost) => {
 
     // console.log(`onCraft
     // itemName is: ${JSON.stringify(itemName)}
@@ -980,7 +979,7 @@ function App() {
     craftDeductions(itemName, totalCost, leftover, hammerCost, false);
 
     // we now send the instructions to onCraft
-    const buildCraftArray = (groupId) => {
+    const buildCraftArray = (groupId, leftover, totalCost, hammerCost) => {
       // Split by '--' to remove the timestamp part
       const splitParts = groupId.split('--');
       
@@ -990,7 +989,10 @@ function App() {
       // Split the resource string by '-' to get individual items
       const splitGroup = resourceString.split('-').filter(Boolean); // Filter to remove empty items if any
 
-      const craftArray = [];
+      let craftArray = [];
+
+      // Find the last unique resource name
+      const lastItem = splitGroup[splitGroup.length - 1];
 
       // Iterate through the split array
       for (let i = 0; i < splitGroup.length; i++) {
@@ -1000,11 +1002,10 @@ function App() {
         if (ingredients[resourceName]) {
           const multiplier = ingredients[resourceName].multiplier || 1;
 
-          if (i === splitGroup.length - 1) {
-            // For the last item, don't add 'child'
+          // Check if the resourceName is the last item (mark all occurrences of the last unique item as 'null')
+          if (resourceName === lastItem) {
             craftArray.push([resourceName, ingredients[resourceName], multiplier, null, groupId, leftover, totalCost, hammerCost]);
           } else {
-            // For all other items, add 'child'
             craftArray.push([resourceName, ingredients[resourceName], multiplier, 'child', groupId, leftover, totalCost, hammerCost]);
           }
         }
@@ -1015,11 +1016,6 @@ function App() {
 
     const craftArray = buildCraftArray(groupId, leftover, totalCost, hammerCost);
 
-
-    // if this is a single craft, we can just add straight to queue, otherwise we need to process the craft order
-    if(bulk){
-      return {craftArray}
-    }
     // note: child items dont get crafted, but are passed to addToCraftQueue to denote which items are being crafted as intermediaries
     craftArray.forEach(craftItem => {
       const [itemName, item, multiplier, child, groupId, leftover, totalCost, hammerCost] = craftItem
@@ -1279,102 +1275,146 @@ function App() {
   // ###### BULK CRAFT LOGIC  
   // ###### BULK CRAFT LOGIC
 
-  const bulkCheck = (ingredientName) => {
+  const bulkCheck = (bulkItemName) => {
 
     let totalCrafts = 5; // Attempt to craft 5x
-    let allCrafts = {};  // Collect all craft groups by groupId
+    let allCrafts = '';
+    let bulkRawCost = {};
+    let bulkSurplus = {};
+    let bulkHammerLoss = 0;
   
     for (let i = 0; i < totalCrafts; i++) {
-      // Call checkCraft to trigger crafting logic and deductions
-      const result = checkCraft(ingredientName, true); // This triggers onCraft
-  
+      console.log(`Start of loop ${i+1}
+        allCrafts: ${JSON.stringify(allCrafts)}
+        bulkRawCost: ${JSON.stringify(bulkRawCost)}
+        bulkSurplus: ${JSON.stringify(bulkSurplus)}
+        bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}`)
+
+      const result = checkCraft(bulkItemName, true); // return [true, ingredientName, groupId, rawCost, surplusList, hammerDeteriation]
+
       if (!result) {
-        // Exit if onCraft returned no result (e.g., tool broke or resources ran out)
         break;
       }
 
-      // Extract the craftArray from the result
-      const groupId = result[1]
-      const craftArray = result[2];
-
-      // Initialize the groupId in allCrafts if not already present
-      if (!allCrafts[groupId]) {
-        allCrafts[groupId] = []; // Create an empty array to store all crafts for this groupId
-      }
-
-      // Iterate through the craftArray and call onCraft for each resource
-      craftArray.forEach(([resourceName, ingredient, child], index) => {
-        const isParent = (index === craftArray.length - 1); // Last item is the parent
-
-        // Call onCraft with child as undefined for the parent (final item)
-        const craftResult = onCraft(resourceName, ingredient, groupId, isParent ? undefined : "child", true);
-        
-        // Append the craft result to the respective group in allCrafts
-        allCrafts[groupId].push(craftResult);
-      });
-    }
-
-    // console.log(`allCrafts: ${JSON.stringify(allCrafts)}`)
-
-    const stackedCrafts = reorderBulk(allCrafts)
-
-    // console.log(`stackedCrafts: ${JSON.stringify(stackedCrafts)}`)
-
-    for (const groupId in stackedCrafts) { // Loop through each groupId in allCrafts
-      const resources = stackedCrafts[groupId]; // Get the array of resources under this groupId
-      
-      // Loop through each resource in the group
-      for (const resource of resources) {
-        const resourceName = resource.itemName; // Get the item name
-        const item = resource.item; // Get the entire resource object as the ingredient
-        const child = resource.child ? "child" : false; // Check if the resource is marked as a child
-        const multiplier = item.multiplier || 1;
+      // Call checkCraft to trigger crafting logic and deductions
+      const [success, ingredientName, groupId, rawCost, surplusList, hammerDeteriation] = checkCraft(bulkItemName, true); // return [true, ingredientName, groupId, rawCost, surplusList, hammerDeteriation]
   
-        // Add these items to the queue now they've been reordered
-        addToCraftQueue(resourceName, item, multiplier, child, groupId)
+      if (!success) {
+        break;
+      }
+
+      let grouping = groupId.split('--')[0];
+
+      // break if this loop would push the hammer beyond it's durability
+      if(bulkHammerLoss + hammerDeteriation > tools['Hammer'].durability){
+        break;
+      }
+
+      let canAdd = true;
+
+      // Loop through rawCost but check beforehand if adding the amount would surpass the inventory limits
+      for (const [resourceName, amountToAdd] of Object.entries(rawCost)) {
+        // Check if the resource exists in ores or ingredients
+        const inventoryItem = ores[resourceName] ? ores[resourceName] : ingredients[resourceName];
+        
+        // Use idleCount if available, otherwise use count
+        const inventoryCount = inventoryItem.idleCount ? inventoryItem.idleCount : inventoryItem.count;
+
+        // Calculate the current total (existing bulk amount + amountToAdd)
+        const currentBulkAmount = bulkRawCost[resourceName] || 0;
+        const totalAfterAddition = currentBulkAmount + amountToAdd;
+
+        // If adding would exceed the inventory, break the loop
+        if (totalAfterAddition > inventoryCount) {
+          canAdd = false;
+          break;
+        }
+      }
+
+      if(!canAdd) break;
+
+      // Loop through the rawCost and add to bulkRawCost
+      for (const [resource, amount] of Object.entries(rawCost)) {
+        if (bulkRawCost[resource]) {
+          bulkRawCost[resource] += amount;
+        } else {
+          bulkRawCost[resource] = amount;
+        }
+      }
+
+      // Loop through the surplusList and add to bulkSurplus
+      for (const [resource, amount] of Object.entries(surplusList)) {
+        if (bulkSurplus[resource]) {
+          bulkSurplus[resource] += amount;
+        } else {
+          bulkSurplus[resource] = amount;
+        }
+      }
+
+      bulkHammerLoss += hammerDeteriation;
+      allCrafts += grouping+'-';
+
+      // lastly, we check bulkSurplus to see if we have an excess and can reduce the costs / crafts
+      for (const [resourceName, surplusAmount] of Object.entries(bulkSurplus)) {
+        let resource = ingredients[resourceName] ? ingredients[resourceName] : ores[resourceName];
+        let multiplier = resource.multiplier || 1;
+
+        if(surplusAmount >= multiplier){
+          for (const [subResourceName, subAmount] of Object.entries(resource.cost)) {
+            bulkRawCost[subResourceName] -= subAmount;
+          }
+
+          // Amend the bulkSurplus
+          bulkSurplus[resourceName] -= [multiplier]
+          // Amend hammer usage
+          bulkHammerLoss -= hammerDeteriation
+          
+          // Remove the last instance of resourceName (plus hyphen) from allCrafts
+          const resourceWithHyphen = resourceName + '-';
+          const lastInstanceIndex = allCrafts.lastIndexOf(resourceWithHyphen); // Get the last occurrence of the resource
+
+          if (lastInstanceIndex !== -1) {
+            allCrafts = allCrafts.substring(0, lastInstanceIndex) + allCrafts.substring(lastInstanceIndex + resourceWithHyphen.length);
+          }
+        }
       }
     }
 
+    console.log(`Exited:
+      allCrafts: ${JSON.stringify(allCrafts)}
+      bulkRawCost: ${JSON.stringify(bulkRawCost)}
+      bulkSurplus: ${JSON.stringify(bulkSurplus)}
+      bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}`)
+
+    const stackedId = reorderBulk(allCrafts, bulkItemName)
+    console.log(`stackedId: ${JSON.stringify(stackedId)}`)
+    onCraft(bulkItemName, stackedId, bulkRawCost, bulkSurplus, bulkHammerLoss);  // Pass groupId to ensure grouping
+    
   };
 
   const reorderBulk = (allCrafts) => {
-    const newAllCrafts = {}; // Object to store the reorganized groups
-  
-    // Step 1: Extract the order from the first `groupId`
-    let firstGroupId = Object.keys(allCrafts)[0] ? Object.keys(allCrafts)[0] : false;
-    if(!firstGroupId){
-      return;
-    }
-    let prefixOrder = firstGroupId.split('--')[0].split('-');
-  
-    // Step 2: Collect and group all items by their prefix
-    const groupedItems = {};
-    for (const groupId in allCrafts) {
-      const prefix = groupId.split('--')[0]; // Extract the prefix
-      if (!groupedItems[prefix]) {
-        groupedItems[prefix] = [];
+    // Remove the trailing hyphen and split the string into an array of items
+    let craftsArray = allCrafts.slice(0, -1).split('-');
+
+    // Create a map to store the items and their counts
+    let craftsMap = new Map();
+
+    // Count the occurrences of each item, maintaining the order of first appearance
+    for (let item of craftsArray) {
+      if (craftsMap.has(item)) {
+        craftsMap.set(item, craftsMap.get(item) + 1);
+      } else {
+        craftsMap.set(item, 1);
       }
-      groupedItems[prefix].push(...allCrafts[groupId]);
     }
-  
-    // Step 3: Iterate through each prefix and re-order based on the first group prefixOrder
-    for (const prefix in groupedItems) {
-      // Sort items based on the prefixOrder (i.e., Gear -> Stone Furnace -> Burner Drill)
-      const sortedItems = groupedItems[prefix].sort((a, b) => {
-        const itemAIndex = prefixOrder.indexOf(a.itemName);
-        const itemBIndex = prefixOrder.indexOf(b.itemName);
-        return itemAIndex - itemBIndex;
-      });
-  
-      // Step 4: Assign a new groupId with the prefix and random number
-      const newGroupId = `${prefix}--${Date.now() + Math.random()}`;
-      newAllCrafts[newGroupId] = sortedItems;
-  
-      // Replace the groupId for each item in the sorted list
-      sortedItems.forEach((item) => {
-        item.groupId = newGroupId;
-      });
+
+    // Rebuild the string by repeating each item according to its count
+    let newAllCrafts = '';
+    for (let [item, count] of craftsMap) {
+      newAllCrafts += (item + '-').repeat(count);
     }
+
+    newAllCrafts += ('-'+ Date.now() + Math.random())
   
     return newAllCrafts;
   };
