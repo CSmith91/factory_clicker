@@ -960,13 +960,13 @@ function App() {
     setNetworks(prevNetworks => {
       const updatedNetworks = { ...prevNetworks };
       if (updatedNetworks[itemName]) {
-        updatedNetworks[itemName].tempCount += operation * 1;
+        updatedNetworks[itemName].tempCount += operation;
       }
       return updatedNetworks;
     });
   }
 
-  const onCraft = (itemName, groupId, totalCost, leftover, hammerCost) => {
+  const onCraft = (itemName, groupId, totalCost, leftover, hammerCost, multiCraft = 1) => {
 
     // console.log(`onCraft
     // itemName is: ${JSON.stringify(itemName)}
@@ -1019,7 +1019,8 @@ function App() {
     // note: child items dont get crafted, but are passed to addToCraftQueue to denote which items are being crafted as intermediaries
     craftArray.forEach(craftItem => {
       const [itemName, item, multiplier, child, groupId, leftover, totalCost, hammerCost] = craftItem
-      addToCraftQueue(itemName, item, multiplier, child, groupId, leftover, totalCost, hammerCost)
+      console.log(`craftItem is: ${JSON.stringify(craftItem)}`)
+      addToCraftQueue(itemName, item, multiplier, child, groupId, leftover, totalCost, hammerCost, multiCraft)
     })
     
   };
@@ -1032,7 +1033,7 @@ function App() {
   const [currentCrafting, setCurrentCrafting] = useState(null); // To manage the current crafting item
   const [isAnimating, setIsAnimating] = useState(false); // To manage animation state
   
-  const addToCraftQueue = (ingredientName, ingredient, multiplier, parentIngredientName = null, groupId, leftover, totalCost, hammerCost) => {
+  const addToCraftQueue = (ingredientName, ingredient, multiplier, parentIngredientName = null, groupId, leftover, totalCost, hammerCost, multiCraft) => {
     setCraftQueue(prevQueue => {
       // Get the last item in the queue
       const lastItem = prevQueue[prevQueue.length - 1];
@@ -1061,6 +1062,7 @@ function App() {
           leftover,
           totalCost,
           hammerCost,
+          multiCraft,
           id: Date.now() + Math.random(), // Generate a unique ID for each craft item
           queue: 1 // Start with the specified multiplier
         };
@@ -1074,53 +1076,53 @@ function App() {
     if(!craftQueue){
       setCraftQueue([])
     }
-    // If there's something in the queue and nothing is currently crafting
-    else if (craftQueue.length > 0 && !currentCrafting) {
-      const [nextItem] = craftQueue; // Get the first item in the queue
-      setCurrentCrafting(nextItem); // Set the current item as crafting
-      setIsAnimating(true); // Start the animation
+    // // If there's something in the queue and nothing is currently crafting
+    // else if (craftQueue.length > 0 && !currentCrafting) {
+    //   const [nextItem] = craftQueue; // Get the first item in the queue
+    //   setCurrentCrafting(nextItem); // Set the current item as crafting
+    //   setIsAnimating(true); // Start the animation
 
-      const { ingredientName, ingredient } = nextItem;
+    //   const { ingredientName, ingredient } = nextItem;
 
-      setTimeout(() => {
-        // Decrease the count of the first item or remove it if count becomes 1
-        setCraftQueue(prevQueue => {
-          if(!prevQueue){
-            setCraftQueue([])
-          }
-          else if(!prevQueue[0]){
-            // the only available item in the queue was cancelled - setCurrentlyCrafting to null and remove the animation
-            setIsAnimating(false);
-            setCurrentCrafting(null);
-          }
-          else if (prevQueue[0].queue > 1) {
-            if(prevQueue[0].parentIngredientName !== 'child'){
-              craftPayout(ingredientName, prevQueue[0].leftover); // Process crafting
-            }
-            // If there are more than 1 in the queue, reduce the count
-            setIsAnimating(false); // End the animation
-            setCurrentCrafting(null); // Reset current crafting item
-            return prevQueue.map((item, index) => {
-              if (index === 0) {
-                return { ...item, queue: item.queue - 1 };
-              }
-              return item;
-            });
-          } else {
-            if(prevQueue[0].parentIngredientName !== 'child'){
-              craftPayout(ingredientName, prevQueue[0].leftover); // Process crafting
-            }
-            // If there's only 1 left, remove the item after crafting completes
-            setIsAnimating(false); // End the animation
-            setCurrentCrafting(null); // Reset current crafting item
-            return prevQueue.slice(1);
-          }
-        });
-      }, ingredient.craftTime * 1000);
-    }
+    //   setTimeout(() => {
+    //     // Decrease the count of the first item or remove it if count becomes 1
+    //     setCraftQueue(prevQueue => {
+    //       if(!prevQueue){
+    //         setCraftQueue([])
+    //       }
+    //       else if(!prevQueue[0]){
+    //         // the only available item in the queue was cancelled - setCurrentlyCrafting to null and remove the animation
+    //         setIsAnimating(false);
+    //         setCurrentCrafting(null);
+    //       }
+    //       else if (prevQueue[0].queue > 1) {
+    //         if(prevQueue[0].parentIngredientName !== 'child'){
+    //           craftPayout(ingredientName, prevQueue[0].leftover, prevQueue[0].multiCraft); // Process crafting
+    //         }
+    //         // If there are more than 1 in the queue, reduce the count
+    //         setIsAnimating(false); // End the animation
+    //         setCurrentCrafting(null); // Reset current crafting item
+    //         return prevQueue.map((item, index) => {
+    //           if (index === 0) {
+    //             return { ...item, queue: item.queue - 1 };
+    //           }
+    //           return item;
+    //         });
+    //       } else {
+    //         if(prevQueue[0].parentIngredientName !== 'child'){
+    //           craftPayout(ingredientName, prevQueue[0].leftover, prevQueue[0].multiCraft); // Process crafting
+    //         }
+    //         // If there's only 1 left, remove the item after crafting completes
+    //         setIsAnimating(false); // End the animation
+    //         setCurrentCrafting(null); // Reset current crafting item
+    //         return prevQueue.slice(1);
+    //       }
+    //     });
+    //   }, ingredient.craftTime * 1000);
+    // }
   }, [craftQueue, currentCrafting]);
 
-  const craftPayout = (ingredientName, leftover) => {
+  const craftPayout = (ingredientName, leftover, multiCraft) => {
     // check if ingredient -- if not, it's a network item
     if (ingredients[ingredientName]) {
   
@@ -1278,10 +1280,12 @@ function App() {
   const bulkCheck = (bulkItemName) => {
 
     let totalCrafts = 5; // Attempt to craft 5x
+    let successfulCrafts = 0;
     let allCrafts = '';
     let bulkRawCost = {};
     let bulkSurplus = {};
     let bulkHammerLoss = 0;
+    let bulkGroupId = ''
   
     for (let i = 0; i < totalCrafts; i++) {
       console.log(`Start of loop ${i+1}
@@ -1301,6 +1305,10 @@ function App() {
   
       if (!success) {
         break;
+      }
+
+      if(i === 0){
+        bulkGroupId = groupId.split('--')[0];
       }
 
       let grouping = groupId.split('--')[0];
@@ -1353,46 +1361,174 @@ function App() {
 
       bulkHammerLoss += hammerDeteriation;
       allCrafts += grouping+'-';
+      successfulCrafts++
 
-      // lastly, we check bulkSurplus to see if we have an excess and can reduce the costs / crafts
-      for (const [resourceName, surplusAmount] of Object.entries(bulkSurplus)) {
-        let resource = ingredients[resourceName] ? ingredients[resourceName] : ores[resourceName];
-        let multiplier = resource.multiplier || 1;
+      // #### THIS IS THE SMART BULK CRAFT THAT LEADS TO FURTHER TROUBLES AND HENCE REQUIRES FURTHER THOUGHT
+      // // lastly, we check bulkSurplus to see if we have an excess and can reduce the costs / crafts
+      // for (const [resourceName, surplusAmount] of Object.entries(bulkSurplus)) {
+      //   let resource = ingredients[resourceName] ? ingredients[resourceName] : ores[resourceName];
+      //   let multiplier = resource.multiplier || 1;
 
-        if(surplusAmount >= multiplier){
-          for (const [subResourceName, subAmount] of Object.entries(resource.cost)) {
-            bulkRawCost[subResourceName] -= subAmount;
-          }
+      //   if(surplusAmount >= multiplier){
+      //     for (const [subResourceName, subAmount] of Object.entries(resource.cost)) {
+      //       bulkRawCost[subResourceName] -= subAmount;
+      //     }
 
-          // Amend the bulkSurplus
-          bulkSurplus[resourceName] -= [multiplier]
-          // Amend hammer usage
-          bulkHammerLoss -= hammerDeteriation
+      //     // Amend the bulkSurplus
+      //     bulkSurplus[resourceName] -= [multiplier]
+      //     // Amend hammer usage
+      //     bulkHammerLoss -= hammerDeteriation
           
-          // Remove the last instance of resourceName (plus hyphen) from allCrafts
-          const resourceWithHyphen = resourceName + '-';
-          const lastInstanceIndex = allCrafts.lastIndexOf(resourceWithHyphen); // Get the last occurrence of the resource
+      //     // Remove the last instance of resourceName (plus hyphen) from allCrafts
+      //     const resourceWithHyphen = resourceName + '-';
+      //     const lastInstanceIndex = allCrafts.lastIndexOf(resourceWithHyphen); // Get the last occurrence of the resource
 
-          if (lastInstanceIndex !== -1) {
-            allCrafts = allCrafts.substring(0, lastInstanceIndex) + allCrafts.substring(lastInstanceIndex + resourceWithHyphen.length);
-          }
-        }
-      }
+      //     if (lastInstanceIndex !== -1) {
+      //       allCrafts = allCrafts.substring(0, lastInstanceIndex) + allCrafts.substring(lastInstanceIndex + resourceWithHyphen.length);
+      //     }
+      //   }
+      // }
     }
 
     console.log(`Exited:
+      successfulCrafts: ${successfulCrafts}
       allCrafts: ${JSON.stringify(allCrafts)}
       bulkRawCost: ${JSON.stringify(bulkRawCost)}
       bulkSurplus: ${JSON.stringify(bulkSurplus)}
-      bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}`)
+      bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}
+      bulkGroupId: ${bulkGroupId}`)
 
-    const stackedId = reorderBulk(allCrafts, bulkItemName)
+    const stackedId = reorderBulk(allCrafts, bulkGroupId)
     console.log(`stackedId: ${JSON.stringify(stackedId)}`)
-    onCraft(bulkItemName, stackedId, bulkRawCost, bulkSurplus, bulkHammerLoss);  // Pass groupId to ensure grouping
+
+    
+
+    onCraft(bulkItemName, stackedId, bulkRawCost, bulkSurplus, bulkHammerLoss, successfulCrafts);  // Pass groupId to ensure grouping
+
+
+
+    // ##### THE BELOW WAS AN ATTEMPT AT SMART-BULK-CRAFTING. IT REQUIRES TOO MUCH CODE AT THIS STAGE IN THE PROJECT --- IT IS A 'NICE TO HAVE'
+
+    // let totalCrafts = 5; // Attempt to craft 5x
+    // let successfulCrafts = 0;
+    // let allCrafts = '';
+    // let bulkRawCost = {};
+    // let bulkSurplus = {};
+    // let bulkHammerLoss = 0;
+  
+    // for (let i = 0; i < totalCrafts; i++) {
+    //   console.log(`Start of loop ${i+1}
+    //     allCrafts: ${JSON.stringify(allCrafts)}
+    //     bulkRawCost: ${JSON.stringify(bulkRawCost)}
+    //     bulkSurplus: ${JSON.stringify(bulkSurplus)}
+    //     bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}`)
+
+    //   const result = checkCraft(bulkItemName, true); // return [true, ingredientName, groupId, rawCost, surplusList, hammerDeteriation]
+
+    //   if (!result) {
+    //     break;
+    //   }
+
+    //   // Call checkCraft to trigger crafting logic and deductions
+    //   const [success, ingredientName, groupId, rawCost, surplusList, hammerDeteriation] = checkCraft(bulkItemName, true); // return [true, ingredientName, groupId, rawCost, surplusList, hammerDeteriation]
+  
+    //   if (!success) {
+    //     break;
+    //   }
+
+    //   let grouping = groupId.split('--')[0];
+
+    //   // break if this loop would push the hammer beyond it's durability
+    //   if(bulkHammerLoss + hammerDeteriation > tools['Hammer'].durability){
+    //     break;
+    //   }
+
+    //   let canAdd = true;
+
+    //   // Loop through rawCost but check beforehand if adding the amount would surpass the inventory limits
+    //   for (const [resourceName, amountToAdd] of Object.entries(rawCost)) {
+    //     // Check if the resource exists in ores or ingredients
+    //     const inventoryItem = ores[resourceName] ? ores[resourceName] : ingredients[resourceName];
+        
+    //     // Use idleCount if available, otherwise use count
+    //     const inventoryCount = inventoryItem.idleCount ? inventoryItem.idleCount : inventoryItem.count;
+
+    //     // Calculate the current total (existing bulk amount + amountToAdd)
+    //     const currentBulkAmount = bulkRawCost[resourceName] || 0;
+    //     const totalAfterAddition = currentBulkAmount + amountToAdd;
+
+    //     // If adding would exceed the inventory, break the loop
+    //     if (totalAfterAddition > inventoryCount) {
+    //       canAdd = false;
+    //       break;
+    //     }
+    //   }
+
+    //   if(!canAdd) break;
+
+    //   // Loop through the rawCost and add to bulkRawCost
+    //   for (const [resource, amount] of Object.entries(rawCost)) {
+    //     if (bulkRawCost[resource]) {
+    //       bulkRawCost[resource] += amount;
+    //     } else {
+    //       bulkRawCost[resource] = amount;
+    //     }
+    //   }
+
+    //   // Loop through the surplusList and add to bulkSurplus
+    //   for (const [resource, amount] of Object.entries(surplusList)) {
+    //     if (bulkSurplus[resource]) {
+    //       bulkSurplus[resource] += amount;
+    //     } else {
+    //       bulkSurplus[resource] = amount;
+    //     }
+    //   }
+
+    //   bulkHammerLoss += hammerDeteriation;
+    //   allCrafts += grouping+'-';
+    //   successfulCrafts++
+
+    //   // lastly, we check bulkSurplus to see if we have an excess and can reduce the costs / crafts
+    //   for (const [resourceName, surplusAmount] of Object.entries(bulkSurplus)) {
+    //     let resource = ingredients[resourceName] ? ingredients[resourceName] : ores[resourceName];
+    //     let multiplier = resource.multiplier || 1;
+
+    //     if(surplusAmount >= multiplier){
+    //       for (const [subResourceName, subAmount] of Object.entries(resource.cost)) {
+    //         bulkRawCost[subResourceName] -= subAmount;
+    //       }
+
+    //       // Amend the bulkSurplus
+    //       bulkSurplus[resourceName] -= [multiplier]
+    //       // Amend hammer usage
+    //       bulkHammerLoss -= hammerDeteriation
+          
+    //       // Remove the last instance of resourceName (plus hyphen) from allCrafts
+    //       const resourceWithHyphen = resourceName + '-';
+    //       const lastInstanceIndex = allCrafts.lastIndexOf(resourceWithHyphen); // Get the last occurrence of the resource
+
+    //       if (lastInstanceIndex !== -1) {
+    //         allCrafts = allCrafts.substring(0, lastInstanceIndex) + allCrafts.substring(lastInstanceIndex + resourceWithHyphen.length);
+    //       }
+    //     }
+    //   }
+    // }
+
+    // console.log(`Exited:
+    //   successfulCrafts: ${successfulCrafts}
+    //   allCrafts: ${JSON.stringify(allCrafts)}
+    //   bulkRawCost: ${JSON.stringify(bulkRawCost)}
+    //   bulkSurplus: ${JSON.stringify(bulkSurplus)}
+    //   bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}`)
+
+    // const stackedId = reorderBulk(allCrafts, bulkItemName)
+    // console.log(`stackedId: ${JSON.stringify(stackedId)}`)
+
+    // onCraft(bulkItemName, stackedId, bulkRawCost, bulkSurplus, bulkHammerLoss, successfulCrafts);  // Pass groupId to ensure grouping
     
   };
 
-  const reorderBulk = (allCrafts) => {
+  const reorderBulk = (allCrafts, groupId) => {
     // Remove the trailing hyphen and split the string into an array of items
     let craftsArray = allCrafts.slice(0, -1).split('-');
 
@@ -1414,7 +1550,7 @@ function App() {
       newAllCrafts += (item + '-').repeat(count);
     }
 
-    newAllCrafts += ('-'+ Date.now() + Math.random())
+    newAllCrafts += ('-'+ Date.now() + Math.random() + '__BULK_' + groupId)
   
     return newAllCrafts;
   };
