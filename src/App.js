@@ -887,15 +887,16 @@ function App() {
     }
   };
 
-  const craftDeductions = (itemName, totalCost, leftover, hammerCost, reverse) => {
-    const operation = reverse ? 1 : -1;  // If reverse is true, we add; if false, we subtract
+  const craftDeductions = (itemName, totalCost, leftover, hammerCost, reverse, multiCraft = 1) => {
+    // multiCraft is ONLY used incrementing tempCount for the final item
+    const operation = reverse ? -1 : 1;  // If reverse is true, we add; if false, we subtract
 
     // Update the hammer's durability, if applicable
     if(ingredients[itemName]){
       setTools(prevTools => {
           const toolName = "Hammer"
           const tool = prevTools[toolName];
-          const updatedDurability = tool.durability + operation * hammerCost;
+          const updatedDurability = tool.durability - operation * hammerCost;
           return {
               ...prevTools,
               [toolName]: {
@@ -912,7 +913,7 @@ function App() {
           ...prevIngredients,
           [resourceName]: {
             ...prevIngredients[resourceName],
-            count: prevIngredients[resourceName].count + operation * amountRequired
+            count: prevIngredients[resourceName].count - operation * amountRequired
           }
         }));
       }
@@ -921,8 +922,8 @@ function App() {
           ...prevIngredients,
           [resourceName]: {
             ...prevIngredients[resourceName],
-            count: prevIngredients[resourceName].count + operation * amountRequired,
-            idleCount: prevIngredients[resourceName].idleCount + operation * amountRequired,
+            count: prevIngredients[resourceName].count - operation * amountRequired,
+            idleCount: prevIngredients[resourceName].idleCount - operation * amountRequired,
           }
         }));
       }
@@ -931,7 +932,7 @@ function App() {
           ...prevIngredients,
           [resourceName]: {
             ...prevIngredients[resourceName],
-            count: prevIngredients[resourceName].count + operation * amountRequired
+            count: prevIngredients[resourceName].count - operation * amountRequired
           }
         }));
       }
@@ -946,7 +947,7 @@ function App() {
       // Increment the tempCount for itemName
       updatedIngredients[itemName] = {
         ...updatedIngredients[itemName],
-        tempCount: updatedIngredients[itemName].tempCount - operation * multiplier
+        tempCount: updatedIngredients[itemName].tempCount + operation * multiplier * multiCraft
       };
     
       // Iterate through the leftover object and increment the tempCount for each resource
@@ -954,7 +955,7 @@ function App() {
         if (updatedIngredients[resourceName]) {
           updatedIngredients[resourceName] = {
             ...updatedIngredients[resourceName],
-            tempCount: updatedIngredients[resourceName].tempCount - operation * amount
+            tempCount: updatedIngredients[resourceName].tempCount + operation * amount
           };
         }
       });
@@ -965,13 +966,13 @@ function App() {
     setNetworks(prevNetworks => {
       const updatedNetworks = { ...prevNetworks };
       if (updatedNetworks[itemName]) {
-        updatedNetworks[itemName].tempCount += operation;
+        updatedNetworks[itemName].tempCount -= operation;
       }
       return updatedNetworks;
     });
   }
 
-  const onCraft = (itemName, groupId, totalCost, leftover, hammerCost, multiCraft = 1) => {
+  const onCraft = (itemName, groupId, totalCost, leftover, hammerCost, multiCraft) => {
 
     // console.log(`onCraft
     // itemName is: ${JSON.stringify(itemName)}
@@ -984,7 +985,7 @@ function App() {
     craftDeductions(itemName, totalCost, leftover, hammerCost, false, multiCraft);
 
     // we now send the instructions to onCraft
-    const buildCraftArray = (groupId, leftover, totalCost, hammerCost) => {
+    const buildCraftArray = (groupId, leftover, totalCost, hammerCost, multiCraft) => {
       // Split by '--' to remove the timestamp part
       const splitParts = groupId.split('--');
       
@@ -1019,7 +1020,7 @@ function App() {
       return craftArray;
     };
 
-    const craftArray = buildCraftArray(groupId, leftover, totalCost, hammerCost);
+    const craftArray = buildCraftArray(groupId, leftover, totalCost, hammerCost, multiCraft);
 
     // note: child items dont get crafted, but are passed to addToCraftQueue to denote which items are being crafted as intermediaries
     craftArray.forEach(craftItem => {
@@ -1293,11 +1294,11 @@ function App() {
     let bulkGroupId = ''
   
     for (let i = 0; i < totalCrafts; i++) {
-      console.log(`Start of loop ${i+1}
-        allCrafts: ${JSON.stringify(allCrafts)}
-        bulkRawCost: ${JSON.stringify(bulkRawCost)}
-        bulkSurplus: ${JSON.stringify(bulkSurplus)}
-        bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}`)
+      // console.log(`Start of loop ${i+1}
+      //   allCrafts: ${JSON.stringify(allCrafts)}
+      //   bulkRawCost: ${JSON.stringify(bulkRawCost)}
+      //   bulkSurplus: ${JSON.stringify(bulkSurplus)}
+      //   bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}`)
 
       const result = checkCraft(bulkItemName, true); // return [true, ingredientName, groupId, rawCost, surplusList, hammerDeteriation]
       if (!result) {
@@ -1396,7 +1397,7 @@ function App() {
       }
     }
 
-    console.log(`Exited:
+    console.log(`Exited bulkSmartBuild:
       successfulCrafts: ${successfulCrafts}
       allCrafts: ${JSON.stringify(allCrafts)}
       bulkRawCost: ${JSON.stringify(bulkRawCost)}
@@ -1405,16 +1406,11 @@ function App() {
       bulkGroupId: ${bulkGroupId}`)
 
     const stackedId = reorderBulk(allCrafts, bulkGroupId)
-    console.log(`stackedId: ${JSON.stringify(stackedId)}`)
+    // console.log(`stackedId: ${JSON.stringify(stackedId)}`)
 
-    // let correctedBulkSurplus = {}
-    // for (const [name, amount] of Object.entries(bulkSurplus)) {
-    //   correctedBulkSurplus[name] = amount / successfulCrafts
-    // }
+    onCraft(bulkItemName, stackedId, bulkRawCost, bulkSurplus, bulkHammerLoss, successfulCrafts);
 
-    // onCraft(bulkItemName, stackedId, bulkRawCost, correctedBulkSurplus, bulkHammerLoss, successfulCrafts);  // Pass groupId to ensure grouping
-
-    // ##### THE BELOW WAS AN ATTEMPT AT SMART-BULK-CRAFTING. IT REQUIRES TOO MUCH CODE AT THIS STAGE IN THE PROJECT --- IT IS A 'NICE TO HAVE'
+    // ##### OLD CODE BELOW.
 
     // let totalCrafts = 5; // Attempt to craft 5x
     // let successfulCrafts = 0;
