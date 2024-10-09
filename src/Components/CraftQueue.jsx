@@ -102,7 +102,6 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
                 alt={item.ingredientName}
                 style={{ width: '30px', height: '30px', marginBottom: '-5px' }} // Adjust size as needed
               />
-              {/* Show the count if it's greater than 1 */}
               <span className="item-count">{item.queue * item.multiplier}</span>
               {debug && (
                 <div>

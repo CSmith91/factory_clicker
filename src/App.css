@@ -232,6 +232,10 @@ button:not(:disabled):hover {
   animation: none; /* Ensure no animation is applied initially */
 }
 
+.craftItem-leftover {
+  display: none;
+}
+
 @keyframes dropBackground {
   from {
     background-position: bottom;

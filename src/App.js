@@ -939,6 +939,7 @@ function App() {
     })
 
     const multiplier = ingredients[itemName].multiplier || 1;
+    const tempAdder = multiCraft > 1 ? (operation * multiplier * multiCraft) : operation * multiplier
 
     // Reserve storage space for the item we're crafting, as well as any leftovers
     setIngredients(prevIngredients => {
@@ -947,7 +948,7 @@ function App() {
       // Increment the tempCount for itemName
       updatedIngredients[itemName] = {
         ...updatedIngredients[itemName],
-        tempCount: updatedIngredients[itemName].tempCount + operation * multiplier * multiCraft
+        tempCount: updatedIngredients[itemName].tempCount + tempAdder
       };
     
       // Iterate through the leftover object and increment the tempCount for each resource
@@ -985,7 +986,7 @@ function App() {
     craftDeductions(itemName, totalCost, leftover, hammerCost, false, multiCraft);
 
     // we now send the instructions to onCraft
-    const buildCraftArray = (groupId, leftover, totalCost, hammerCost, multiCraft) => {
+    const buildCraftArray = (groupId, totalCost, hammerCost) => {
       // Split by '--' to remove the timestamp part
       const splitParts = groupId.split('--');
       
@@ -1020,14 +1021,21 @@ function App() {
       return craftArray;
     };
 
-    const craftArray = buildCraftArray(groupId, leftover, totalCost, hammerCost, multiCraft);
+    const craftArray = buildCraftArray(groupId, totalCost, hammerCost);
 
     // note: child items dont get crafted, but are passed to addToCraftQueue to denote which items are being crafted as intermediaries
     craftArray.forEach(craftItem => {
-      const [itemName, item, multiplier, child, groupId, leftover, totalCost, hammerCost] = craftItem
-      console.log(`craftItem is: ${JSON.stringify(craftItem)}`)
+      const [itemName, item, multiplier, child, groupId, totalCost, hammerCost] = craftItem
+      //console.log(`craftItem is: ${JSON.stringify(craftItem)}`)
       addToCraftQueue(itemName, item, multiplier, child, groupId, leftover, totalCost, hammerCost, multiCraft)
     })
+
+    if(leftover){
+      Object.entries(leftover).forEach(([resourceName, amount]) => {
+        const item = ores[resourceName] ? ores[resourceName] : ingredients[resourceName];
+        addToCraftQueue(resourceName, item, amount, 'leftover', groupId, leftover, null, null, null)
+      })
+    }
     
   };
 
@@ -1090,6 +1098,8 @@ function App() {
 
       const { ingredientName, ingredient } = nextItem;
 
+      const itemCraftTime = craftQueue[0].parentIngredientName === 'leftover' ? 10 : ingredient.craftTime * 1000;
+
       setTimeout(() => {
         // Decrease the count of the first item or remove it if count becomes 1
         setCraftQueue(prevQueue => {
@@ -1102,8 +1112,8 @@ function App() {
             setCurrentCrafting(null);
           }
           else if (prevQueue[0].queue > 1) {
-            if(prevQueue[0].parentIngredientName !== 'child'){
-              craftPayout(ingredientName, prevQueue[0].leftover, prevQueue[0].multiCraft); // Process crafting
+            if(prevQueue[0].parentIngredientName !== 'child' && prevQueue[0].parentIngredientName !== 'leftover'){
+              craftPayout(ingredientName, prevQueue[0].multiCraft); // Process crafting
             }
             // If there are more than 1 in the queue, reduce the count
             setIsAnimating(false); // End the animation
@@ -1115,8 +1125,11 @@ function App() {
               return item;
             });
           } else {
-            if(prevQueue[0].parentIngredientName !== 'child'){
-              craftPayout(ingredientName, prevQueue[0].leftover, prevQueue[0].multiCraft); // Process crafting
+            if(prevQueue[0].parentIngredientName !== 'child' && prevQueue[0].parentIngredientName !== 'leftover'){
+              craftPayout(ingredientName, prevQueue[0].multiCraft); // Process crafting
+            }
+            else if(prevQueue[0].parentIngredientName === 'leftover'){
+              craftPayout(ingredientName, prevQueue[0].multiCraft, prevQueue[0].leftover); // Process crafting
             }
             // If there's only 1 left, remove the item after crafting completes
             setIsAnimating(false); // End the animation
@@ -1124,13 +1137,13 @@ function App() {
             return prevQueue.slice(1);
           }
         });
-      }, ingredient.craftTime * 1000);
+      }, itemCraftTime);
     }
   }, [craftQueue, currentCrafting]);
 
-  const craftPayout = (ingredientName, leftover, multiCraft) => {
+  const craftPayout = (ingredientName, multiCraft, leftover) => {
     // check if ingredient -- if not, it's a network item
-    if (ingredients[ingredientName]) {
+    if (ingredients[ingredientName] && !leftover) {
   
       setIngredients(prevIngredients => {
         const updatedIngredients = { ...prevIngredients };
@@ -1156,28 +1169,6 @@ function App() {
       
         return updatedIngredients;
       });
-
-      if (leftover) {
-        // Iterate through leftover object
-        Object.keys(leftover).forEach((item) => {
-          setIngredients((prevIngredients) => {
-            // Check if the item exists in ingredients
-            if (prevIngredients[item]) {
-              return {
-                ...prevIngredients,
-                [item]: {
-                  ...prevIngredients[item],
-                  // Increase the count by leftover amount
-                  count: prevIngredients[item].count + leftover[item],
-                  // Decrease the tempCount by the leftover amount
-                  tempCount: prevIngredients[item].tempCount - leftover[item],
-                }
-              };
-            }
-            return prevIngredients; // Return unchanged if the item doesn't exist
-          });
-        });
-      }
   
       // Early-stage unlock check - #myFirstFurnace       
       if (ingredients["Stone Furnace"].count === 0 && !unlockables.smelt1.isVisible) {
@@ -1198,6 +1189,27 @@ function App() {
         }));
       }
     } 
+    else if(leftover){
+      // Iterate through leftover object
+      Object.keys(leftover).forEach((item) => {
+        setIngredients((prevIngredients) => {
+          // Check if the item exists in ingredients
+          if (prevIngredients[item]) {
+            return {
+              ...prevIngredients,
+              [item]: {
+                ...prevIngredients[item],
+                // Increase the count by leftover amount
+                count: prevIngredients[item].count + leftover[item],
+                // Decrease the tempCount by the leftover amount
+                tempCount: prevIngredients[item].tempCount - leftover[item],
+              }
+            };
+          }
+          return prevIngredients; // Return unchanged if the item doesn't exist
+        });
+      });
+    }
     // Handle network items
     else {
       setNetworks(prevNetworks => ({
@@ -1406,7 +1418,7 @@ function App() {
       bulkGroupId: ${bulkGroupId}`)
 
     const stackedId = reorderBulk(allCrafts, bulkGroupId)
-    // console.log(`stackedId: ${JSON.stringify(stackedId)}`)
+    console.log(`stackedId: ${JSON.stringify(stackedId)}`)
 
     onCraft(bulkItemName, stackedId, bulkRawCost, bulkSurplus, bulkHammerLoss, successfulCrafts);
 
