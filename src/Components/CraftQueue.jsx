@@ -110,6 +110,9 @@ const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, deb
                   <p>GIndex: {groupIndex}</p>
                   <p>ID: {item.id}</p>
                   <p>Queue: {item.queue}</p>
+                  <p>totalCost: {JSON.stringify(item.totalCost)}</p>
+                  <p>leftover: {JSON.stringify(item.leftover)}</p>
+                  <p>hammerCost: {JSON.stringify(item.hammerCost)}</p>
                 </div>
               )}
             </div>

@@ -52,8 +52,8 @@ function App() {
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, isCraftable: false, craftTime: 3.2, canBus: true, isRaw: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, isCraftable: false, craftTime: 16, canBus: true },
     "Plastic": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Coal": 1, "Petroleum": 20}, multiplier: 2, isCraftable: false, craftTime: 1 },
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 },
     "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2, "Plastic": 2}, isCraftable: true, craftTime: 6 },
   })
@@ -1011,9 +1011,9 @@ function App() {
 
           // Check if the resourceName is the last item (mark all occurrences of the last unique item as 'null')
           if (resourceName === lastItem) {
-            craftArray.push([resourceName, ingredients[resourceName], multiplier, null, groupId, leftover, totalCost, hammerCost]);
+            craftArray.push([resourceName, ingredients[resourceName], multiplier, null, groupId, totalCost, hammerCost]);
           } else {
-            craftArray.push([resourceName, ingredients[resourceName], multiplier, 'child', groupId, leftover, totalCost, hammerCost]);
+            craftArray.push([resourceName, ingredients[resourceName], multiplier, 'child', groupId, totalCost, hammerCost]);
           }
         }
       }
@@ -1026,7 +1026,6 @@ function App() {
     // note: child items dont get crafted, but are passed to addToCraftQueue to denote which items are being crafted as intermediaries
     craftArray.forEach(craftItem => {
       const [itemName, item, multiplier, child, groupId, totalCost, hammerCost] = craftItem
-      //console.log(`craftItem is: ${JSON.stringify(craftItem)}`)
       addToCraftQueue(itemName, item, multiplier, child, groupId, leftover, totalCost, hammerCost, multiCraft)
     })
 
@@ -1228,24 +1227,45 @@ function App() {
   // ###### CANCEL LOGIC
   // ###### CANCEL LOGIC
 
-  const cancelCraft = (groupId, totalCost, leftover, hammerCost, bulk) => {
+  const cancelCraft = (groupId, totalCost, leftover, hammerCost, bulkCancel) => {
 
     // Filter the craftQueue to find all items that belong to the same groupId
     const groupItems = craftQueue.filter(item => item.groupId === groupId);
-
     // Find the parent item (where parentIngredientName is null)
     const parentItem = groupItems.find(item => !item.parentIngredientName);
 
-    if(bulk){
-      bulkRefund(parentItem.ingredientName, groupId, totalCost, leftover, hammerCost)
+    // console.log(`craft set to cancel: parentItem.ingredientName: ${parentItem.ingredientName}
+    //   groupId: ${groupId}
+    //   totalCost: ${JSON.stringify(totalCost)}
+    //   leftover: ${JSON.stringify(leftover)}
+    //   hammerCost: ${hammerCost}
+    //   `)
+
+    const bulkGroup = groupId.endsWith('__BULK');
+
+    // single cancelling a single stack
+    if(!bulkCancel && !bulkGroup){
+      // Cancel logic -- unlike factorio, if intermediary items have already been crafted, they still get canelled and refunded.
+      craftDeductions(parentItem.ingredientName, totalCost, leftover, hammerCost, true); 
+      deleteQueue(groupId.split('--')[0], groupId)
+    }
+    // bulk cancelling an single item stack
+    else if(bulkCancel && !bulkGroup){
+      // this works by looping cancelCraft up to 5x. The logic is in the CraftQueue component. 
       return
     }
-
-    // Cancel logic -- unlike factorio, if intermediary items have already been crafted, they still get canelled and refunded.
-    craftDeductions(parentItem.ingredientName, totalCost, leftover, hammerCost, true);
-
-    // remove the parent item (and any child items) from the queue
-    deleteQueue(groupId.split('--')[0], groupId)
+    // single cancelling a bulk group
+    else if(!bulkCancel && bulkGroup){
+      singleBulkRefund(parentItem.ingredientName, groupId, totalCost, leftover, hammerCost)
+    }
+    // bulk cancelling a bulk group
+    else if(bulkCancel && bulkGroup){
+      // potentially, you can loop singleBulkRefund 5x, as this has worked for bulk cancelling an single item stack
+      return
+    }
+    else{
+      console.error(`Something has gone wrong in cancelling this craft!`)
+    }
   }
 
   const deleteQueue = (groupName, groupId) => {
@@ -1290,6 +1310,16 @@ function App() {
     .filter(Boolean); // Remove null entries (items that were removed)
   });
 };
+
+  const singleBulkRefund = (parentName, groupId, totalCost, leftover, hammerCost) => {
+    console.log(`cancelling one item in a bulk craft
+      parentName: ${parentName}
+      groupId: ${groupId}
+      totalCost: ${JSON.stringify(totalCost)}
+      leftover: ${JSON.stringify(leftover)}
+      hammerCost: ${hammerCost}
+      `)
+  }
 
   // ###### BULK CRAFT LOGIC
   // ###### BULK CRAFT LOGIC  
@@ -1569,11 +1599,6 @@ function App() {
   
     return newAllCrafts;
   };
-
-  const bulkRefund = (parentName, totalCost, leftover, hammerCost) => {
-    // code goes here
-    // do we need this?
-  }
 
   return (
     <>
