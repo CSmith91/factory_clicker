@@ -1342,20 +1342,7 @@ function App() {
         i++
         Object.entries(cancelSum).forEach(([resourceName, amount]) => {
           console.log(`checking ${resourceName}`)
-          if(cancelLeftover[resourceName]){
-            // check leftover last
-            cancelSum[resourceName] -= cancelLeftover[resourceName]
-            refundCountdown -= cancelLeftover[resourceName]
-            rawRefund[resourceName] ? rawRefund[resourceName] += cancelLeftover[resourceName] : rawRefund[resourceName] = cancelLeftover[resourceName];
-            cancelLeftover[resourceName] = 0;
-            console.log(`We have leftover ${resourceName}. 
-              cancelSum is now: ${JSON.stringify(cancelSum)}. 
-              refundCountdown is: ${refundCountdown}
-              We've reduced cancelLeftovers to: ${JSON.stringify(cancelLeftover)}
-              rawRefund is now: ${JSON.stringify(rawRefund)}
-              `)
-          }
-          else if(ores[resourceName] || (ingredients[resourceName] && !ingredients[resourceName].isCraftable)){
+          if(ores[resourceName] || (ingredients[resourceName] && !ingredients[resourceName].isCraftable)){
             // straight refund
             cancelSum[resourceName] -= amount;
             refundCountdown -= amount;
@@ -1425,9 +1412,7 @@ function App() {
                 refundCountdown = 0; // or += multiplier?
               }
 
-              // do a final check of the cancelLeftover?
-
-              console.log(`
+              console.log(`----${resourceName}----
                 cancelSum is now: ${JSON.stringify(cancelSum)}
                 rawRefund is now: ${JSON.stringify(rawRefund)}
                 cancelLeftovers is: ${JSON.stringify(cancelLeftover)} // remember, this is independant of queueCancel, it's ascertaining where refunds are to be assigned.
@@ -1456,6 +1441,22 @@ function App() {
           break;
         }
       }
+
+      // we lastly neaten up any leftovers
+      if(cancelLeftover){
+        // cancelSum[resourceName] -= cancelLeftover[resourceName]
+        // refundCountdown -= cancelLeftover[resourceName]
+        // rawRefund[resourceName] ? rawRefund[resourceName] += cancelLeftover[resourceName] : rawRefund[resourceName] = cancelLeftover[resourceName];
+        // cancelLeftover[resourceName] = 0;
+        console.log(`We have leftovers. 
+          cancelSum is: ${JSON.stringify(cancelSum)}. 
+          refundCountdown is: ${refundCountdown}
+          cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
+          rawRefund is: ${JSON.stringify(rawRefund)}
+          ------
+          `)
+      }
+
       return [cancelLeftover, rawRefund, hammerRefund, queueCancel]
     }
 
