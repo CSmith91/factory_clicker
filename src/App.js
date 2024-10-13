@@ -1317,7 +1317,6 @@ function App() {
     // this is what we need to cancel
     let cancelSum = ingredients[parentName].cost;
     let cancelLeftover = leftover;
-    let finalRefund = {};
 
     console.log(`cancelling a single ${parentName} within a bulk craft
       cancelSum: ${JSON.stringify(cancelSum)}
@@ -1350,6 +1349,7 @@ function App() {
               rawRefund is now: ${JSON.stringify(rawRefund)}
               cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
               queueCancel is now: ${JSON.stringify(queueCancel)}
+              hammerRefund is now: ${hammerRefund}
               refundCountdown is: ${refundCountdown}
               `)
           }
@@ -1366,6 +1366,7 @@ function App() {
                   console.log(`We are crafting this intermediary, but must be careful as this has a multiplier`)
                   cancelSum[resourceName] -= multiplier
                   refundCountdown -= multiplier
+                  hammerRefund++
                   queueCancel[resourceName] ? queueCancel[resourceName] += multiplier : queueCancel[resourceName] = multiplier
                   if(cancelSum[resourceName] < 0){
                     cancelLeftover[resourceName] -= cancelSum[resourceName]
@@ -1375,6 +1376,7 @@ function App() {
                 else{
                   console.log(`We are crafting this intermediary with no multiplier`)
                   cancelSum[resourceName] -= 1
+                  hammerRefund++
                   queueCancel[resourceName] ? queueCancel[resourceName]++ : queueCancel[resourceName] = 1
                   refundCountdown--
                 }
@@ -1389,15 +1391,11 @@ function App() {
                 queueCancel = newQueueCancel;
 
                 cancelSum[resourceName] -= multiplier;
+                hammerRefund++
                 queueCancel[resourceName] ? queueCancel[resourceName] += multiplier : queueCancel[resourceName] = multiplier;
                 refundCountdown -= multiplier;
 
               }
-              // Object.entries(ingredients[resourceName].cost).forEach(([resourceName, amount]) => {
-              //   rawRefund[resourceName] ? rawRefund[resourceName] += amount : rawRefund[resourceName] = amount;
-              //   refundCountdown -= amount
-              // })
-
               // now we double check if refundCountdown has gone negative -- if it has, we tweak the rawRefund, cancelLeftovers and queueCancel
               if(refundCountdown < 0){
                 console.log(`Our refundCountdown is negative, so we need to correct for this`)
@@ -1415,6 +1413,7 @@ function App() {
                 rawRefund is now: ${JSON.stringify(rawRefund)}
                 cancelLeftovers is: ${JSON.stringify(cancelLeftover)} // remember, this is independant of queueCancel, it's ascertaining where refunds are to be assigned.
                 queueCancel is now: ${JSON.stringify(queueCancel)}
+                hammerRefund is now: ${hammerRefund}
                 refundCountdown is: ${refundCountdown}
                 `)
             }
@@ -1446,6 +1445,7 @@ function App() {
               We start with: 
               cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
               queueCancel is: ${JSON.stringify(queueCancel)}
+              hammerRefund is now: ${hammerRefund}
               rawRefund is: ${JSON.stringify(rawRefund)}
               ------
               `)
@@ -1456,6 +1456,7 @@ function App() {
 
             if(queueCancel[resourceName]){
               queueCancel[resourceName] -= multiplier;
+              hammerRefund--
             }
             else if(reimburse[resourceName]){
               reimburse[resourceName] -= multiplier;
@@ -1488,6 +1489,7 @@ function App() {
             console.log(`And end with:
               cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
               queueCancel is: ${JSON.stringify(queueCancel)}
+              hammerRefund is now: ${hammerRefund}
               rawRefund is: ${JSON.stringify(rawRefund)}
               ------
               `);
@@ -1508,14 +1510,18 @@ function App() {
       return [cancelLeftover, rawRefund, hammerRefund, queueCancel]
     }
 
-    const [newLeftover, refund, hammerFix, queueCancel] = smartRefund(componentArray, cancelSum, cancelLeftover, totalCost)
+    const [newLeftover, refund, hammerIterations, queueCancel] = smartRefund(componentArray, cancelSum, cancelLeftover, totalCost)
+    const hammer_cost_per_item = tools['Hammer'].corrodeRate;
+    const hammerRefund = (hammerIterations+1) * hammer_cost_per_item
 
     console.log(`Our smartRefund is:
       newLeftover is: ${JSON.stringify(newLeftover)}
       refund is: ${JSON.stringify(refund)}
-      hammerFix is: ${JSON.stringify(hammerFix)}
+      hammerFix is: ${JSON.stringify(hammerRefund)}
       queueCancel is: ${JSON.stringify(queueCancel)}
       `)
+
+
 
   }
 
