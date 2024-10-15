@@ -1257,7 +1257,7 @@ function App() {
     }
     // single cancelling a bulk group
     else if(!bulkCancel && bulkGroup){
-      singleBulkRefund(parentItem.ingredientName, groupId, totalCost, leftover, hammerCost)
+      singleBulkRefund(parentItem.ingredientName, groupId, totalCost, leftover)
     }
     // bulk cancelling a bulk group
     else if(bulkCancel && bulkGroup){
@@ -1312,19 +1312,19 @@ function App() {
     });
   };
 
-  const deleteQueueByOne = (parentName, groupId, refund, leftover, hammerRefund, queueCancelList) => {
-    console.log(`We're deleting an item in a bulk queue
-      parentName: ${parentName}
-      groupId: ${groupId}
-      refund: ${JSON.stringify(refund)}
-      leftover: ${JSON.stringify(leftover)}
-      hammerRefund: ${hammerRefund}
-      queueCancelList: ${JSON.stringify(queueCancelList)}
-      `)
+  const deleteBulkQueueByOne = (parentName, groupId, refund, leftover, hammerRefund, queueCancelList) => {
+    // console.log(`We're deleting an item in a bulk queue
+    //   parentName: ${parentName}
+    //   groupId: ${groupId}
+    //   refund: ${JSON.stringify(refund)}
+    //   leftover: ${JSON.stringify(leftover)}
+    //   hammerRefund: ${hammerRefund}
+    //   queueCancelList: ${JSON.stringify(queueCancelList)}
+    //   `)
 
     // remove the clicked item from the queue by id
     setCraftQueue((prevQueue) => {
-      console.log(`prevQueue: ${JSON.stringify(prevQueue)}`)
+      //console.log(`prevQueue: ${JSON.stringify(prevQueue)}`)
 
       // Helper function to update the groupId
       const updateGroupId = (groupId, queueCancelList) => {
@@ -1393,7 +1393,7 @@ function App() {
     });
   };
 
-  const singleBulkRefund = (parentName, groupId, totalCost, leftover, hammerCost) => {
+  const singleBulkRefund = (parentName, groupId, totalCost, leftover) => {
 
     // this is what we need to cancel
     let cancelSum = JSON.parse(JSON.stringify(ingredients[parentName].cost));
@@ -1404,7 +1404,6 @@ function App() {
     //   groupId: ${groupId}
     //   totalCost: ${JSON.stringify(totalCost)}
     //   cancelLeftover: ${JSON.stringify(cancelLeftover)}
-    //   hammerCost: ${hammerCost}
     //   `)
 
     // Step 1: Split the string at '--' to ignore everything after it
@@ -1419,28 +1418,27 @@ function App() {
       Object.entries(cancelSum).forEach(([resourceName, amount]) => {
         let refundCountdown = amount;
         while(refundCountdown > 0){
-          //console.log(`checking ${resourceName}`)
+          console.log(`checking ${resourceName}`)
           if(ores[resourceName] || (ingredients[resourceName] && !ingredients[resourceName].isCraftable)){
             // straight refund
             cancelSum[resourceName] -= amount;
             refundCountdown -= amount;
             rawRefund[resourceName] ? rawRefund[resourceName] += amount : rawRefund[resourceName] = amount;
-            // console.log(`${resourceName} is raw, so we add this.
-            //   cancelSum is now: ${JSON.stringify(cancelSum)}
-            //   rawRefund is now: ${JSON.stringify(rawRefund)}
-            //   cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
-            //   queueCancel is now: ${JSON.stringify(queueCancel)}
-            //   hammerRefund is now: ${hammerRefund}
-            //   refundCountdown is: ${refundCountdown}
-            //   `)
+            console.log(`${resourceName} is raw, so we add this.
+              cancelSum is now: ${JSON.stringify(cancelSum)}
+              rawRefund is now: ${JSON.stringify(rawRefund)}
+              cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
+              queueCancel is now: ${JSON.stringify(queueCancel)}
+              hammerRefund is now: ${hammerRefund}
+              refundCountdown is: ${refundCountdown}
+              `)
           }
           else if(ingredients[resourceName]){
             // this is an intermediary we need to covert back to it's raw item
+            const multiplier = ingredients[resourceName].multiplier || 1;
+            const subItems = JSON.parse(JSON.stringify(ingredients[resourceName].cost));
             if(componentArray.includes(resourceName)){
               // check if we need to break this down further
-              const multiplier = ingredients[resourceName].multiplier || 1;
-              const subItems = JSON.parse(JSON.stringify(ingredients[resourceName].cost));
-
               if(totalCost[resourceName] && rawRefund[resourceName] < totalCost[resourceName]){
                 //console.log(`rawRefund[${resourceName}] is: ${rawRefund[resourceName]} and the totalCost[] is greater, at: ${totalCost[resourceName]}`)
                 if(multiplier > 1){
@@ -1463,7 +1461,7 @@ function App() {
                 }
               }
               else{
-                //console.log(`rawRefund[${resourceName}] is: ${rawRefund[resourceName]} and the totalCost[resourceName] is less, at: ${totalCost[resourceName]}, so we must dig deeper, to subItems, which is: ${JSON.stringify(subItems)}`)
+                console.log(`rawRefund[${resourceName}] is: ${rawRefund[resourceName]} and the totalCost[resourceName] is less, at: ${totalCost[resourceName]}, so we must dig deeper, to subItems, which is: ${JSON.stringify(subItems)}`)
                 const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = smartRefund(componentArray, subItems, cancelLeftover, totalCost, rawRefund, hammerRefund, queueCancel)
 
                 cancelLeftover = newCancelLeftover;
@@ -1483,10 +1481,9 @@ function App() {
                 // Object.entries(subItems).forEach(([resourceName, amount]) => {
                 //   rawRefund[resourceName] -= amount;
                 // })
-                cancelSum[resourceName] -= refundCountdown; // or += multiplier?
-                cancelLeftover[resourceName] ? cancelLeftover[resourceName] -= refundCountdown : cancelLeftover[resourceName] = -refundCountdown; // or += multiplier?
-                //queueCancel[resourceName] ? cancelLeftover[resourceName] -= refundCountdown : cancelLeftover[resourceName] = -refundCountdown; // or += multiplier?
-                refundCountdown = 0; // or += multiplier?
+                cancelSum[resourceName] -= refundCountdown;
+                cancelLeftover[resourceName] ? cancelLeftover[resourceName] -= refundCountdown : cancelLeftover[resourceName] = -refundCountdown;
+                refundCountdown = 0;
               }
 
               // console.log(`----Reducing ${resourceName}----
@@ -1499,13 +1496,19 @@ function App() {
               //   `)
             }
             else{
-              //console.log(`We didn't use ${resourceName} directly, we made it from other components, so we need to dig deeper.`)
-              const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = smartRefund(componentArray, cancelSum, cancelLeftover, totalCost, rawRefund, hammerRefund, queueCancel)
+              console.log(`We didn't use ${resourceName} directly, we made it from other components, so we need to dig deeper.`)
+              // break this down further
+              const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = smartRefund(componentArray, subItems, cancelLeftover, totalCost, rawRefund, hammerRefund, queueCancel)
 
               cancelLeftover = newCancelLeftover;
               rawRefund = newRawRefund;
               hammerRefund = newHammerRefund;
               queueCancel = newQueueCancel;
+
+              cancelSum[resourceName] -= multiplier;
+              hammerRefund++
+              queueCancel[resourceName] ? queueCancel[resourceName] += multiplier : queueCancel[resourceName] = multiplier;
+              refundCountdown -= multiplier;
 
             }
           }
@@ -1608,9 +1611,7 @@ function App() {
     craftDeductions(parentName, refund, newLeftover, hammerRefund, true);
 
     // delete the items in the queue
-    deleteQueueByOne(parentName, groupId, refund, newLeftover, hammerRefund, finalQueueCancel);
-
-    //##### DO WE NEED TO UPDATE THE EXISITNG ITEMS IN THE QUEUE? Thinking leftover
+    deleteBulkQueueByOne(parentName, groupId, refund, newLeftover, hammerRefund, finalQueueCancel);
 
   }
 
