@@ -52,8 +52,8 @@ function App() {
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, isCraftable: false, craftTime: 3.2, canBus: true, isRaw: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, isCraftable: false, craftTime: 16, canBus: true },
     "Plastic": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Coal": 1, "Petroleum": 20}, multiplier: 2, isCraftable: false, craftTime: 1 },
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
-    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 6.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 50.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 50.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 },
     "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2, "Plastic": 2}, isCraftable: true, craftTime: 6 }
   })
@@ -1098,7 +1098,7 @@ function App() {
 
       const { ingredientName, ingredient } = nextItem;
 
-      const itemCraftTime = craftQueue[0].parentIngredientName === 'leftover' ? 10 : ingredient.craftTime * 10000; // CHANGE BACK TO 1000
+      const itemCraftTime = craftQueue[0].parentIngredientName === 'leftover' ? 10 : ingredient.craftTime * 1000;
 
       setTimeout(() => {
         // Decrease the count of the first item or remove it if count becomes 1
@@ -1420,20 +1420,20 @@ function App() {
       Object.entries(cancelSum).forEach(([resourceName, amount]) => {
         let refundCountdown = amount;
         while(refundCountdown > 0){
-          console.log(`checking ${resourceName}`)
+          //console.log(`checking ${resourceName}`)
           if(ores[resourceName] || (ingredients[resourceName] && !ingredients[resourceName].isCraftable)){
             // straight refund
             cancelSum[resourceName] -= amount;
             refundCountdown -= amount;
             rawRefund[resourceName] ? rawRefund[resourceName] += amount : rawRefund[resourceName] = amount;
-            console.log(`${resourceName} is raw, so we add this.
-              cancelSum is now: ${JSON.stringify(cancelSum)}
-              rawRefund is now: ${JSON.stringify(rawRefund)}
-              cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
-              queueCancel is now: ${JSON.stringify(queueCancel)}
-              hammerRefund is now: ${hammerRefund}
-              refundCountdown is: ${refundCountdown}
-              `)
+            // console.log(`${resourceName} is raw, so we add this.
+            //   cancelSum is now: ${JSON.stringify(cancelSum)}
+            //   rawRefund is now: ${JSON.stringify(rawRefund)}
+            //   cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
+            //   queueCancel is now: ${JSON.stringify(queueCancel)}
+            //   hammerRefund is now: ${hammerRefund}
+            //   refundCountdown is: ${refundCountdown}
+            //   `)
           }
           else if(ingredients[resourceName]){
             // this is an intermediary we need to covert back to it's raw item
@@ -1463,7 +1463,7 @@ function App() {
                 }
               }
               else{
-                console.log(`rawRefund[${resourceName}] is: ${rawRefund[resourceName]} and the totalCost[resourceName] is less, at: ${totalCost[resourceName]}, so we must dig deeper, to subItems, which is: ${JSON.stringify(subItems)}`)
+                //console.log(`rawRefund[${resourceName}] is: ${rawRefund[resourceName]} and the totalCost[resourceName] is less, at: ${totalCost[resourceName]}, so we must dig deeper, to subItems, which is: ${JSON.stringify(subItems)}`)
                 const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = smartRefund(componentArray, subItems, cancelLeftover, totalCost, rawRefund, hammerRefund, queueCancel)
 
                 cancelLeftover = newCancelLeftover;
@@ -1485,17 +1485,17 @@ function App() {
                 refundCountdown = 0;
               }
 
-              console.log(`----Reducing ${resourceName}----
-                cancelSum is now: ${JSON.stringify(cancelSum)}
-                rawRefund is now: ${JSON.stringify(rawRefund)}
-                cancelLeftovers is: ${JSON.stringify(cancelLeftover)} // remember, this is independant of queueCancel, it's ascertaining where refunds are to be assigned.
-                queueCancel is now: ${JSON.stringify(queueCancel)}
-                hammerRefund is now: ${hammerRefund}
-                refundCountdown is: ${refundCountdown}
-                `)
+              // console.log(`----Reducing ${resourceName}----
+              //   cancelSum is now: ${JSON.stringify(cancelSum)}
+              //   rawRefund is now: ${JSON.stringify(rawRefund)}
+              //   cancelLeftovers is: ${JSON.stringify(cancelLeftover)} // remember, this is independant of queueCancel, it's ascertaining where refunds are to be assigned.
+              //   queueCancel is now: ${JSON.stringify(queueCancel)}
+              //   hammerRefund is now: ${hammerRefund}
+              //   refundCountdown is: ${refundCountdown}
+              //   `)
             }
             else{
-              console.log(`We didn't use ${resourceName} directly, we made it from other components, so we need to dig deeper.`)
+              //console.log(`We didn't use ${resourceName} directly, we made it from other components, so we need to dig deeper.`)
               // break this down further
               const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = smartRefund(componentArray, subItems, cancelLeftover, totalCost, rawRefund, hammerRefund, queueCancel)
 
@@ -1518,42 +1518,50 @@ function App() {
         }
       })
 
-      const cleanBulkRefund = (cancelLeftover, rawRefund, hammerRefund, queueCancel, totalCost, reimburse) => {
+      const cleanBulkRefund = (cancelLeftover, rawRefund, hammerRefund, queueCancel, totalCost, reimburse = null, finalCheck = false) => {
         let objectToClean = reimburse ? reimburse : cancelLeftover;
         Object.entries(objectToClean).forEach(([resourceName, amount]) => {
           const subItem = ingredients[resourceName] ? ingredients[resourceName] : ores[resourceName]
           const multiplier = ingredients[resourceName] ? ingredients[resourceName].multiplier || 1 : 1
-          console.log(`Checking object ${JSON.stringify(objectToClean)}, Multiplier is: ${multiplier} && amount is: ${amount}`);
-          if(amount >= multiplier){
-            console.log(`We have leftovers (${resourceName}) that can be reduced. We're working on ${JSON.stringify(objectToClean)}
-              We start with: 
+          console.log(`Checking object ${JSON.stringify(objectToClean)}, Multiplier is: ${multiplier} && amount is: ${amount} && finalCheck is ${finalCheck}. If there's a match, we'll initiate cleanBulkRefund`);
+          if(!finalCheck && amount >= multiplier){
+            console.log(` ######## cleanBulkRefund ########
+              We have leftovers (${resourceName}) that can be reduced. We're working on ${JSON.stringify(objectToClean)}. Reimburse is: ${JSON.stringify(reimburse)}
               cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
               queueCancel is: ${JSON.stringify(queueCancel)}
-              hammerRefund is now: ${hammerRefund}
+              hammerRefund is: ${hammerRefund}
               rawRefund is: ${JSON.stringify(rawRefund)}
               totalCost is: ${JSON.stringify(totalCost)}
               ------
               `)
 
+            // reduce cancelLeftover
+            console.log(`check if "${resourceName}" is in reimburse (and that we're in reimburse!)`)
             if(!reimburse){
+              console.log(`We are on the top layer. cancelLeftover[${resourceName}] is: ${JSON.stringify(cancelLeftover[resourceName])}`)
               cancelLeftover[resourceName] -= multiplier;
+              hammerRefund--
+              console.log(`cancelLeftover[${resourceName}] is now: ${cancelLeftover[resourceName]} and hammerRefund is: ${hammerRefund}`)
+            }
+            else if(reimburse && reimburse[resourceName]){
+              console.log(`${resourceName} *is* in the reimburse (and we're therefore a level down). reimburse is: ${JSON.stringify(reimburse)}`)
+              reimburse[resourceName] -= multiplier;
+              hammerRefund--
+              console.log(`reimburse is now: ${JSON.stringify(reimburse)} and hammerRefund is: ${hammerRefund}`)
+            }
+            else{
+              console.info(`we're a level down, but the item isn't in reimburse!`)
             }
 
-            if(queueCancel[resourceName]){
-              queueCancel[resourceName] -= multiplier;
-              hammerRefund--
-            }
-            else if(reimburse[resourceName]){
-              reimburse[resourceName] -= multiplier;
-            }
-            else{
-              console.error(`this item isn't in the queue!`)
-            }
+
+            console.log(`Check if we can directly refund ${resourceName} by seeing if it's in both the rawRefund && totalCost`)
             if(rawRefund[resourceName] && totalCost[resourceName]){
-              rawRefund[resourceName] -= multiplier;
+              // console.log(`It is! rawRefund[${resourceName}] is: ${rawRefund[resourceName]}`)
+              // rawRefund[resourceName] -= multiplier;
+              // console.log(`rawRefund[${resourceName}] is now: ${rawRefund[resourceName]}`)
             }
             else{
-              console.log(`We don't have ${resourceName} to refund, so we need a recursive call. Creating reiburse, we get: ${JSON.stringify(subItem.cost)}`)
+              console.log(`We can't refund ${resourceName} directly (it was made from other products), so we need a recursive call. Creating reimburse, we get: ${JSON.stringify(subItem.cost)}`)
               const reimburse = JSON.parse(JSON.stringify(subItem.cost));
               const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = cleanBulkRefund(cancelLeftover, rawRefund, hammerRefund, queueCancel, totalCost, reimburse);
               cancelLeftover = newCancelLeftover;
@@ -1562,22 +1570,61 @@ function App() {
               queueCancel = newQueueCancel;
             }
 
-            // we do another check if we still have leftover
+            // we need to do a final check to see if we have any leftover. If we do have leftovers, we reduce the refund of the item.cost(s) by one, and deduct one * item.multiplier on the queueCancel 
             if(cancelLeftover){
-              const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = cleanBulkRefund(cancelLeftover, rawRefund, hammerRefund, queueCancel, totalCost);
+              console.log(`On our final check, we still have leftover, which is ${JSON.stringify(cancelLeftover)}}`)
+              const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = cleanBulkRefund(cancelLeftover, rawRefund, hammerRefund, queueCancel, totalCost, null, true);
               cancelLeftover = newCancelLeftover;
               rawRefund = newRawRefund;
               hammerRefund = newHammerRefund;
               queueCancel = newQueueCancel;
             }
 
-            console.log(`And end with:
+            console.log(`We end with:
               cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
               queueCancel is: ${JSON.stringify(queueCancel)}
               hammerRefund is now: ${hammerRefund}
               rawRefund is: ${JSON.stringify(rawRefund)}
+            ##### end cleanBulkRefund #####`);
+
+
+          }
+          else if(finalCheck && amount > 0 && amount <= multiplier){
+            // If we do have leftovers, we reduce the refund of the item.cost(s) by one, and deduct one * item.multiplier on the queueCancel
+            console.log(` ######## cleanBulkRefund --- finalClean ########
+              We have leftovers (${resourceName}) that can be reduced. We're working on ${JSON.stringify(objectToClean)}. Reimburse is: ${JSON.stringify(reimburse)}
+              cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
+              queueCancel is: ${JSON.stringify(queueCancel)}
+              hammerRefund is: ${hammerRefund}
+              rawRefund is: ${JSON.stringify(rawRefund)}
+              totalCost is: ${JSON.stringify(totalCost)}
               ------
-              `);
+              `) 
+            
+            // we *need* to make this item an additional time to maintain the remaining craft costs (and hence get the desired leftover) as such, we reduce our queueCancel
+            queueCancel[resourceName] -= multiplier;
+            console.log(`We've reduced the cancelQueue to: ${JSON.stringify(queueCancel)}. Now we check if we can reduce ${resourceName} from rawRefund by checking `)
+            if(rawRefund[resourceName] && totalCost[resourceName]){
+              rawRefund[resourceName] -= multiplier;
+              hammerRefund--
+              console.log(`rawRefund[${resourceName}] is now: ${rawRefund[resourceName]}`)
+            }
+            else{
+              console.log(`We can't refund ${resourceName} directly (it was made from other products), so we need a recursive call. Creating reimburse, we get: ${JSON.stringify(subItem.cost)}`)
+              const finalReimburse = JSON.parse(JSON.stringify(subItem.cost));
+              const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = cleanBulkRefund(cancelLeftover, rawRefund, hammerRefund, queueCancel, totalCost, finalReimburse, true);
+              cancelLeftover = newCancelLeftover;
+              rawRefund = newRawRefund;
+              hammerRefund = newHammerRefund;
+              queueCancel = newQueueCancel;
+            }
+
+            console.log(`We end with:
+              cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
+              queueCancel is: ${JSON.stringify(queueCancel)}
+              hammerRefund is now: ${hammerRefund}
+              rawRefund is: ${JSON.stringify(rawRefund)}
+            ##### end cleanBulkRefund #####`);
           }
         })
         return [cancelLeftover, rawRefund, hammerRefund, queueCancel]
