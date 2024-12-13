@@ -1556,7 +1556,7 @@ function App() {
 
             console.log(`Check if we can directly refund ${resourceName} by seeing if it's in both the rawRefund && totalCost`)
             if(rawRefund[resourceName] && totalCost[resourceName]){
-              //  THIS SECTION WORKS FOR RED CHIPS, BUT NOT FOR GREEN. IF REMOVED, WE GET THE OPPOSITE
+              //  THIS SECTION WORKS FOR RED CHIPS, BUT NOT FOR GREEN. IF REMOVED, WE GET THE OPPOSITE --
               console.log(`It is! rawRefund[${resourceName}] is: ${rawRefund[resourceName]}`)
               rawRefund[resourceName] -= multiplier; // I think the multiplier here does us a disservice, as we need the multiplier from the ingredient above (wire, in our example)
               console.log(`rawRefund[${resourceName}] is now: ${rawRefund[resourceName]}`)
