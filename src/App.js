@@ -1230,6 +1230,7 @@ function App() {
   // ###### CANCEL LOGIC
   // ###### CANCEL LOGIC
   // ###### CANCEL LOGIC
+  // nice to have -- add logic to add whatever intermediary items were crafted prior to cancellation to your inventory.
 
   const cancelCraft = (groupId, totalCost, leftover, hammerCost, bulkCancel) => {
 
