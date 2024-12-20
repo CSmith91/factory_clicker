@@ -65,7 +65,9 @@ const singleBulkRefundExt = (parentName, groupId, totalCost, leftover, otherFunc
 
 }
 
-const smartRefund = (componentArray, cancelSum, cancelLeftover, totalRefundPool, rawRefund, hammerRefund, queueCancel, ores, ingredients) => {
+const smartRefund = (componentArray, cancelSum, cancelLeftover, totalCost, rawRefund, hammerRefund, queueCancel, ores, ingredients) => {
+    // when rawRefund goes up, totalRefundPool goes down
+    let totalRefundPool = JSON.parse(JSON.stringify(totalCost));
 
     console.log(`We've called a new smartRefund loop. The cancelSum is: ${JSON.stringify(cancelSum)}`)
 
@@ -78,12 +80,15 @@ const smartRefund = (componentArray, cancelSum, cancelLeftover, totalRefundPool,
           cancelSum[resourceName] -= amount;
           refundCountdown -= amount;
           rawRefund[resourceName] ? rawRefund[resourceName] += amount : rawRefund[resourceName] = amount;
-          console.log(`${resourceName} is raw, so we add this.
+          totalRefundPool[resourceName] -= amount
+
+          console.log(`${resourceName} is raw, so we add this without needing further checks.
             cancelSum is now: ${JSON.stringify(cancelSum)}
             rawRefund is now: ${JSON.stringify(rawRefund)}
             cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
             queueCancel is now: ${JSON.stringify(queueCancel)}
             hammerRefund is now: ${hammerRefund}
+            totalRefundPool is now: ${JSON.stringify(totalRefundPool)}
             refundCountdown is: ${refundCountdown}
             `)
         }
@@ -101,10 +106,12 @@ const smartRefund = (componentArray, cancelSum, cancelLeftover, totalRefundPool,
                     console.log(`rawRefund[${resourceName}] is: ${rawRefund[resourceName]} and the totalRefundPool is greater, at: ${totalRefundPool[resourceName]}`)
                     if(multiplier > 1){
                         // We directly used this intermediary, but must be careful as this has a multiplier
-                        cancelSum[resourceName] -= multiplier
-                        refundCountdown -= multiplier
-                        hammerRefund++
-                        queueCancel[resourceName] ? queueCancel[resourceName] += multiplier : queueCancel[resourceName] = multiplier
+                        cancelSum[resourceName] -= multiplier;
+                        rawRefund[resourceName] += multiplier;
+                        totalRefundPool[resourceName] -= multiplier;
+                        refundCountdown -= multiplier;
+                        hammerRefund++;
+                        queueCancel[resourceName] ? queueCancel[resourceName] += multiplier : queueCancel[resourceName] = multiplier;
                         // check if we've refunded by the resource by too much (through the multiplier) if so, we add this as a leftover item and correct the refundCountdown
                         if(cancelSum[resourceName] < 0){
                             cancelLeftover[resourceName] += cancelSum[resourceName]
@@ -116,15 +123,28 @@ const smartRefund = (componentArray, cancelSum, cancelLeftover, totalRefundPool,
                             cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
                             queueCancel is now: ${JSON.stringify(queueCancel)}
                             hammerRefund is now: ${hammerRefund}
+                            totalRefundPool is now: ${JSON.stringify(totalRefundPool)}
                             refundCountdown is: ${refundCountdown}
                             `)
                     }
                     else{
-                        console.log(`We used this intermediary directly. It had no multiplier, so it should be straight-forward`)
-                        cancelSum[resourceName] -= 1
+                        // We used this intermediary directly. It had no multiplier, so it should be straight-forward
+                        cancelSum[resourceName]--;
+                        rawRefund[resourceName]++;
+                        totalRefundPool[resourceName]--;
                         hammerRefund++
                         queueCancel[resourceName] ? queueCancel[resourceName]++ : queueCancel[resourceName] = 1
                         refundCountdown--
+
+                        console.log(`We used this intermediary directly. It had no multiplier, so it should be straight-forward:
+                            cancelSum is now: ${JSON.stringify(cancelSum)}
+                            rawRefund is now: ${JSON.stringify(rawRefund)}
+                            cancelLeftovers is: ${JSON.stringify(cancelLeftover)}
+                            queueCancel is now: ${JSON.stringify(queueCancel)}
+                            hammerRefund is now: ${hammerRefund}
+                            totalRefundPool is now: ${JSON.stringify(totalRefundPool)}
+                            refundCountdown is: ${refundCountdown}
+                            `)
                     }
                 } 
                 // we DO need to break this down further
@@ -145,19 +165,21 @@ const smartRefund = (componentArray, cancelSum, cancelLeftover, totalRefundPool,
                 }
                 // now we double check if refundCountdown has gone negative -- if it has, we tweak the rawRefund, cancelLeftovers, hammerRefund and queueCancel
                 if(refundCountdown < 0){
-                    console.log(`Our refundCountdown for ${resourceName} is negative (its: ${refundCountdown}), so we need to correct for this`)
+                    console.log(`Our refundCountdown for ${resourceName} is negative (its: ${refundCountdown}), so we need to correct for this.`)
                     cancelSum[resourceName] -= refundCountdown;
                     cancelLeftover[resourceName] ? cancelLeftover[resourceName] -= refundCountdown : cancelLeftover[resourceName] = -refundCountdown;
 
                     // rawRefund: we need to decrease this, but we need to know HOW to decrease it, directly, indirectly -- HOW indirectly? 
                     // We're basing it on what already exists in rawRefund
                     if(rawRefund[resourceName]){
-                        rawRefund[resourceName] -= multiplier
+                        rawRefund[resourceName] -= multiplier;
+                        totalRefundPool[resourceName] += multiplier;
                     }
                     else{
                         Object.entries(subItems).forEach(([subItemName, subItemAmount]) => {
                             if (rawRefund[subItemName]) {
                                 rawRefund[subItemName]--;
+                                totalRefundPool[subItemName]++;
                             }
                         });
                     }
@@ -172,6 +194,8 @@ const smartRefund = (componentArray, cancelSum, cancelLeftover, totalRefundPool,
                         cancelLeftover: ${JSON.stringify(cancelLeftover)}
                         hammerRefund: ${JSON.stringify(hammerRefund)}
                         queueCancel: ${JSON.stringify(queueCancel)}
+                        totalRefundPool: ${JSON.stringify(totalRefundPool)} // I DON'T KNOW IF THIS IS CORRECT, SO CHECK THIS
+
                         `)
                 }
             }
@@ -206,6 +230,7 @@ const smartRefund = (componentArray, cancelSum, cancelLeftover, totalRefundPool,
         rawRefund: ${JSON.stringify(rawRefund)}
         hammerRefund: ${JSON.stringify(hammerRefund)}
         queueCancel: ${JSON.stringify(queueCancel)}
+        totalRefundPool is now: ${JSON.stringify(totalRefundPool)}
         `)
 
     // we do a final check of leftovers, in the event that we have accrued enough to add this back into the pool (this happens when two odd-multiplier items are refunded, e.g. 2x green chips)
