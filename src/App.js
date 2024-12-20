@@ -840,6 +840,12 @@ function App() {
       let durabilityRequired = corrodeRate * totalOperations;
       let finalCondition = durability - durabilityRequired
 
+      console.log(`---checkHammer---
+        totalOperations: ${totalOperations} for ${cleanList}
+        corrodeRate = ${corrodeRate}
+        durabilityRequired: ${totalOperations} x ${corrodeRate} = ${durabilityRequired}
+        `)
+
       // Check if the tool has enough durability
       if (finalCondition > 0) {
         return durabilityRequired;  // Return cost if the tool has enough durability
@@ -1495,10 +1501,10 @@ function App() {
       }
 
       bulkHammerLoss += hammerDeteriation;
+      //console.log(`bulkHammerLoss has been increased by ${hammerDeteriation} to ${bulkHammerLoss}`)
       allCrafts += grouping+'-';
       successfulCrafts++
 
-      // #### THIS IS THE SMART BULK CRAFT THAT LEADS TO FURTHER TROUBLES AND HENCE REQUIRES FURTHER THOUGHT
       // lastly, we check bulkSurplus to see if we have an excess and can reduce the costs / crafts
       for (const [resourceName, surplusAmount] of Object.entries(bulkSurplus)) {
         let resource = ingredients[resourceName] ? ingredients[resourceName] : ores[resourceName];
@@ -1512,7 +1518,8 @@ function App() {
           // Amend the bulkSurplus
           bulkSurplus[resourceName] -= [multiplier]
           // Amend hammer usage
-          bulkHammerLoss -= hammerDeteriation
+          bulkHammerLoss -= 1* tools.Hammer.corrodeRate
+          //console.log(`we have a surplus, so bulkHammerLoss has been decreased by ${tools.Hammer.corrodeRate} to ${bulkHammerLoss}`)
           
           // Remove the last instance of resourceName (plus hyphen) from allCrafts
           const resourceWithHyphen = resourceName + '-';
