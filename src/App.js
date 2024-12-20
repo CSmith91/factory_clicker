@@ -55,7 +55,7 @@ function App() {
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, isCraftable: false, craftTime: 3.2, canBus: true, isRaw: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, isCraftable: false, craftTime: 16, canBus: true },
     "Plastic": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Coal": 1, "Petroleum": 20}, multiplier: 2, isCraftable: false, craftTime: 1 },
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 50.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 5.5 }, // CHANGE BACK TO 0.5 craftTime
     "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 50.5 }, // CHANGE BACK TO 0.5 craftTime
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 },
     "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2, "Plastic": 2}, isCraftable: true, craftTime: 6 }

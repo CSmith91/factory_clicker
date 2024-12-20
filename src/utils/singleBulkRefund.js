@@ -416,8 +416,8 @@ const smartRefund = (componentArray, cancelSum, cancelLeftover, totalCost, rawRe
                         refundCountdown -= multiplier
                         hammerRefund++
                         queueCancel[resourceName] ? queueCancel[resourceName] += multiplier : queueCancel[resourceName] = multiplier
+                        // check if we've refunded by the resource by too much (through the multiplier) if so, we add this as a leftover item and correct the refundCountdown
                         if(cancelSum[resourceName] < 0){
-                            // i have amended this as we've combined cancelSum and cancelLeftover to toCancel, so now we MAY need to ADD cancel rather than SUBTRACT
                             cancelLeftover[resourceName] += cancelSum[resourceName]
                             refundCountdown -= cancelSum[resourceName]
                         }
@@ -508,6 +508,59 @@ const smartRefund = (componentArray, cancelSum, cancelLeftover, totalCost, rawRe
         hammerRefund: ${JSON.stringify(hammerRefund)}
         queueCancel: ${JSON.stringify(queueCancel)}
         `)
+
+    // we do a final check of leftovers, in the event that we have accrued enough to add this back into the pool (this happens when two odd-multiplier items are refunded, e.g. 2x green chips)
+    Object.entries(cancelLeftover).forEach(([resourceName, amount]) => {
+        if(ingredients[resourceName] && ingredients[resourceName].multiplier > 1 && ingredients[resourceName].multiplier <= amount){
+            //const multiplier = ingredients[resourceName].multiplier
+            const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = reverseLeftover(componentArray, cancelLeftover, totalCost, rawRefund, hammerRefund, queueCancel, ores, ingredients);
+            cancelLeftover = newCancelLeftover;
+            rawRefund = newRawRefund;
+            hammerRefund = newHammerRefund;
+            queueCancel = newQueueCancel;
+        }
+    })
+
+    return [cancelLeftover, rawRefund, hammerRefund, queueCancel]
+}
+
+const reverseLeftover = (componentArray, cancelLeftover, totalCost, rawRefund, hammerRefund, queueCancel, ores, ingredients) => {
+    // we've increased the cancelLefotver, so we now need to check if this has increased the leftover to the point of stacking this in the cancelQueue
+    console.log(`
+        #
+        #
+        #
+        We need to adjust the leftover as it has accrued to a full item
+        cancelLeftover: ${JSON.stringify(cancelLeftover)}      
+        rawRefund: ${JSON.stringify(rawRefund)}
+        hammerRefund: ${JSON.stringify(hammerRefund)}
+        queueCancel: ${JSON.stringify(queueCancel)}
+        `)
+
+    // the below works, but we need to then add the rawItem to the rawRefund, which in principle is a loop. Can we instead just go back to smartRefund with new terms?
+    // cancelLeftover[resourceName] -= multiplier;
+    // queueCancel[resourceName] += multiplier;
+    // hammerRefund++;
+
+    let cancelSum = cancelLeftover;
+    const [newCancelLeftover, newRawRefund, newHammerRefund, newQueueCancel] = smartRefund(componentArray, cancelSum, {}, totalCost, rawRefund, hammerRefund, queueCancel, ores, ingredients)
+
+    cancelLeftover = newCancelLeftover;
+    rawRefund = newRawRefund;
+    hammerRefund = newHammerRefund;
+    queueCancel = newQueueCancel;
+
+    console.log(`
+        #
+        #
+        #
+        We've adjusted the leftover as it has accrued to a full item, we get:
+        cancelLeftover: ${JSON.stringify(cancelLeftover)}      
+        rawRefund: ${JSON.stringify(rawRefund)}
+        hammerRefund: ${JSON.stringify(hammerRefund)}
+        queueCancel: ${JSON.stringify(queueCancel)}
+        `)
+    
     return [cancelLeftover, rawRefund, hammerRefund, queueCancel]
 }
 
