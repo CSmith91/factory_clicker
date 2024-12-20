@@ -368,7 +368,7 @@ const singleBulkRefundExt = (parentName, groupId, totalCost, leftover, otherFunc
     //   `)
 
     const hammer_cost_per_item = tools['Hammer'].corrodeRate;
-    hammerRefund = hammerRefund * hammer_cost_per_item;
+    hammerRefund = (hammerRefund+1) * hammer_cost_per_item;
     queueCancel[parentName] = (ingredients[parentName].multiplier || 1);
 
     // refund the items, adjust the leftovers and refund the hammer

@@ -840,11 +840,11 @@ function App() {
       let durabilityRequired = corrodeRate * totalOperations;
       let finalCondition = durability - durabilityRequired
 
-      console.log(`---checkHammer---
-        totalOperations: ${totalOperations} for ${cleanList}
-        corrodeRate = ${corrodeRate}
-        durabilityRequired: ${totalOperations} x ${corrodeRate} = ${durabilityRequired}
-        `)
+      // console.log(`---checkHammer---
+      //   totalOperations: ${totalOperations} for ${cleanList}
+      //   corrodeRate = ${corrodeRate}
+      //   durabilityRequired: ${totalOperations} x ${corrodeRate} = ${durabilityRequired}
+      //   `)
 
       // Check if the tool has enough durability
       if (finalCondition > 0) {
@@ -1423,11 +1423,11 @@ function App() {
     let bulkGroupId = ''
   
     for (let i = 0; i < totalCrafts; i++) {
-      console.log(`Start of loop ${i+1}
-        allCrafts: ${JSON.stringify(allCrafts)}
-        bulkRawCost: ${JSON.stringify(bulkRawCost)}
-        bulkSurplus: ${JSON.stringify(bulkSurplus)}
-        bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}`)
+      // console.log(`Start of loop ${i+1}
+      //   allCrafts: ${JSON.stringify(allCrafts)}
+      //   bulkRawCost: ${JSON.stringify(bulkRawCost)}
+      //   bulkSurplus: ${JSON.stringify(bulkSurplus)}
+      //   bulkHammerLoss: ${JSON.stringify(bulkHammerLoss)}`)
 
       const result = checkCraft(bulkItemName, true); // return [true, ingredientName, groupId, rawCost, surplusList, hammerDeteriation]
       if (!result) {
