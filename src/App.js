@@ -300,7 +300,7 @@ function App() {
   const [tools, setTools] = useState ({
     Axe: { durability: 100, corrodeRate: 0.5, cost: {"Stone": 2}, unlocked: true},
     Pickaxe: { durability: 100, corrodeRate: 1, cost: {"Wood": 5}, unlocked: true},
-    Hammer: { durability: 1000, corrodeRate: 1.5, cost: {"Wood": 5, "Stone": 5}, unlocked: testMode}
+    Hammer: { durability: 1000, corrodeRate: 1, cost: {"Wood": 5, "Stone": 5}, unlocked: testMode} // CHANGE BACK TO 1.5, 1 IS USED FOR TESTING / EASY CALCS
   })
 
   // Messages, sound & VFX
@@ -1386,12 +1386,17 @@ function App() {
                     }, {})
                   : null;
 
+              // Check if leftover is different and assign it to item.leftover
+              const newLeftover = JSON.stringify(leftover) !== JSON.stringify(item.leftover) ? leftover : item.leftover;
+
+              // If the newLeftover is different, we need to update the global tempCount of that item (usually +1 the tempCount)
+
               return {
                   ...item,
                   groupId: newGroupId,
                   multiCraft: newMultiCraft,
                   queue: Math.max(newQueueCount, 0), // Update queue count
-                  leftover: { ...item.leftover, ...leftover }, // Update leftover
+                  leftover: newLeftover, // Update leftover
                   hammerCost: newHammerCost, // Update hammer cost
                   totalCost: newTotalCost, // Update total cost
               };
