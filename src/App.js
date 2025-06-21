@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
+// Components imported
 import ResourceSection from './Components/ResourceSection';
 import Inventory from './Components/Inventory';
 import Research from './Components/Research';
@@ -12,7 +13,9 @@ import RepairTools from './Components/RepairTools';
 import CompletedResearch from './Components/CompletedResearch';
 import Debug from './Components/Debug';
 
+// Big spoopy scripts (refactored) imported
 import singleBulkRefundExt from './utils/singleBulkRefund';
+import deleteBulkQueueByOneExt from './utils/deleteBulkQueueByOne'
 
 function App() {
 
@@ -896,7 +899,7 @@ function App() {
     }
   };
 
-  const craftDeductions = (itemName, totalCost, leftover, hammerCost, reverse, multiCraft = 1) => {
+  const craftDeductions = (itemName, totalCost, leftover, hammerCost, reverse, multiCraft = 1, oddCancel = {}) => {
     // multiCraft is ONLY used incrementing tempCount for the final item
     const operation = reverse ? -1 : 1;  // If reverse is true, we add; if false, we subtract
 
@@ -960,16 +963,29 @@ function App() {
         ...updatedIngredients[itemName],
         tempCount: updatedIngredients[itemName].tempCount + tempAdder
       };
-    
-      // Iterate through the leftover object and increment the tempCount for each resource
-      Object.entries(leftover).forEach(([resourceName, amount]) => {
-        if (updatedIngredients[resourceName]) {
-          updatedIngredients[resourceName] = {
-            ...updatedIngredients[resourceName],
-            tempCount: updatedIngredients[resourceName].tempCount + operation * amount
-          };
-        }
-      });
+
+      // this covers single-refund-from-bulk when the leftover is assymmetric (i.e. green chips take 3 wire, which has a multiplier of two)
+      if(oddCancel && Object.keys(oddCancel).length > 0){
+        Object.entries(oddCancel).forEach(([resourceName, amount]) => {
+          if (updatedIngredients[resourceName]) {
+            updatedIngredients[resourceName] = {
+              ...updatedIngredients[resourceName],
+              tempCount: updatedIngredients[resourceName].tempCount + amount
+            };
+          }
+        });
+      }
+      else{
+        // Iterate through the leftover object and increment the tempCount for each resource
+        Object.entries(leftover).forEach(([resourceName, amount]) => {
+          if (updatedIngredients[resourceName]) {
+            updatedIngredients[resourceName] = {
+              ...updatedIngredients[resourceName],
+              tempCount: updatedIngredients[resourceName].tempCount + operation * amount
+            };
+          }
+        });
+      }
     
       return updatedIngredients;
     });
@@ -1322,95 +1338,14 @@ function App() {
     });
   };
 
-  const deleteBulkQueueByOne = (parentName, groupId, refund, leftover, hammerRefund, queueCancelList) => {
-    // console.log(`We're deleting an item in a bulk queue
-    //   parentName: ${parentName}
-    //   groupId: ${groupId}
-    //   refund: ${JSON.stringify(refund)}
-    //   leftover: ${JSON.stringify(leftover)}
-    //   hammerRefund: ${hammerRefund}
-    //   queueCancelList: ${JSON.stringify(queueCancelList)}
-    //   `)
-
-    // remove the clicked item from the queue by id
-    setCraftQueue((prevQueue) => {
-      //console.log(`prevQueue: ${JSON.stringify(prevQueue)}`)
-
-      // Helper function to update the groupId
-      const updateGroupId = (groupId, queueCancelList) => {
-        // Split the groupId string by '-' to get an array of items
-        let groupIdParts = groupId.split('-');
-
-        // Remove items from the groupId based on the queueCancelList
-        Object.keys(queueCancelList).forEach((itemName) => {
-          const multiplier = ores[itemName] ? 1 : ingredients[itemName].multiplier ? ingredients[itemName].multiplier : 1;
-          const countToRemove = queueCancelList[itemName] / multiplier;
-          let countRemoved = 0;
-
-          // Loop through groupIdParts and remove the items one by one
-          groupIdParts = groupIdParts.filter((part) => {
-              if (part === itemName && countRemoved < countToRemove) {
-                  countRemoved++;
-                  return false; // Remove this item
-              }
-              return true; // Keep this item
-          });
-      });
-
-        // Rebuild the groupId string from the updated groupIdParts
-        return groupIdParts.join('-');
-      };
-
-      // Loop through the queue and process only the items matching the groupId
-      const updatedQueue = prevQueue.map((item) => {
-          if (item.groupId === groupId && item.queue > 0) {
-              // Reduce the queue based on queueCancelList for matching items
-              const cancelAmount = queueCancelList[item.ingredientName] || 0;
-              const newQueueCount = item.queue - (cancelAmount / item.multiplier);
-              const newMultiCraft = item.multiCraft - 1;
-
-              // If the queue count goes to 0 or below, don't include this item
-              if (newQueueCount <= 0) {
-                  return null; // Will be filtered out later
-              }
-
-              // Update the groupId by removing the items in queueCancelList
-              const newGroupId = updateGroupId(item.groupId, queueCancelList);
-
-              // Update hammerCost and totalCost
-              const newHammerCost = item.hammerCost ? item.hammerCost - hammerRefund : null;
-              const newTotalCost = item.totalCost
-                  ? Object.keys(item.totalCost).reduce((newCost, key) => {
-                        newCost[key] = item.totalCost[key] - (refund[key] || 0);
-                        return newCost;
-                    }, {})
-                  : null;
-
-              // Check if leftover is different and assign it to item.leftover
-              const newLeftover = JSON.stringify(leftover) !== JSON.stringify(item.leftover) ? leftover : item.leftover;
-
-              // If the newLeftover is different, we need to update the global tempCount of that item (usually +1 the tempCount)
-
-              return {
-                  ...item,
-                  groupId: newGroupId,
-                  multiCraft: newMultiCraft,
-                  queue: Math.max(newQueueCount, 0), // Update queue count
-                  leftover: newLeftover, // Update leftover
-                  hammerCost: newHammerCost, // Update hammer cost
-                  totalCost: newTotalCost, // Update total cost
-              };
-          }
-          return item; // Leave non-matching items unchanged
-      });
-
-      // Filter out any items that were set to null (i.e., queue count reached 0)
-      return updatedQueue.filter(item => item !== null);
-    });
+  const deleteBulkQueueByOne = (parentName, groupId, refund, leftover, hammerRefund, queueCancelList, previousLeftover = {}) => {
+    // nice to have, commented out for now.
+    //deleteBulkQueueByOneExt(parentName, groupId, refund, leftover, hammerRefund, queueCancelList, previousLeftover, {ores, ingredients, setIngredients, setCraftQueue})
   };
 
   const singleBulkRefund = (parentName, groupId, totalCost, leftover) => {
-    singleBulkRefundExt(parentName, groupId, totalCost, leftover, {ores, ingredients, tools, craftDeductions, deleteBulkQueueByOne})
+    // nice to have, commented out for now.
+    //singleBulkRefundExt(parentName, groupId, totalCost, leftover, {ores, ingredients, tools, craftDeductions, deleteBulkQueueByOne})
   }
 
   // ###### BULK CRAFT LOGIC
