@@ -12,7 +12,7 @@ The game is coded up to belts and inserters. The tech for boilers and electric d
 ### New Features 1.1.0 - Smart Crafting & UI update
 - 'Smart crafting' is now coded into the game. When a craft request is sent, if the exact items required for the craft aren't available, the game will go down the tree of intermediary products to see if it's possible to craft those missing items using their components, all the way down to raw ore and base ingredients.
   - Another feature of this is how it handles bulk crafting (see below)
-- Single-crafted items can be cancelled if users right-click the item on the craft queue.
+- Single-crafted items can be cancelled if users click the item on the craft queue.
 - Bulk crafting. A batch of 5 of one item is sent to the craft queue on right-click. This combines with the smart crafting to consider:
   - Running out of core items mid-way and swapping to base ingredients
   - Factoring in the hammer cost, including if extra items are needed to be crafted in the process
