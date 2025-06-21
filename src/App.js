@@ -19,9 +19,9 @@ import deleteBulkQueueByOneExt from './utils/deleteBulkQueueByOne'
 
 function App() {
 
-  const testMode = true;
-  const speedMode = false;
-  const [debug, setDebug] = useState(false)
+  const testMode = true; // unlocks everything if true
+  const speedMode = false; // allows adding resources on request. This is used to speed up test gameplay (as opposed to the above, which is more for full development)
+  const [debug, setDebug] = useState(false) // appears when testMode == true, and shows extra variables, etc.
 
   let cheat = 0;
   // if(testMode){
@@ -58,7 +58,7 @@ function App() {
     "Copper Plate": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Ore": 1}, isCraftable: false, craftTime: 3.2, canBus: true, isRaw: true},
     "Steel": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 5}, isCraftable: false, craftTime: 16, canBus: true },
     "Plastic": {group: 'i3', count: 0, tempCount: 0, unlocked: testMode, cost: {"Coal": 1, "Petroleum": 20}, multiplier: 2, isCraftable: false, craftTime: 1 },
-    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 5.5 }, // CHANGE BACK TO 0.5 craftTime
+    "Wire": {group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Copper Plate": 1}, multiplier: 2, isCraftable: true, craftTime: 0.5 },
     "Gear" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Iron Plate": 2}, isCraftable: true, craftTime: 0.5 },
     "Electronic Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 3, "Iron Plate": 1}, isCraftable: true, craftTime: 0.5 },
     "Advanced Circuit" : { group: 'i5', count: 0, tempCount: 0, unlocked: testMode, cost: {"Wire": 4, "Electronic Circuit": 2, "Plastic": 2}, isCraftable: true, craftTime: 6 }
@@ -303,7 +303,7 @@ function App() {
   const [tools, setTools] = useState ({
     Axe: { durability: 100, corrodeRate: 0.5, cost: {"Stone": 2}, unlocked: true},
     Pickaxe: { durability: 100, corrodeRate: 1, cost: {"Wood": 5}, unlocked: true},
-    Hammer: { durability: 1000, corrodeRate: 1, cost: {"Wood": 5, "Stone": 5}, unlocked: testMode} // CHANGE BACK TO 1.5, 1 IS USED FOR TESTING / EASY CALCS
+    Hammer: { durability: 100, corrodeRate: 1.5, cost: {"Wood": 5, "Stone": 5}, unlocked: testMode}
   })
 
   // Messages, sound & VFX
