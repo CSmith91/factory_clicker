@@ -18,7 +18,7 @@ The game is coded up to belts and inserters. The tech for boilers and electric d
   - Factoring in the hammer cost, including if extra items are needed to be crafted in the process
   - Crafting as many of the desired item as possible and stopping if either ingredients run out or if the hammer breaks
   - Grouping components and smart rounding: when items with an odd number of multi-components is bulk crafted, the craft logic will craft the minimum amount of an ingredient.
-  - - E.g. green chips use 3 wire, 2 wire is made by 1 copper plate. Bulk crafting 5 green chips with no smart logic and no wire (but enough copper plate) will send a request of 10 copper plates to 20 wire, using 15 wire (and so 5 wire leftover). Smart craft sees this and rounds it down to only requesting 8 copper plate, making 16 wire. 15 wire will then be spent and 1 wire will be added to the inventory as a surplus
+    - E.g. green chips use 3 wire, 2 wire is made by 1 copper plate. Bulk crafting 5 green chips with no smart logic and no wire (but enough copper plate) will send a request of 10 copper plates to 20 wire, using 15 wire (and so 5 wire leftover). Smart craft sees this and rounds it down to only requesting 8 copper plate, making 16 wire. 15 wire will then be spent and 1 wire will be added to the inventory as a surplus
   - UI reflects this smart rounding and also smart stacking
     - E.g. A - A - A becomes A3
     - A - B - A - B doesn't change
