@@ -187,147 +187,92 @@ const InserterOnSite = ({
 
                 // if we have enough fuel/leccy, we can now check machines
                 if(canRun){
-                    // check if we have any machines
-                    if(machine.count > 0){
-                        const item = ores[itemName] ? ores[itemName] : ingredients[itemName];
-                        // check if this machine has less than input
-                        let notDrill = true;
-                        if(machineName === "Burner Drill" || machineName === "Electric Drill"){
-                            notDrill = false;
+                    // Helper: Get item from ores or ingredients
+                    function getInventoryItem(itemName, ores, ingredients) {
+                        return ores[itemName] || ingredients[itemName];
+                    }
+
+                    // Helper: Find active fuel with highest current value
+                    function getActiveFuel(fuels) {
+                        let activeFuel = null;
+                        let maxFuelCurrent = -1;
+
+                        for (const [fuelName, fuelData] of Object.entries(fuels)) {
+                            if (fuelData.current > maxFuelCurrent) {
+                                activeFuel = [fuelName, fuelData];
+                                maxFuelCurrent = fuelData.current;
+                            }
                         }
-                        if(notDrill && machine.inputMax - machine.currentInput > 0 && item.count > 0){
+                        return activeFuel;
+                    }
+
+                    // Helper: Try loading fuel into machine
+                    function tryLoadFuel(machine, ores, ingredients, machineName, itemName, inserterName) {
+                        const fuels = machine.fuels;
+                        const activeFuel = getActiveFuel(fuels);
+
+                        // check our machine has is alread using a specific fuel
+                        if (activeFuel) {
+                            const [fuelName, fuelData] = activeFuel;
+                            const inventoryFuel = getInventoryItem(fuelName, ores, ingredients);
+
+                            if (fuelData.current + 0.95 < machine.inputMax && inventoryFuel?.count > 0) {
+                                setAnimation('active');
+                                turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
+                                return true;
+                            } else {
+                                setAnimation('idle');
+                                return true;
+                            }
+                        }
+
+                        // No dominant active fuel. Try to load any available one
+                        for (const [fuelName, fuelData] of Object.entries(fuels)) {
+                            const inventoryFuel = getInventoryItem(fuelName, ores, ingredients);
+                            if (fuelData.current + 0.95 < machine.inputMax && inventoryFuel?.count > 0) {
+                                setAnimation('active');
+                                turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
+                                return true;
+                            }
+                        }
+
+                        // No fuel available
+                        setAnimation('inputReq');
+                        return false;
+                    }
+
+                    // Main logic
+                    if (machine.count > 0) {
+                        const item = getInventoryItem(itemName, ores, ingredients);
+                        const isDrill = machineName === "Burner Drill" || machineName === "Electric Drill";
+                        const hasRoomForInput = machine.inputMax - machine.currentInput > 0;
+
+                        // we have a non-drill with room for input and input to add
+                        if (!isDrill && hasRoomForInput && item.count > 0) {
                             setAnimation('active');
-                            animationSet = true; 
+                            animationSet = true;
                             turnOnInserter(inserterName, machineName, itemName, 'main');
                         }
-                        else if(notDrill && machine.inputMax - machine.currentInput > 0 && item.count == 0){
-                            // we don't have any input in our inventory to add to our machine, however, if our machine has fuel, we also run checks there (as the machine may have some input stored)
-                            if(machine.fuels){
-
-                                // see if we have one fuel to focus on (this is to prevent stuffing every fuels into machines)
-                                let activeFuel = null;
-                                let maxFuelCurrent = -1; // Initialize with a low value
-
-                                // Iterate over fuels and find the one with the highest current value
-                                for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
-                                    if (fuelData.current > maxFuelCurrent) {
-                                        activeFuel = [fuelName, fuelData]; // Store the fuel with the highest current
-                                        maxFuelCurrent = fuelData.current; // Update maxFuelCurrent
-                                    }
-                                }
-                                
-                                if (activeFuel && maxFuelCurrent > 0) {
-                                    const [fuelName, fuelData] = activeFuel;
-                                    let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName];
-                                    
-                                    if (machine.fuels[fuelName].current + 0.95 < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
-                                        setAnimation('active');
-                                        animationSet = true;
-                                        turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
-                                    }
-                                    else{
-                                        // we have an active fuel but don't have more of the fuel available. This isnt a problem at this stage, so we can set to idle
-                                        setAnimation('idle');
-                                        animationSet = true;
-                                    }
-                                } else {
-                                    // Iterate over fuels and check there's no other fuel with current > 0 -- this is to ensure we dont load additional fuels
-                                    for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
-                                        if (fuelData.current > 0) {
-                                            break;
-                                        }
-                                    }
-                                    
-                                    // No active fuel and we're empty, so iterate through all fuels in machine, see if there's room, then check if we have this in the inventory
-                                    for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
-                                        // Check if current fuel is less than inputMax and if there is fuel available in ingredients
-                                        let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
-                                        if (fuelData.current + 0.95 < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
-                                            //console.log(`${fuelName} can be added to the machine.`);
-                                            setAnimation('active');
-                                            animationSet = true; 
-                                            turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
-                                            break; // Stop the loop once the first valid fuel is found
-                                        }
-                                    }
-                                    if (!animationSet) {
-                                        // if we get this far, there are no items available to add to the machine
-                                        setAnimation('inputReq');
-                                        animationSet = true; 
-                                    }
-                                }
-                            }
-                            else{
-                                // we've got to input don't require fuel
+                        // we have a non-drill with room for input but no input in our inventory
+                        else if (!isDrill && hasRoomForInput && item.count === 0) {
+                            // if our machine requires fuel (e.g. a furnace) try to add fuel instead
+                            if (machine.fuels) {
+                                animationSet = tryLoadFuel(machine, ores, ingredients, machineName, itemName, inserterName);
+                            } 
+                            // no fuel needed, and no input available!
+                            else {
                                 setAnimation('inputReq');
-                                animationSet = true; 
+                                animationSet = true;
                             }
                         }
-                        else{
-                            // machines have full input resource, now check if fuel required
-                            if(machine.fuels){
-
-                                // see if we have one fuel to focus on (this is to prevent stuffing every fuels into machines)
-                                let activeFuel = null;
-                                let maxFuelCurrent = -1; // Initialize with a low value
-
-                                // Iterate over fuels and find the one with the highest current value
-                                for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
-                                    if (fuelData.current > maxFuelCurrent) {
-                                        activeFuel = [fuelName, fuelData]; // Store the fuel with the highest current
-                                        maxFuelCurrent = fuelData.current; // Update maxFuelCurrent
-                                    }
-                                }
-                                
-                                if (activeFuel && maxFuelCurrent > 0) {
-                                    const [fuelName, fuelData] = activeFuel;
-                                    let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName];
-                                    
-                                    if (machine.fuels[fuelName].current + 0.95 < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
-                                        setAnimation('active');
-                                        animationSet = true;
-                                        turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
-                                    }
-                                    else{
-                                        // we have an active fuel but don't have more of the fuel available. This isnt a problem at this stage, so we can set to idle
-                                        setAnimation('idle');
-                                        animationSet = true;
-                                    }
-                                } else {
-                                    // Iterate over fuels and check there's no other fuel with current > 0 -- this is to ensure we dont load additional fuels
-                                    for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
-                                        if (fuelData.current > 0) {
-                                            break;
-                                        }
-                                    }
-                                    
-                                    // No active fuel and we're empty, so iterate through all fuels in machine, see if there's room, then check if we have this in the inventory
-                                    for (const [fuelName, fuelData] of Object.entries(machine.fuels)) {
-                                        // Check if current fuel is less than inputMax and if there is fuel available in ingredients
-                                        let inventoryFuel = ores[fuelName] ? ores[fuelName] : ingredients[fuelName]
-                                        if (fuelData.current + 0.95 < machine.inputMax && inventoryFuel && inventoryFuel.count > 0) {
-                                            //console.log(`${fuelName} can be added to the machine.`);
-                                            setAnimation('active');
-                                            animationSet = true; 
-                                            turnOnInserter(inserterName, machineName, itemName, 'fuel', fuelName);
-                                            break; // Stop the loop once the first valid fuel is found
-                                        }
-                                    }
-                                    if (!animationSet) {
-                                        // if we get this far, there are no items available to add to the machine
-                                        setAnimation('inputReq');
-                                        animationSet = true; 
-                                    }
-                                }
-                            }
-                            else{
-                                // we have an electric machine with full content
+                        // we have a drill, and/or a machine with max input
+                        else {
+                            if (machine.fuels) {
+                                animationSet = tryLoadFuel(machine, ores, ingredients, machineName, itemName, inserterName);
+                            } else {
                                 setAnimation('idle');
                             }
                         }
-                    }
-                    else{
-                        // no machines deployed
                     }
                 }
                 else if(!canRun && burner && !inserter.isSelfInserting){
