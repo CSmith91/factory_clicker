@@ -11,16 +11,16 @@ The game is coded up to belts and inserters. The tech for boilers and electric d
 
 ### New Features 1.1.0 - Smart Crafting & UI update
 - 'Smart crafting' is now coded into the game. When a craft request is sent, if the exact items required for the craft aren't available, the game will go down the tree of intermediary products to see if it's possible to craft those missing items using their components, all the way down to raw ore and base ingredients.
-- - Another feature of this is how it handles bulk crafting (see below)
+  - Another feature of this is how it handles bulk crafting (see below)
 - Single-crafted items can be cancelled if users right-click the item on the craft queue.
 - Bulk crafting. A batch of 5 of one item is sent to the craft queue on right-click. This combines with the smart crafting to consider:
-- - Running out of core items mid-way and swapping to base ingredients
+  - Running out of core items mid-way and swapping to base ingredients
   - Factoring in the hammer cost, including if extra items are needed to be crafted in the process
   - Crafting as many of the desired item as possible and stopping if either ingredients run out or if the hammer breaks
   - Grouping components and smart rounding: when items with an odd number of multi-components is bulk crafted, the craft logic will craft the minimum amount of an ingredient.
   - - E.g. green chips use 3 wire, 2 wire is made by 1 copper plate. Bulk crafting 5 green chips with no smart logic and no wire (but enough copper plate) will send a request of 10 copper plates to 20 wire, using 15 wire (and so 5 wire leftover). Smart craft sees this and rounds it down to only requesting 8 copper plate, making 16 wire. 15 wire will then be spent and 1 wire will be added to the inventory as a surplus
   - UI reflects this smart rounding and also smart stacking
-  - - E.g. A - A - A becomes A3
+    - E.g. A - A - A becomes A3
     - A - B - A - B doesn't change
     - A - B - B - B - A - A becomes A - B3 - A2
 
