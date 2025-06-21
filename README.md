@@ -42,4 +42,5 @@ A major struggle has been implementing cancelling crafting from bulk crafts. Bul
 - bulk cancellation request to a single craft that's stacked
 - single cancellation request to a bulk craft
 - bulk cancellation request to a bulk craft
+
 The frameworks for the fix are built with the code commented out, as bugs have led to a bottleneck in development and so this has been shelved for the meantime. This is feasible as we can still expand the game without this core code changing
