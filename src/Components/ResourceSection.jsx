@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import OresAndDrills from './OresAndDrills';
 import Furnaces from './Furnaces'
+import Sites from './Sites';
 
 const ResourceSection = ({
     unlockables,
@@ -352,6 +353,15 @@ const ResourceSection = ({
                 setLanes={setLanes}
                 debug={debug} 
                 onAlert={onAlert} />
+            </div>
+          )}
+
+            {/* Sites Section */}
+            {shouldShowFurnaces() && (
+            <div className='section'>
+              <Sites 
+              
+              />
             </div>
           )}
       </>

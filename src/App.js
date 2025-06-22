@@ -19,7 +19,7 @@ import deleteBulkQueueByOneExt from './utils/deleteBulkQueueByOne'
 
 function App() {
 
-  const testMode = false; // unlocks everything if true
+  const testMode = true; // unlocks everything if true
   const speedMode = false; // allows adding resources on request. This is used to speed up test gameplay (as opposed to the above, which is more for full development)
   const [debug, setDebug] = useState(false) // appears when testMode == true, and shows extra variables, etc.
 
@@ -1110,6 +1110,7 @@ function App() {
     });
   };
 
+  // craft queue watcher
   useEffect(() => {
     // this catches the event when a queue is manually cancelled by the user, so we need to reinitialise
     if(!craftQueue){
@@ -1536,8 +1537,8 @@ function App() {
               )}
             </div>
 
-            {/* Factory Section */}
-            <div className='section'>
+            {/* Factory Section */} 
+            {/* <div className='section'>
               <FactorySection 
               unlockables={unlockables} 
               expandables={expandables}
@@ -1552,7 +1553,7 @@ function App() {
               lanes={lanes}
               setLanes={setLanes}
                />
-            </div>
+            </div> */}
 
             < ResourceSection 
               unlockables={unlockables}

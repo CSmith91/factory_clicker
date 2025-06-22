@@ -1,0 +1,12 @@
+.power-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto auto;
+    gap: 12px;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.power-cell {
+    font-weight: bold;
+}

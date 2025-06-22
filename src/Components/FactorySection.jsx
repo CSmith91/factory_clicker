@@ -1,6 +1,7 @@
 import Tools from "./Tools"
 import Networks from "./Networks"
 import Expansion from "./Expansion"
+import Power from "./Power"
 
 const FactorySection = ({ unlockables, expandables, onUnlock, handleBeltUnlock, ores, ingredients, tools, checkCraft, networks, setNetworks, lanes, setLanes }) => {
 
@@ -9,6 +10,7 @@ const FactorySection = ({ unlockables, expandables, onUnlock, handleBeltUnlock, 
             <h2>Factory</h2>
             {unlockables.belts1.unlocked && (
                 <>
+                    < Power  />
                     < Expansion ores={ores} ingredients={ingredients} onUnlock={onUnlock} handleBeltUnlock={handleBeltUnlock} lanes={lanes} setLanes={setLanes} expandables={expandables}  />
                     < Networks checkCraft={checkCraft} networks={networks} setNetworks={setNetworks} />
                 </>
