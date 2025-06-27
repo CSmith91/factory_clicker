@@ -1,7 +1,7 @@
 import Tools from "./Tools"
 import Networks from "./Networks"
 import Expansion from "./Expansion"
-import Power from "./Power"
+import Power from "../../src/Components/Power"
 
 const FactorySection = ({ unlockables, expandables, onUnlock, handleBeltUnlock, ores, ingredients, tools, checkCraft, networks, setNetworks, lanes, setLanes }) => {
 

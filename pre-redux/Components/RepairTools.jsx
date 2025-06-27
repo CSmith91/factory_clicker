@@ -1,5 +1,5 @@
 import React from "react";
-import RepairButton from "../../pre-redux/Components/RepairButton";
+import RepairButton from "./RepairButton";
 
 const RepairTools = ({ tools, onRepair }) => {
     return(

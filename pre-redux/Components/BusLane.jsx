@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import images from "./Images/images";
+import images from "../../src/Components/Images/images";
 
 const BusLane = ({ 
     ores, 

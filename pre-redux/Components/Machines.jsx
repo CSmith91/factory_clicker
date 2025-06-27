@@ -1,5 +1,5 @@
 import React from "react";
-import MachineOnSite from "../../pre-redux/Components/MachineOnSite";
+import MachineOnSite from "./MachineOnSite";
 
 const Machines = ({ unlockables, machineType, ores, oreName, ingredients,  setOres, setIngredients, storage, getStorage, pendingMachineOutput, setPendingMachineOutput, siteCounts, updateSiteCounts, onAlert }) => {
 

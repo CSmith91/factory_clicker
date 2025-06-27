@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import images from "./Images/images";
+import images from "../../src/Components/Images/images";
 
 const InserterOnSite = ({                            
     ores,

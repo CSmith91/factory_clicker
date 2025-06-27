@@ -1,55 +1,52 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { incrementSiteCount, incrementPendingOutput } from '../app/features/sites/sitesSlice';
+import { useStorageHelpers } from '../hooks/useStorageHelpers';
 
-const OreButton = ({ ores, oreName, siteCounts, pendingMachineOutput, setPendingMachineOutput, updateSiteCounts, getStorage }) => {
+const OreButton = ({ oreName }) => {
+    const dispatch = useDispatch();
+    const ores = useSelector(state => state.ores);
+    const siteCounts = useSelector(state => state.sites.siteCounts);
+    const pendingMachineOutput = useSelector(state => state.sites.pendingMachineOutput);
+    const { getStorage } = useStorageHelpers();
+
     const [isAnimating, setIsAnimating] = useState(false);
     const craftTime = ores[oreName].craftTime;
 
     const handleClick = () => {
+        const banked = siteCounts[oreName] || 0;
+        const pending = pendingMachineOutput[oreName] || 0;
+        const storageLimit = getStorage(oreName);
 
-        // check the bank isn't full
-        if(siteCounts[oreName]){
-            if(siteCounts[oreName] + pendingMachineOutput[oreName] >= getStorage(oreName)){
-                return;
-            }
-            else{
-                startMine()
-            }
-        }
-        else{
-            startMine()
-        }
-    }
+        if (banked + pending >= storageLimit) return;
+        startMine();
+    };
 
     const startMine = () => {
-        // Start the animation
         setIsAnimating(true);
-        // Update the pending output
-        setPendingMachineOutput(prevPending => ({
-            ...prevPending,
-            [oreName]: (prevPending[oreName] || 0) + 1
-        }));
 
-        // Delay the execution of updateSiteCounts
+        // Add pending output
+        dispatch(incrementPendingOutput({ itemName: oreName, amount: 1 }));
+
+        // Delay the execution of adding to site count
         setTimeout(() => {
-            updateSiteCounts(oreName, 1, 'manual');
+            dispatch(incrementSiteCount({ itemName: oreName, amount: 1 }));
 
-            setPendingMachineOutput(prevPending => ({
-                ...prevPending,
-                [oreName]: (prevPending[oreName] || 0)- 1
-            }));
+            // Remove the pending output
+            dispatch(incrementPendingOutput({ itemName: oreName, amount: -1 }));
 
-            // End the animation
             setIsAnimating(false);
         }, craftTime * 1000);
     };
 
     return (
         <div style={{ margin: '10px', position: 'relative' }}>
-            <button 
+            <button
                 onClick={handleClick}
                 className={`mine-button ${isAnimating ? 'animating' : ''}`}
                 disabled={isAnimating}
-                style={{ '--craft-time': `${craftTime}s` }}>
+                style={{ '--craft-time': `${craftTime}s` }}
+            >
                 Get {oreName}
             </button>
         </div>

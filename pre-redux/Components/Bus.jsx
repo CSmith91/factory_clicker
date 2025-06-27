@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import BusLane from "./BusLane";
+import BusLane from "../../src/Components/BusLane";
 
 const Bus = ({ itemName, lanes, setLanes, networks, setNetworks, siteCounts, setSiteCounts, ores, ingredients, setOres, setIngredients, getStorage, debug, onAlert }) => {
 

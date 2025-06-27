@@ -1,5 +1,5 @@
 import React, { useEffect, useRef} from 'react';
-import images from './Images/images';
+import images from '../../src/Components/Images/images';
 
 
 const CraftQueue = ({ craftQueue, currentCrafting, isAnimating, cancelCraft, debug }) => {

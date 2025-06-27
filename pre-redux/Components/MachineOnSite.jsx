@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import MachineAddButton from "./MachineAddButton"
 import Inserters from "./Inserters";
-import images from './Images/images';
+import images from '../../src/Components/Images/images';
 
 const MachineOnSite = ({ 
     unlockables, 

@@ -1,16 +1,19 @@
-import './Site.css';
-import images from './Images/images';
+import './Sites.css';
+import Site from '../../src/Components/Site';
 
-const Site = ({key, siteId}) => {
+const Sites = () => {
+
+    const maxSites = 9;
+    const siteIds = Array.from({ length: maxSites }, (_, i) => i + 1);
 
     return (
         <div>
-            <button>
-                This is Site {siteId}
-            </button>
+            <h2>Sites</h2>
             <div className="inventory-div">
                 <div className="sites-navigation">
-                                 
+                    {siteIds.map(id => (
+                        <Site key={id} siteId={id} />
+                    ))}                 
                 </div>
         
                 {/* <div className='craftList'>
@@ -91,4 +94,4 @@ const Site = ({key, siteId}) => {
     );
 };
 
-export default Site;
+export default Sites;

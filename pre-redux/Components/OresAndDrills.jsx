@@ -1,8 +1,8 @@
 import React from 'react';
 import Machines from './Machines';
-import OreButton from './OreButton';
+import OreButton from '../../src/Components/OreButton';
 import Bus from './Bus'
-import images from './Images/images';
+import images from '../../src/Components/Images/images';
 
 const OresAndDrills = ({ 
     unlockables,

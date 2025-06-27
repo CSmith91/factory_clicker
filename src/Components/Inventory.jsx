@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+
+
 import CraftQueue from './CraftQueue';
 import images from './Images/images';
 
-const Inventory = ({ 
-    unlockables, 
-    ores, 
-    ingredients, 
-    getStorage, 
-    checkCraft,
-    bulkCheck,
-    craftQueue,
-    currentCrafting,
-    isAnimating,
-    cancelCraft,
-    debug
-    }) => {
+// import helpers, hooks, etc
+import { checkCraft } from '../utils/craftCore';
+import { bulkCheck } from '../utils/craftBulk';
+import { useStorageHelpers } from '../hooks/useStorageHelpers';
+
+const Inventory = ({}) => {
+
+    const ores = useSelector((state) => state.ores);
+    const ingredients = useSelector((state) => state.ingredients);
+    const unlockables = useSelector((state) => state.unlockables);
+    const craftQueue = useSelector((state) => state.craftQueue);
+    const debug = useSelector(state => state.debug.debug);
+    const { getStorage } = useStorageHelpers();
 
     // Determine which menu is visible to the player
     const [activeSection, setActiveSection] = useState('Intermediate Products');
@@ -145,12 +148,7 @@ const Inventory = ({
         
                 <div className='craftList'>
                     {craftQueue && craftQueue.length > 0 && (
-                        <CraftQueue 
-                            craftQueue={craftQueue}
-                            currentCrafting={currentCrafting}
-                            isAnimating={isAnimating}
-                            cancelCraft={cancelCraft} 
-                            debug={debug} />
+                        <CraftQueue />
                     )}
                 </div>
         

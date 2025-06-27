@@ -1,7 +1,7 @@
 import React from "react";
-import Machines from "./Machines";
+import Machines from "../../src/Components/Machines";
 import Bus from "./Bus";
-import images from './Images/images';
+import images from '../../src/Components/Images/images';
 
 const Furnaces = ({ 
     unlockables, 

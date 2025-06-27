@@ -1,5 +1,5 @@
 import React from "react"
-import images from "./Images/images"
+import images from "../../src/Components/Images/images"
 
 const TestMode = ({ ores, ingredients, onCheat }) => {
     return (
