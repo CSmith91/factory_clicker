@@ -42,7 +42,7 @@ const Patches = () => {
                         {images[oreName] && (
                             <>
                                 <img src={images[oreName]} alt={`${oreName} Img`} />
-                                {ores[oreName].tempCount != 0 &&(
+                                {ores[oreName].tempCount !== 0 &&(
                                     <span className="img-temp-number">{ores[oreName].tempCount}</span>
                                 )}
                                 <span className="img-number">{sites[oreName] || 0}</span>

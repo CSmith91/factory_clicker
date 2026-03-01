@@ -12,8 +12,8 @@ export const useSitesHelpers=  () => {
     const ores = useSelector(state => state.ores);
     const ingredients = useSelector(state => state.ingredients);
     const tools = useSelector(state => state.tools)
-    const siteCounts = useSelector(state => state.sites)
-    const { getStorage, isStorageFull } = useStorageHelpers();
+    const siteCounts = useSelector(state => state.sites.siteCounts)
+    const { getStorage } = useStorageHelpers();
 
 
     const handleBank = (itemName) => {
@@ -28,7 +28,8 @@ export const useSitesHelpers=  () => {
 
         if (item.count + item.tempCount >= storageLimit) {
             dispatch(addAlert(`${itemName} is full.`));
-        } else{
+        } 
+        else{
             const newCount = item.count + currentCount;
 
             if (newCount + item.tempCount > storageLimit) {
@@ -95,19 +96,18 @@ export const useSitesHelpers=  () => {
 
         // Increment the ore count only if the tool had durability or machine-mined
         const tool = tools[toolName];
-        if (tool?.durability > 0 || !manOrMachine === 'manual') {
+        if (tool?.durability > 0 || manOrMachine !== 'manual') {
             // update patch, if applicable
-            if(ores.patch){
-                dispatch(decrementPatchSize({itemName: oreName, amount: 1}))
-            }
-            //update harvest, if applicable
-            if(ores.harvested){
-                dispatch(incrementHarvested({itemName: oreName, amount: 1}))
-            }
+            dispatch(decrementPatchSize({itemName: oreName, amount: 1}))
+
+            // update harvest, if applicable
+            dispatch(incrementHarvested({itemName: oreName, amount: 1}))
+
         }
     };
 
     return {
-        handleBank
+        handleBank,
+        updateSiteCounts
     }
 }

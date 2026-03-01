@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { incrementSiteCount, incrementPendingOutput } from '../app/features/sites/sitesSlice';
+import { incrementPendingOutput } from '../app/features/sites/sitesSlice';
 import { useStorageHelpers } from '../hooks/useStorageHelpers';
+import { useSitesHelpers } from'../hooks/useSiteHelpers'
 
 const OreButton = ({ oreName }) => {
     const dispatch = useDispatch();
@@ -9,6 +10,7 @@ const OreButton = ({ oreName }) => {
     const siteCounts = useSelector(state => state.sites.siteCounts);
     const pendingMachineOutput = useSelector(state => state.sites.pendingMachineOutput);
     const { getStorage } = useStorageHelpers();
+    const { updateSiteCounts } = useSitesHelpers();
 
     const [isAnimating, setIsAnimating] = useState(false);
     const craftTime = ores[oreName].craftTime;
@@ -30,7 +32,7 @@ const OreButton = ({ oreName }) => {
 
         // Delay the execution of adding to site count
         setTimeout(() => {
-            dispatch(incrementSiteCount({ itemName: oreName, amount: 1 }));
+            updateSiteCounts(oreName, 1, 'manual')
 
             // Remove the pending output
             dispatch(incrementPendingOutput({ itemName: oreName, amount: -1 }));

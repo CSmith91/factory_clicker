@@ -12,12 +12,16 @@ import Patches from './Components/Patches';
 import Inventory from './Components/Inventory';
 // import Research from './Components/Research';
 // import TestMode from './Components/TestMode';
-// import Messages from './Components/Messages';
-// import AudioPlayer from './Components/AudioPlayer';
+import Messages from './Components/Messages';
+import AudioPlayer from './Components/AudioPlayer';
 // import FactorySection from './Components/FactorySection';
 // import RepairTools from './Components/RepairTools';
 // import CompletedResearch from './Components/CompletedResearch';
-// import Debug from './Components/Debug';
+import Debug from './Components/Debug';
+import Sites from './Components/Sites'
+
+// Extras imported
+import { testMode } from './config'
 
 // // Big spoopy scripts (refactored) imported
 // import singleBulkRefundExt from './utils/singleBulkRefund';
@@ -25,25 +29,49 @@ import Inventory from './Components/Inventory';
 
 function App() {
 
-    // this set of code is our ticker, used for global state management. Currently, ticks are set at 2 per second (500), and can be amended here
+    // this set of code is our ticker, used for global state management. Currently, ticks are set at 8 per second (125), and can be amended here
     // you can also use this ticker  for testing/dev  by later adding a 'pause' feature
     const tickCount = useSelector((state) => state.game.tickCount);
     const dispatch = useDispatch();
     useEffect(() => {
     const interval = setInterval(() => {
         dispatch(gameTick());
-    }, 500);
+    }, 125);
     return () => clearInterval(interval);
     }, [dispatch]);
+
+    // for messages
+    const messages = useSelector(state => state.notifications.messages);
 
     return (
         <>
             <div className="App" style={{ padding: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Patches />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Inventory />
+                    {/* Alert Section */}
+                    <div className='alerts'>
+                    {messages.length > 0 && (
+                        <Messages />
+                    )}
+                    <AudioPlayer />
+                    </div>
+
+                    {/* Debug buttons */}
+                    <div className='debug'>
+                    {testMode && (
+                        <Debug />
+                    )}
+                    </div>
+
+                    {/* Factory Section */} 
+                    <div className='section'>
+                        <Patches />
+                    </div>
+                    <div className='section'>
+                        <Sites />
+                    </div>
+                    <div className='section'>
+                        <Inventory />
+                    </div>
                 </div>
                 <p>Tick: {tickCount}</p>
             </div>
